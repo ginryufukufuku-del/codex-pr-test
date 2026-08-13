@@ -21,3 +21,21 @@ GitHub CLIとCodexを使ったPull Requestワークフローを検証するた�
 
 > [!IMPORTANT]
 > `main`ブランチは直接変更せず、必ずPull Requestを経由してください。
+
+## タスク管理アプリ
+
+ブラウザで動作するシンプルなタスク管理アプリを収録しています。タスクの追加、完了切替、削除ができ、内容はブラウザに保存されます。
+
+### 起動方法
+
+```bash
+python3 -m http.server 8000
+```
+
+ブラウザで <http://localhost:8000> を開いてください。
+
+### テスト
+
+```bash
+python3 -m unittest discover -s test -v
+```
