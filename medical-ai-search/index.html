@@ -21,7 +21,7 @@
   html{font-size:20px;touch-action:manipulation;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
   .hero{
-    max-width:960px;margin:12px auto 0;padding:8.8px 20px;border-radius:32px;
+    max-width:960px;margin:12px auto 0;padding:7.9px 20px;border-radius:32px;
     background-color:#f0f6fb;
     background-image:
       radial-gradient(120% 140% at 88% -10%, rgba(200,224,246,.55), rgba(200,224,246,0) 60%),
@@ -33,9 +33,9 @@
   }
   header{max-width:100%;}
   h1{font-size:1.4rem;margin:0 0 4px;}
-  .sub{color:var(--muted);font-size:0.62rem;line-height:1.39;}
-  main{max-width:960px;margin:0 auto;padding:12px 16px 50px;display:flex;flex-direction:column;gap:12.9px;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14.7px 16px;}
+  .sub{color:var(--muted);font-size:0.62rem;line-height:1.25;}
+  main{max-width:960px;margin:0 auto;padding:12px 16px 50px;display:flex;flex-direction:column;gap:11.6px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:13.2px 16px;}
   .card h2{font-size:1.05rem;margin:0 0 8px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   label{display:block;font-size:0.9rem;color:var(--muted);margin-bottom:5px;font-weight:600;}
@@ -44,8 +44,8 @@
   }
   textarea{resize:vertical;min-height:60px;font-family:inherit;}
   #voice::placeholder{font-size:0.525rem;color:#b8c6bd;opacity:1;}
-  .field{margin-bottom:9.7px;}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9.7px;}
+  .field{margin-bottom:8.7px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8.7px;}
   .chip{
     border:2px solid var(--border);background:var(--chip);padding:9.6px 19.8px;border-radius:999px;
     cursor:pointer;font-size:0.95rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
@@ -94,8 +94,8 @@
   }
   .chip:active,.chip.pressed{transform:scale(0.96);}
   .chip .badge{font-size:0.55rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
-  .note{font-size:0.55rem;color:var(--muted);margin-top:9.7px;line-height:1.55;}
-  .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:13.6px;}
+  .note{font-size:0.55rem;color:var(--muted);margin-top:8.7px;line-height:1.4;}
+  .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:12.2px;}
   button{touch-action:manipulation;min-height:44px;}
   #mic-btn, #clear-btn{min-height:28px;}
   button.primary{
@@ -131,19 +131,19 @@
   }
   button.clear-btn:hover{background:linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%), linear-gradient(160deg, rgba(220,125,125,.74), rgba(185,90,90,.68));}
   #query-preview{
-    white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:16px;font-size:1rem;line-height:1.55;min-height:70px;
+    white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:14.4px 16px;font-size:1rem;line-height:1.4;min-height:70px;
     color:var(--accent-dark);display:flex;align-items:center;justify-content:center;text-align:center;
   }
-  .result-list{display:flex;flex-direction:column;gap:9.7px;margin-top:11.6px;}
+  .result-list{display:flex;flex-direction:column;gap:8.7px;margin-top:10.4px;}
   .result-item{
     display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);border-radius:18px;
-    padding:10.9px 16px;background:#f4faf6;color:inherit;text-decoration:none;cursor:pointer;
+    padding:9.8px 16px;background:#f4faf6;color:inherit;text-decoration:none;cursor:pointer;
     touch-action:manipulation;transition:transform .06s,background .1s;
   }
   .result-item:active,.result-item.pressed{transform:scale(0.98);background:#eaf5ee;}
   .result-item .name{font-weight:700;font-size:1.05rem;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
-  .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:9.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.55;}
+  .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
   @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
 </style>
@@ -162,7 +162,7 @@
     <h2 style="font-size:1.512rem;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
     <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など。</div>
     <div class="field">
-      <textarea id="voice" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:83px;"></textarea>
+      <textarea id="voice" rows="1" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:42px;"></textarea>
     </div>
     <div class="btnbar">
       <button class="primary" id="mic-btn">🎤 <span style="font-size:1.35em;">話す</span>（入力）</button>
@@ -206,20 +206,28 @@ const SERVICES = [
     note: "米国医師資格認証が必要。トップを開きます。"
   },
   {
-    id: "hokuto",
-    category: "medical",
-    name: "ホクト (Hokuto)",
-    urlType: "manual",
-    url: "https://hokuto.app/ai-search",
-    note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容を貼り付けてください。"
-  },
-  {
     id: "verahealth",
     category: "medical",
     name: "Vera Health",
     urlType: "manual",
     url: "https://www.verahealth.ai/",
     note: "医療エビデンス検索AI（推定）。料金体系・アクセス条件は要確認です。"
+  },
+  {
+    id: "glasshealth",
+    category: "medical",
+    name: "Glass Health",
+    urlType: "manual",
+    url: "https://glass.health/",
+    note: "臨床意思決定支援AI。トップ/ログイン画面を開きます。"
+  },
+  {
+    id: "hokuto",
+    category: "medical",
+    name: "ホクト (Hokuto)",
+    urlType: "manual",
+    url: "https://hokuto.app/ai-search",
+    note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容を貼り付けてください。"
   },
   {
     id: "medii",
@@ -367,6 +375,7 @@ function refreshPreview() {
   autoGrowVoice();
 }
 document.getElementById("voice").addEventListener("input", refreshPreview);
+autoGrowVoice();
 
 document.getElementById("clear-btn").addEventListener("click", () => {
   const voiceEl = document.getElementById("voice");
