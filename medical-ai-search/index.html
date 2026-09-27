@@ -68,6 +68,13 @@
     box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
                0 6px 14px rgba(55,100,120,.32), 0 1px 2px rgba(55,100,120,.2);
   }
+  .chip.active.chip-lightblue{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(185,222,235,.68), rgba(140,190,212,.62));
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -10px 14px rgba(0,0,0,.08),
+               0 6px 14px rgba(90,150,175,.28), 0 1px 2px rgba(90,150,175,.18);
+  }
   .chip.active.chip-gray{
     background:
       linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
@@ -237,6 +244,7 @@ const SERVICES = [
   {
     id: "google",
     category: "general",
+    chipTone: "lightblue",
     name: "Google",
     urlType: "query",
     url: "https://www.google.com/search?q=",
@@ -245,6 +253,7 @@ const SERVICES = [
   {
     id: "bing",
     category: "general",
+    chipTone: "lightblue",
     name: "Bing",
     urlType: "query",
     url: "https://www.bing.com/search?q=",
@@ -307,7 +316,7 @@ function showResult(s, status, url, blocked) {
 SERVICES.forEach(s => {
   const chip = document.createElement("button");
   chip.type = "button";
-  chip.className = "chip active" + (s.chipTone === "gray" ? " chip-gray" : (s.category === "general" ? " chip-general" : ""));
+  chip.className = "chip active" + (s.chipTone ? " chip-" + s.chipTone : (s.category === "general" ? " chip-general" : ""));
   chip.dataset.id = s.id;
   chip.innerHTML = `${s.name} <span class="badge">${s.urlType === "query" ? "自動入力" : "コピーして開く"}</span>`;
   chip.title = s.note;
