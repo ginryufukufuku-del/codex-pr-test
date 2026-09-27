@@ -51,7 +51,7 @@
     cursor:pointer;font-size:0.95rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
     touch-action:manipulation;min-height:35px;
   }
-  .chip.active, button.primary, #mic-btn.recording, .clear-btn{
+  .chip.active, button.primary, #mic-btn.recording, button.clear-btn{
     text-shadow:
       -1px -1px 0 rgba(0,0,0,.16),
       1px -1px 0 rgba(0,0,0,.22),
@@ -120,7 +120,7 @@
     background:linear-gradient(160deg, rgba(224,138,138,.75), rgba(196,105,105,.7));
     color:#fff;border-color:rgba(255,255,255,.45);
   }
-  .clear-btn{
+  button.clear-btn{
     background:
       linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
       linear-gradient(160deg, rgba(235,150,150,.68), rgba(205,110,110,.62));
@@ -129,7 +129,7 @@
     box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 16px rgba(0,0,0,.1),
                0 8px 18px rgba(150,80,80,.32), 0 2px 4px rgba(150,80,80,.22);
   }
-  .clear-btn:hover{background:linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%), linear-gradient(160deg, rgba(220,125,125,.74), rgba(185,90,90,.68));}
+  button.clear-btn:hover{background:linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%), linear-gradient(160deg, rgba(220,125,125,.74), rgba(185,90,90,.68));}
   #query-preview{
     white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:16px;font-size:1rem;line-height:1.6;min-height:70px;
     color:var(--accent-dark);display:flex;align-items:center;justify-content:center;text-align:center;
