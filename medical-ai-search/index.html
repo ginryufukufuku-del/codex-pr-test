@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>医療AI 横断検索アシスタント</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#6fae8e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="医療AI検索">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   :root{
     --bg:#f2f7f4; --card:#ffffff; --border:#dbe6e0; --text:#26332c; --muted:#6b7d73;
@@ -432,6 +440,12 @@ document.getElementById("copy-btn").addEventListener("click", async () => {
   const ok = await copyText(q);
   alert(ok ? "クエリをコピーしました。" : "コピーに失敗しました。手動で選択してコピーしてください。");
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

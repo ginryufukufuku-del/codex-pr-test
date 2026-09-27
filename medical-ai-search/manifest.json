@@ -1,0 +1,14 @@
+{
+  "name": "医療AI横断検索アシスタント",
+  "short_name": "医療AI検索",
+  "description": "患者情報をまとめて話し、複数の医療AI/検索サービスへワンタップでコピー＆送信するツール",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f7f4",
+  "theme_color": "#6fae8e",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
