@@ -159,6 +159,7 @@
     </div>
     <div class="btnbar">
       <button class="primary" id="mic-btn">🎤 話す（開始）</button>
+      <button class="secondary" id="clear-btn" style="padding-top:9px;padding-bottom:9px;">🗑 消去</button>
       <span class="note" id="mic-status" style="align-self:center;">未対応のブラウザでは手入力してください（Chrome推奨）。</span>
     </div>
   </div>
@@ -365,6 +366,13 @@ function refreshPreview() {
   preview.textContent = q || "入力内容";
 }
 document.getElementById("voice").addEventListener("input", refreshPreview);
+
+document.getElementById("clear-btn").addEventListener("click", () => {
+  const voiceEl = document.getElementById("voice");
+  voiceEl.value = "";
+  refreshPreview();
+  voiceEl.focus();
+});
 
 let recognizer = null;
 let recording = false;
