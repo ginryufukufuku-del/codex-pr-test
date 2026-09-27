@@ -10,47 +10,51 @@
     --accent:#2563eb; --accent-dark:#1d4ed8; --chip:#eef2f7; --chip-active:#2563eb; --chip-active-text:#fff;
   }
   *{box-sizing:border-box;}
+  html{font-size:30px;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
   header{padding:20px 16px 8px;max-width:960px;margin:0 auto;}
-  h1{font-size:1.35rem;margin:0 0 4px;}
-  .sub{color:var(--muted);font-size:0.85rem;line-height:1.5;}
-  main{max-width:960px;margin:0 auto;padding:12px 16px 60px;display:flex;flex-direction:column;gap:16px;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
-  .card h2{font-size:1rem;margin:0 0 12px;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  label{display:block;font-size:0.8rem;color:var(--muted);margin-bottom:4px;}
+  h1{font-size:1.6rem;margin:0 0 6px;}
+  .sub{color:var(--muted);font-size:0.95rem;line-height:1.6;}
+  main{max-width:960px;margin:0 auto;padding:12px 16px 60px;display:flex;flex-direction:column;gap:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .card h2{font-size:1.15rem;margin:0 0 14px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  label{display:block;font-size:0.9rem;color:var(--muted);margin-bottom:5px;font-weight:600;}
   input[type=text], input[type=number], textarea, select{
-    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:#fff;color:var(--text);
+    width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:1.05rem;background:#fff;color:var(--text);
   }
-  textarea{resize:vertical;min-height:56px;font-family:inherit;}
-  .field{margin-bottom:10px;}
+  textarea{resize:vertical;min-height:60px;font-family:inherit;}
+  .field{margin-bottom:14px;}
   .chips{display:flex;flex-wrap:wrap;gap:8px;}
   .chip{
-    border:1px solid var(--border);background:var(--chip);padding:9px 14px;border-radius:999px;
-    cursor:pointer;font-size:0.88rem;user-select:none;transition:.12s;
+    border:2px solid var(--border);background:var(--chip);padding:16px 22px;border-radius:14px;
+    cursor:pointer;font-size:1.05rem;font-weight:600;user-select:none;transition:.12s;
   }
   .chip.active{background:var(--chip-active);color:var(--chip-active-text);border-color:var(--chip-active);}
-  .chip .badge{font-size:0.7rem;opacity:.75;margin-left:4px;}
-  .note{font-size:0.78rem;color:var(--muted);margin-top:10px;line-height:1.5;}
-  .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .chip .badge{font-size:0.72rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
+  .note{font-size:0.85rem;color:var(--muted);margin-top:10px;line-height:1.6;}
+  .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
   button.primary{
-    background:var(--accent);color:#fff;border:none;padding:11px 20px;border-radius:9px;font-size:0.95rem;cursor:pointer;font-weight:600;
+    background:var(--accent);color:#fff;border:none;padding:18px 30px;border-radius:12px;font-size:1.1rem;cursor:pointer;font-weight:700;
+    box-shadow:0 2px 6px rgba(37,99,235,.25);
   }
   button.primary:hover{background:var(--accent-dark);}
   button.secondary{
-    background:#fff;border:1px solid var(--border);padding:11px 16px;border-radius:9px;cursor:pointer;font-size:0.9rem;
+    background:#fff;border:2px solid var(--border);padding:14px 22px;border-radius:12px;cursor:pointer;font-size:1rem;font-weight:600;
   }
+  button.secondary:hover{background:#f0f3f7;}
+  #mic-btn.recording{background:#dc2626;color:#fff;border-color:#dc2626;}
   #query-preview{
-    white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--border);border-radius:8px;padding:12px;font-size:0.85rem;min-height:60px;
+    white-space:pre-wrap;background:#f8fafc;border:2px dashed var(--border);border-radius:10px;padding:16px;font-size:1rem;line-height:1.6;min-height:70px;
   }
-  .result-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .result-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .result-item{
-    display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:#fafcff;
+    display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);border-radius:10px;padding:14px 16px;background:#fafcff;
   }
-  .result-item .name{font-weight:600;font-size:0.92rem;}
-  .result-item .status{font-size:0.75rem;color:var(--muted);}
-  .result-item a{color:var(--accent);text-decoration:none;font-size:0.85rem;font-weight:600;}
-  .warn{background:#fff7e6;border:1px solid #f4d999;color:#7a5b00;padding:10px 12px;border-radius:8px;font-size:0.8rem;line-height:1.6;}
+  .result-item .name{font-weight:700;font-size:1.05rem;}
+  .result-item .status{font-size:0.85rem;color:var(--muted);margin-top:2px;}
+  .result-item a{color:var(--accent);text-decoration:none;font-size:0.95rem;font-weight:700;}
+  .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:14px 16px;border-radius:10px;font-size:0.88rem;line-height:1.7;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:0.75rem;}
   @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
 </style>
@@ -67,7 +71,19 @@
   </div>
 
   <div class="card">
-    <h2>患者情報入力</h2>
+    <h2>① 音声入力（患者情報をまとめて話してください）</h2>
+    <div class="note" style="margin:0 0 10px;">年齢・性別・主訴・現病歴・身体所見・検査所見などを、まとめて自由に話してください。文字起こしされた内容がそのまま患者情報として使われます。</div>
+    <div class="field">
+      <textarea id="voice" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:120px;"></textarea>
+    </div>
+    <div class="btnbar">
+      <button class="primary" id="mic-btn">🎤 話す（開始）</button>
+      <span class="note" id="mic-status" style="align-self:center;">未対応のブラウザでは手入力してください（Chrome推奨）。</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 詳細入力（任意・音声だけで足りない場合に補足）</h2>
     <div class="grid2">
       <div class="field">
         <label>年齢</label>
@@ -106,8 +122,12 @@
   </div>
 
   <div class="card">
-    <h2>検索先を選択（複数選択可）</h2>
+    <h2>検索先を選択（既定で全選択・個別に外せます）</h2>
     <div class="chips" id="service-chips"></div>
+    <div class="btnbar">
+      <button class="secondary" id="select-all-btn">全選択</button>
+      <button class="secondary" id="select-none-btn">全解除</button>
+    </div>
     <div class="note">
       「URL連携あり」＝検索語をURLに載せて開けるサービス。「手動貼付」＝トップページ/チャット画面を開くのでコピーした内容を貼り付けてください。
     </div>
@@ -117,8 +137,8 @@
     <h2>生成されたクエリ</h2>
     <div id="query-preview">左のフォームに入力すると、ここに検索文が自動生成されます。</div>
     <div class="btnbar">
-      <button class="primary" id="run-btn">選択したサービスを開く ＆ コピー</button>
-      <button class="secondary" id="copy-btn">クエリだけコピー</button>
+      <button class="primary" id="run-btn" style="font-size:1.3rem;padding:22px 36px;width:100%;">🚀 全AIに一括送信（1ボタン）</button>
+      <button class="secondary" id="copy-btn" style="width:100%;">クエリだけコピー</button>
     </div>
     <div class="result-list" id="result-list"></div>
   </div>
@@ -193,7 +213,7 @@ const selected = new Set();
 
 SERVICES.forEach(s => {
   const chip = document.createElement("div");
-  chip.className = "chip";
+  chip.className = "chip active";
   chip.dataset.id = s.id;
   chip.innerHTML = `${s.name} <span class="badge">${s.urlType === "query" ? "URL連携あり" : "手動貼付"}</span>`;
   chip.title = s.note;
@@ -207,12 +227,25 @@ SERVICES.forEach(s => {
     }
   });
   chipsEl.appendChild(chip);
+  selected.add(s.id);
+});
+
+document.getElementById("select-all-btn").addEventListener("click", () => {
+  SERVICES.forEach(s => {
+    selected.add(s.id);
+    chipsEl.querySelector(`[data-id="${s.id}"]`).classList.add("active");
+  });
+});
+document.getElementById("select-none-btn").addEventListener("click", () => {
+  selected.clear();
+  chipsEl.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
 });
 
 const fields = ["age","sex","chief","history","exam","labs","question"];
 const preview = document.getElementById("query-preview");
 
 function buildQuery() {
+  const voice = document.getElementById("voice").value.trim();
   const age = document.getElementById("age").value.trim();
   const sex = document.getElementById("sex").value;
   const chief = document.getElementById("chief").value.trim();
@@ -222,6 +255,7 @@ function buildQuery() {
   const question = document.getElementById("question").value.trim();
 
   const lines = [];
+  if (voice) lines.push(`患者情報（音声入力）: ${voice}`);
   if (age || sex) lines.push(`患者: ${age ? age + "歳" : ""}${sex ? " " + sex : ""}`);
   if (chief) lines.push(`主訴: ${chief}`);
   if (history) lines.push(`現病歴: ${history}`);
@@ -233,9 +267,72 @@ function buildQuery() {
 
 function refreshPreview() {
   const q = buildQuery();
-  preview.textContent = q || "左のフォームに入力すると、ここに検索文が自動生成されます。";
+  preview.textContent = q || "話すか、下の欄に入力すると、ここに検索文が自動生成されます。";
 }
-fields.forEach(id => document.getElementById(id).addEventListener("input", refreshPreview));
+[...fields, "voice"].forEach(id => document.getElementById(id).addEventListener("input", refreshPreview));
+
+let recognizer = null;
+let recording = false;
+const micBtn = document.getElementById("mic-btn");
+const micStatus = document.getElementById("mic-status");
+const voiceEl = document.getElementById("voice");
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognitionCtor) {
+  micStatus.textContent = "このブラウザは音声入力に対応していません。手入力してください。";
+  micBtn.disabled = true;
+} else {
+  recognizer = new SpeechRecognitionCtor();
+  recognizer.lang = "ja-JP";
+  recognizer.continuous = true;
+  recognizer.interimResults = true;
+
+  let baseText = "";
+
+  recognizer.addEventListener("start", () => {
+    baseText = voiceEl.value ? voiceEl.value.trim() + " " : "";
+    micStatus.textContent = "聞き取り中です…話し終えたら「停止」を押してください。";
+  });
+
+  recognizer.addEventListener("result", (event) => {
+    let finalText = "";
+    let interimText = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalText += t;
+      else interimText += t;
+    }
+    if (finalText) baseText += finalText;
+    voiceEl.value = (baseText + interimText).trim();
+    refreshPreview();
+  });
+
+  recognizer.addEventListener("error", (event) => {
+    micStatus.textContent = `音声認識エラー: ${event.error}`;
+    stopRecording();
+  });
+
+  recognizer.addEventListener("end", () => {
+    if (recording) recognizer.start();
+  });
+
+  function startRecording() {
+    recording = true;
+    micBtn.textContent = "⏹ 停止";
+    micBtn.classList.add("recording");
+    recognizer.start();
+  }
+  function stopRecording() {
+    recording = false;
+    micBtn.textContent = "🎤 話す（開始）";
+    micBtn.classList.remove("recording");
+    micStatus.textContent = "文字起こしが完了しました。内容を確認・修正できます。";
+    try { recognizer.stop(); } catch (e) {}
+  }
+  micBtn.addEventListener("click", () => {
+    if (recording) stopRecording(); else startRecording();
+  });
+}
 
 async function copyText(text) {
   try {
