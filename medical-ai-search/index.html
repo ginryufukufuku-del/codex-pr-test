@@ -371,9 +371,16 @@ function buildQuery() {
   return document.getElementById("voice").value.trim();
 }
 
+function autoGrowVoice() {
+  const el = document.getElementById("voice");
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
 function refreshPreview() {
   const q = buildQuery();
   preview.textContent = q || "入力内容";
+  autoGrowVoice();
 }
 document.getElementById("voice").addEventListener("input", refreshPreview);
 
