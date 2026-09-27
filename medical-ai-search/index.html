@@ -108,7 +108,6 @@
   .result-item:active,.result-item.pressed{transform:scale(0.98);background:#eaf5ee;}
   .result-item .name{font-weight:700;font-size:1.05rem;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
-  .result-item .go{color:var(--accent);font-size:0.7rem;font-weight:700;white-space:nowrap;margin-left:10px;}
   .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:10px 14px;border-radius:16px;font-size:0.56rem;line-height:1.6;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
   @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
@@ -272,6 +271,8 @@ async function copyText(text) {
   }
 }
 
+const NO_STATUS_IDS = ["google", "bing"];
+
 function showResult(s, status, url, blocked) {
   let item = resultList.querySelector(`[data-result-id="${s.id}"]`);
   if (!item) {
@@ -283,12 +284,12 @@ function showResult(s, status, url, blocked) {
     resultList.prepend(item);
   }
   item.href = url;
+  const showStatus = !NO_STATUS_IDS.includes(s.id);
   item.innerHTML = `
     <div>
       <div class="name">${s.name}</div>
-      <div class="status">${status}</div>
+      ${showStatus ? `<div class="status">${status}</div>` : ""}
     </div>
-    <span class="go">${blocked ? "▶ タップして開く" : "再度開く"}</span>
   `;
 }
 
