@@ -159,14 +159,18 @@
 
 
   <div class="card">
-    <h2 style="font-size:1.512rem;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <h2 style="font-size:1.512rem;margin:0;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="primary" id="mic-btn" style="padding:3.6px 10px;font-size:0.42rem;min-height:20px;">🎤 <span style="font-size:1.35em;">話す</span>（入力）</button>
+        <button class="secondary clear-btn" id="clear-btn" style="padding:3.6px 10px;font-size:0.42rem;min-height:20px;">🗑 消去</button>
+      </div>
+    </div>
     <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など。</div>
     <div class="field">
       <textarea id="voice" rows="1" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:42px;"></textarea>
     </div>
     <div class="btnbar">
-      <button class="primary" id="mic-btn">🎤 <span style="font-size:1.35em;">話す</span>（入力）</button>
-      <button class="secondary clear-btn" id="clear-btn">🗑 消去</button>
       <span class="note" id="mic-status" style="display:none;"></span>
     </div>
   </div>
