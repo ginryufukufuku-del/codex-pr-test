@@ -21,7 +21,7 @@
   html{font-size:20px;touch-action:manipulation;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
   .hero{
-    max-width:960px;margin:12px auto 0;padding:22px 20px;border-radius:32px;
+    max-width:960px;margin:12px auto 0;padding:8.8px 20px;border-radius:32px;
     background-color:#f0f6fb;
     background-image:
       radial-gradient(120% 140% at 88% -10%, rgba(200,224,246,.55), rgba(200,224,246,0) 60%),
@@ -33,9 +33,9 @@
   }
   header{max-width:100%;}
   h1{font-size:1.4rem;margin:0 0 4px;}
-  .sub{color:var(--muted);font-size:0.62rem;line-height:1.46;}
-  main{max-width:960px;margin:0 auto;padding:12px 16px 50px;display:flex;flex-direction:column;gap:13.6px;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:15.5px 16px;}
+  .sub{color:var(--muted);font-size:0.62rem;line-height:1.39;}
+  main{max-width:960px;margin:0 auto;padding:12px 16px 50px;display:flex;flex-direction:column;gap:12.9px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14.7px 16px;}
   .card h2{font-size:1.05rem;margin:0 0 8px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   label{display:block;font-size:0.9rem;color:var(--muted);margin-bottom:5px;font-weight:600;}
@@ -157,9 +157,6 @@
 </div>
 <main>
 
-  <div class="warn">
-    <strong>ご注意（実装上の制約）:</strong> ホクト・OpenEvidence・MEDIIなどは、外部アプリから患者情報を送信して自動検索させる公開APIを提供していません（多くは医師資格認証や院内契約が必要な非公開サービスです）。そのため本ツールは「入力内容を検索文としてコピーし、選択したサービスをタブで開く」補助ツールとして動作します。各サイトを開いた後、コピーされた内容を検索欄に貼り付けてください。
-  </div>
 
   <div class="card">
     <h2 style="font-size:1.512rem;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
@@ -176,17 +173,12 @@
 
   <div class="card">
     <h2>タップ<span style="font-size:0.8em;">した</span>AI<span style="font-size:0.8em;">へ</span>コピー＆送信</h2>
-    <div class="note" style="margin:0 0 10px;">ボタンを1回タップすると、画面最下部に選択したAIバーが表示されます。</div>
 
     <div class="note" style="font-weight:700;margin-top:0;">医療系AI</div>
     <div class="chips" id="service-chips-medical"></div>
 
     <div class="note" style="font-weight:700;">汎用AI・チャット / 検索</div>
     <div class="chips" id="service-chips-general"></div>
-
-    <div class="note">
-      「自動入力」＝検索語を付けて検索結果を直接開きます。「コピーして開く」＝トップページ/チャット画面を開くので、コピー済みの内容を貼り付けてください。
-    </div>
   </div>
 
   <div class="card">
@@ -220,14 +212,6 @@ const SERVICES = [
     urlType: "manual",
     url: "https://hokuto.app/ai-search",
     note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容を貼り付けてください。"
-  },
-  {
-    id: "pubmed",
-    category: "medical",
-    name: "PubMed",
-    urlType: "query",
-    url: "https://pubmed.ncbi.nlm.nih.gov/?term=",
-    note: "無料で公開API（E-utilities）あり。文献検索に利用できます。"
   },
   {
     id: "verahealth",
@@ -338,7 +322,7 @@ SERVICES.forEach(s => {
   chip.type = "button";
   chip.className = "chip active" + (s.chipTone ? " chip-" + s.chipTone : (s.category === "general" ? " chip-general" : ""));
   chip.dataset.id = s.id;
-  chip.innerHTML = `${s.name} <span class="badge">${s.urlType === "query" ? "自動入力" : "コピーして開く"}</span>`;
+  chip.innerHTML = s.name;
   chip.title = s.note;
   chip.addEventListener("click", () => {
     const q = buildQuery();
