@@ -77,53 +77,14 @@
   </div>
 
   <div class="card">
-    <h2>① 音声入力（患者情報をまとめて話してください）</h2>
-    <div class="note" style="margin:0 0 10px;">年齢・性別・主訴・現病歴・身体所見・検査所見などを、まとめて自由に話してください。文字起こしされた内容がそのまま患者情報として使われます。</div>
+    <h2>患者情報を話してください（1つの入力欄でOK）</h2>
+    <div class="note" style="margin:0 0 10px;">年齢・性別・主訴・現病歴・身体所見・検査所見・質問したいことなど、順番を気にせずまとめて話してください。</div>
     <div class="field">
-      <textarea id="voice" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:120px;"></textarea>
+      <textarea id="voice" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:160px;"></textarea>
     </div>
     <div class="btnbar">
       <button class="primary" id="mic-btn">🎤 話す（開始）</button>
       <span class="note" id="mic-status" style="align-self:center;">未対応のブラウザでは手入力してください（Chrome推奨）。</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>② 詳細入力（任意・音声だけで足りない場合に補足）</h2>
-    <div class="grid2">
-      <div class="field">
-        <label>年齢</label>
-        <input type="number" id="age" placeholder="例: 68" min="0" max="130">
-      </div>
-      <div class="field">
-        <label>性別</label>
-        <select id="sex">
-          <option value="">選択してください</option>
-          <option value="男性">男性</option>
-          <option value="女性">女性</option>
-          <option value="その他/不明">その他/不明</option>
-        </select>
-      </div>
-    </div>
-    <div class="field">
-      <label>主訴</label>
-      <input type="text" id="chief" placeholder="例: 3日前からの発熱と右下腹部痛">
-    </div>
-    <div class="field">
-      <label>現病歴</label>
-      <textarea id="history" placeholder="経過、随伴症状、既往歴、内服薬など"></textarea>
-    </div>
-    <div class="field">
-      <label>身体所見・診察所見</label>
-      <textarea id="exam" placeholder="バイタル、視触診所見など"></textarea>
-    </div>
-    <div class="field">
-      <label>検査所見（血液検査・画像検査など）</label>
-      <textarea id="labs" placeholder="血液検査値、CT/エコー/レントゲン所見など"></textarea>
-    </div>
-    <div class="field">
-      <label>質問内容（何を知りたいか）</label>
-      <input type="text" id="question" placeholder="例: 鑑別診断と推奨される追加検査は？">
     </div>
   </div>
 
@@ -247,35 +208,17 @@ document.getElementById("select-none-btn").addEventListener("click", () => {
   chipsEl.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
 });
 
-const fields = ["age","sex","chief","history","exam","labs","question"];
 const preview = document.getElementById("query-preview");
 
 function buildQuery() {
-  const voice = document.getElementById("voice").value.trim();
-  const age = document.getElementById("age").value.trim();
-  const sex = document.getElementById("sex").value;
-  const chief = document.getElementById("chief").value.trim();
-  const history = document.getElementById("history").value.trim();
-  const exam = document.getElementById("exam").value.trim();
-  const labs = document.getElementById("labs").value.trim();
-  const question = document.getElementById("question").value.trim();
-
-  const lines = [];
-  if (voice) lines.push(`患者情報（音声入力）: ${voice}`);
-  if (age || sex) lines.push(`患者: ${age ? age + "歳" : ""}${sex ? " " + sex : ""}`);
-  if (chief) lines.push(`主訴: ${chief}`);
-  if (history) lines.push(`現病歴: ${history}`);
-  if (exam) lines.push(`身体所見: ${exam}`);
-  if (labs) lines.push(`検査所見: ${labs}`);
-  if (question) lines.push(`質問: ${question}`);
-  return lines.join("\n");
+  return document.getElementById("voice").value.trim();
 }
 
 function refreshPreview() {
   const q = buildQuery();
-  preview.textContent = q || "話すか、下の欄に入力すると、ここに検索文が自動生成されます。";
+  preview.textContent = q || "話すか、上の欄に入力すると、ここに検索文が表示されます。";
 }
-[...fields, "voice"].forEach(id => document.getElementById(id).addEventListener("input", refreshPreview));
+document.getElementById("voice").addEventListener("input", refreshPreview);
 
 let recognizer = null;
 let recording = false;
