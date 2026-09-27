@@ -70,10 +70,10 @@
   }
   .chip.active.chip-lightblue{
     background:
-      linear-gradient(160deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%),
-      linear-gradient(160deg, rgba(185,222,235,.68), rgba(140,190,212,.62));
-    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -10px 14px rgba(0,0,0,.08),
-               0 6px 14px rgba(90,150,175,.28), 0 1px 2px rgba(90,150,175,.18);
+      linear-gradient(160deg, rgba(255,255,255,.38), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(140,195,215,.72), rgba(95,155,182,.68));
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(65,120,145,.32), 0 1px 2px rgba(65,120,145,.2);
   }
   .chip.active.chip-gray{
     background:
@@ -144,7 +144,7 @@
 
   <div class="card">
     <h2 style="font-size:1.512rem;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
-    <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など、質問してください。</div>
+    <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など。</div>
     <div class="field">
       <textarea id="voice" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:118px;"></textarea>
     </div>
@@ -173,7 +173,7 @@
     <h2>生成されたクエリ</h2>
     <div id="query-preview">話すか入力すると、ここに検索文が表示されます。</div>
     <div class="btnbar">
-      <button class="secondary" id="copy-btn" style="width:100%;padding-top:9px;padding-bottom:9px;color:var(--accent-dark);">クエリだけコピー<span style="font-size:0.6em;font-weight:400;">（他のAI用）</span></button>
+      <button class="secondary" id="copy-btn" style="width:100%;padding-top:9px;padding-bottom:9px;color:var(--accent-dark);">クエリ<span style="font-size:0.65em;">だけ</span>コピー<span style="font-size:0.6em;font-weight:400;">（他のAI用）</span></button>
     </div>
     <div class="result-list" id="result-list"></div>
   </div>
