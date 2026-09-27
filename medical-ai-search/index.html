@@ -10,7 +10,7 @@
     --accent:#6fae8e; --accent-dark:#588f73; --chip:#e9f4ee; --chip-active:#6fae8e; --chip-active-text:#fff;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html{font-size:30px;touch-action:manipulation;}
+  html{font-size:20px;touch-action:manipulation;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
   header{padding:20px 16px 8px;max-width:960px;margin:0 auto;}
   h1{font-size:1.6rem;margin:0 0 6px;}
@@ -94,7 +94,7 @@
 <main>
 
   <div class="warn">
-    <strong>ご注意（実装上の制約）:</strong> ホクト・OpenEvidence・UpToDate・Ubie・MEDIIなどは、外部アプリから患者情報を送信して自動検索させる公開APIを提供していません（多くは医師資格認証や院内契約が必要な非公開サービスです）。そのため本ツールは「入力内容を1つの検索文にまとめ、選択したサービスをタブで開き、クエリをクリップボードにコピーする」補助ツールとして動作します。各サイトを開いた後、コピーされた内容を検索欄に貼り付けてください。
+    <strong>ご注意（実装上の制約）:</strong> ホクト・OpenEvidence・Glass Health・Vera Health・MEDIIなどは、外部アプリから患者情報を送信して自動検索させる公開APIを提供していません（多くは医師資格認証や院内契約が必要な非公開サービスです）。そのため本ツールは「入力内容を検索文としてコピーし、選択したサービスをタブで開く」補助ツールとして動作します。各サイトを開いた後、コピーされた内容を検索欄に貼り付けてください。なお、UpToDateは有料契約が前提のため対象から外しています。Glass Health・Vera Healthの正確な料金体系は各社サイトでご確認ください。
   </div>
 
   <div class="card">
@@ -110,22 +110,24 @@
   </div>
 
   <div class="card">
-    <h2>検索先を選択（既定で全選択・個別に外せます）</h2>
-    <div class="chips" id="service-chips"></div>
-    <div class="btnbar">
-      <button class="secondary" id="select-all-btn">全選択</button>
-      <button class="secondary" id="select-none-btn">全解除</button>
-    </div>
+    <h2>タップしたAIへコピー＆送信</h2>
+    <div class="note" style="margin:0 0 10px;">ボタンを1回タップするだけで、話した内容をコピーしてそのサービスを開きます（1つずつ確実に開けます）。</div>
+
+    <div class="note" style="font-weight:700;margin-top:0;">医療系AI</div>
+    <div class="chips" id="service-chips-medical"></div>
+
+    <div class="note" style="font-weight:700;">汎用AI・チャット / 検索</div>
+    <div class="chips" id="service-chips-general"></div>
+
     <div class="note">
-      「URL連携あり」＝検索語をURLに載せて開けるサービス。「手動貼付」＝トップページ/チャット画面を開くのでコピーした内容を貼り付けてください。
+      「自動入力」＝検索語を付けて検索結果を直接開きます。「コピーして開く」＝トップページ/チャット画面を開くので、コピー済みの内容を貼り付けてください。
     </div>
   </div>
 
   <div class="card">
     <h2>生成されたクエリ</h2>
-    <div id="query-preview">左のフォームに入力すると、ここに検索文が自動生成されます。</div>
+    <div id="query-preview">話すか入力すると、ここに検索文が表示されます。</div>
     <div class="btnbar">
-      <button class="primary" id="run-btn" style="font-size:1.3rem;padding:22px 36px;width:100%;">🚀 全AIに一括送信（1ボタン）</button>
       <button class="secondary" id="copy-btn" style="width:100%;">クエリだけコピー</button>
     </div>
     <div class="result-list" id="result-list"></div>
@@ -140,6 +142,7 @@
 const SERVICES = [
   {
     id: "hokuto",
+    category: "medical",
     name: "ホクト (Hokuto)",
     urlType: "manual",
     url: "https://hokuto.app/",
@@ -147,34 +150,31 @@ const SERVICES = [
   },
   {
     id: "openevidence",
+    category: "medical",
     name: "OpenEvidence",
     urlType: "manual",
     url: "https://www.openevidence.com/",
     note: "米国医師資格認証が必要。トップを開きます。"
   },
   {
-    id: "uptodate",
-    name: "UpToDate",
-    urlType: "query",
-    url: "https://www.uptodate.com/contents/search?search=",
-    note: "検索語をURLに付与して開けます（本文閲覧は契約が必要）。"
-  },
-  {
     id: "glasshealth",
+    category: "medical",
     name: "Glass Health",
     urlType: "manual",
     url: "https://glass.health/",
-    note: "臨床意思決定支援AI。トップ/ログイン画面を開きます。"
+    note: "臨床意思決定支援AI。個人利用の無料プランがありますが機能制限あり（要確認）。"
   },
   {
-    id: "ubie",
-    name: "Ubie AI問診",
+    id: "verahealth",
+    category: "medical",
+    name: "Vera Health",
     urlType: "manual",
-    url: "https://ubie.app/",
-    note: "症状チェッカー。トップを開きます。"
+    url: "https://www.verahealth.ai/",
+    note: "医療エビデンス検索AI（推定）。料金体系・アクセス条件は要確認です。"
   },
   {
     id: "medii",
+    category: "medical",
     name: "MEDII",
     urlType: "manual",
     url: "https://medii.jp/",
@@ -182,6 +182,7 @@ const SERVICES = [
   },
   {
     id: "pubmed",
+    category: "medical",
     name: "PubMed（無料・公的API）",
     urlType: "query",
     url: "https://pubmed.ncbi.nlm.nih.gov/?term=",
@@ -189,44 +190,113 @@ const SERVICES = [
   },
   {
     id: "google",
+    category: "general",
     name: "Google検索",
     urlType: "query",
     url: "https://www.google.com/search?q=",
     note: "一般的な補助検索として。"
+  },
+  {
+    id: "bing",
+    category: "general",
+    name: "Bing検索",
+    urlType: "query",
+    url: "https://www.bing.com/search?q=",
+    note: "検索語を付けて開けます。Copilotの回答が表示される場合があります。"
+  },
+  {
+    id: "chatgpt",
+    category: "general",
+    name: "ChatGPT",
+    urlType: "query",
+    url: "https://chatgpt.com/?q=",
+    note: "ログインが必要。仕様変更により動作しなくなる可能性があります。"
+  },
+  {
+    id: "claude",
+    category: "general",
+    name: "Claude",
+    urlType: "manual",
+    url: "https://claude.ai/new",
+    note: "ログインが必要。新規チャットが開きます（コピー済みの内容を貼り付けてください）。"
+  },
+  {
+    id: "gemini",
+    category: "general",
+    name: "Gemini",
+    urlType: "manual",
+    url: "https://gemini.google.com/app",
+    note: "ログインが必要。新規チャットが開きます（コピー済みの内容を貼り付けてください）。"
+  },
+  {
+    id: "copilot",
+    category: "general",
+    name: "Copilot",
+    urlType: "manual",
+    url: "https://copilot.microsoft.com/",
+    note: "Microsoft Copilot。ログインが必要な場合があります（コピー済みの内容を貼り付けてください）。"
   }
 ];
 
-const chipsEl = document.getElementById("service-chips");
-const selected = new Set();
+const chipsContainers = { medical: document.getElementById("service-chips-medical"), general: document.getElementById("service-chips-general") };
+const resultList = document.getElementById("result-list");
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function showResult(s, status, url, blocked) {
+  let item = resultList.querySelector(`[data-result-id="${s.id}"]`);
+  if (!item) {
+    item = document.createElement("div");
+    item.className = "result-item";
+    item.dataset.resultId = s.id;
+    resultList.prepend(item);
+  }
+  item.innerHTML = `
+    <div>
+      <div class="name">${s.name}</div>
+      <div class="status">${status}</div>
+    </div>
+    <a href="${url}" target="_blank" rel="noopener">${blocked ? "▶ タップして開く" : "再度開く"}</a>
+  `;
+}
 
 SERVICES.forEach(s => {
-  const chip = document.createElement("div");
+  const chip = document.createElement("button");
+  chip.type = "button";
   chip.className = "chip active";
   chip.dataset.id = s.id;
-  chip.innerHTML = `${s.name} <span class="badge">${s.urlType === "query" ? "URL連携あり" : "手動貼付"}</span>`;
+  chip.innerHTML = `${s.name} <span class="badge">${s.urlType === "query" ? "自動入力" : "コピーして開く"}</span>`;
   chip.title = s.note;
   chip.addEventListener("click", () => {
-    if (selected.has(s.id)) {
-      selected.delete(s.id);
-      chip.classList.remove("active");
-    } else {
-      selected.add(s.id);
-      chip.classList.add("active");
+    const q = buildQuery();
+    if (!q) { alert("先に患者情報を話すか入力してください。"); return; }
+    let targetUrl = s.url;
+    if (s.urlType === "query") {
+      targetUrl = s.url + encodeURIComponent(q.replace(/\n/g, " "));
     }
+    // ユーザー操作(クリック)の直後・同期的にwindow.openを呼ぶ。
+    // await等を先に挟むとSafari/iOSでは「ユーザー操作」と認識されずブロックされるため注意。
+    const win = window.open(targetUrl, "_blank");
+    if (win) win.opener = null;
+    const blocked = !win || win.closed;
+    copyText(q);
+    showResult(
+      s,
+      blocked
+        ? "ポップアップがブロックされました。下のリンクをタップしてください（内容はコピー済み）"
+        : (s.urlType === "query" ? "クエリを付与して開きました" : "コピー済み・開いたページに貼り付けてください"),
+      targetUrl,
+      blocked
+    );
   });
-  chipsEl.appendChild(chip);
-  selected.add(s.id);
-});
-
-document.getElementById("select-all-btn").addEventListener("click", () => {
-  SERVICES.forEach(s => {
-    selected.add(s.id);
-    chipsEl.querySelector(`[data-id="${s.id}"]`).classList.add("active");
-  });
-});
-document.getElementById("select-none-btn").addEventListener("click", () => {
-  selected.clear();
-  chipsEl.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  chipsContainers[s.category].appendChild(chip);
 });
 
 const preview = document.getElementById("query-preview");
@@ -247,8 +317,14 @@ const micBtn = document.getElementById("mic-btn");
 const micStatus = document.getElementById("mic-status");
 const voiceEl = document.getElementById("voice");
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-if (!SpeechRecognitionCtor) {
+if (isIOS) {
+  micStatus.textContent = "iPhone/iPadはこのボタンでの音声入力に対応していません。この入力欄をタップし、キーボードのマイクアイコン🎤（OS標準の音声入力）を使って話してください。";
+  micBtn.disabled = true;
+  micBtn.style.opacity = "0.5";
+} else if (!SpeechRecognitionCtor) {
   micStatus.textContent = "このブラウザは音声入力に対応していません。手入力してください。";
   micBtn.disabled = true;
 } else {
@@ -304,51 +380,11 @@ if (!SpeechRecognitionCtor) {
   });
 }
 
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
 document.getElementById("copy-btn").addEventListener("click", async () => {
   const q = buildQuery();
   if (!q) { alert("先に患者情報を入力してください。"); return; }
   const ok = await copyText(q);
   alert(ok ? "クエリをコピーしました。" : "コピーに失敗しました。手動で選択してコピーしてください。");
-});
-
-document.getElementById("run-btn").addEventListener("click", async () => {
-  const q = buildQuery();
-  if (!q) { alert("先に患者情報を入力してください。"); return; }
-  if (selected.size === 0) { alert("検索先を1つ以上選択してください。"); return; }
-
-  await copyText(q);
-
-  const resultList = document.getElementById("result-list");
-  resultList.innerHTML = "";
-
-  selected.forEach(id => {
-    const s = SERVICES.find(x => x.id === id);
-    let targetUrl = s.url;
-    if (s.urlType === "query") {
-      targetUrl = s.url + encodeURIComponent(q.replace(/\n/g, " "));
-    }
-    window.open(targetUrl, "_blank", "noopener");
-
-    const item = document.createElement("div");
-    item.className = "result-item";
-    item.innerHTML = `
-      <div>
-        <div class="name">${s.name}</div>
-        <div class="status">${s.urlType === "query" ? "クエリを付与して開きました" : "トップページを開きました（クエリはコピー済み・貼り付けてください）"}</div>
-      </div>
-      <a href="${targetUrl}" target="_blank" rel="noopener">再度開く</a>
-    `;
-    resultList.appendChild(item);
-  });
 });
 </script>
 </body>
