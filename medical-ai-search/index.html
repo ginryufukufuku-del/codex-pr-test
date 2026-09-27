@@ -71,11 +71,11 @@
   .chip.active.chip-gray{
     background:
       linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
-      linear-gradient(160deg, rgba(188,192,196,.72), rgba(140,145,150,.68));
+      linear-gradient(160deg, rgba(182,196,206,.72), rgba(132,148,160,.68));
     color:var(--chip-active-text);border:1px solid rgba(255,255,255,.5);
     -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
     box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
-               0 6px 14px rgba(90,95,100,.32), 0 1px 2px rgba(90,95,100,.2);
+               0 6px 14px rgba(85,100,112,.32), 0 1px 2px rgba(85,100,112,.2);
   }
   .chip:active,.chip.pressed{transform:scale(0.96);}
   .chip .badge{font-size:0.55rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
@@ -197,7 +197,7 @@ const SERVICES = [
   {
     id: "pubmed",
     category: "medical",
-    name: "PubMed（無料・公的API）",
+    name: "PubMed",
     urlType: "query",
     url: "https://pubmed.ncbi.nlm.nih.gov/?term=",
     note: "無料で公開API（E-utilities）あり。文献検索に利用できます。"
