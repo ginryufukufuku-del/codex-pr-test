@@ -31,25 +31,40 @@
     cursor:pointer;font-size:1.05rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
     touch-action:manipulation;min-height:44px;
   }
-  .chip.active{background:var(--chip-active);color:var(--chip-active-text);border-color:var(--chip-active);}
+  .chip.active, button.primary, #mic-btn.recording{
+    text-shadow:-0.5px -0.5px 0 rgba(0,0,0,.28),0.5px -0.5px 0 rgba(0,0,0,.28),
+                -0.5px 0.5px 0 rgba(0,0,0,.28),0.5px 0.5px 0 rgba(0,0,0,.28);
+  }
+  .chip.active{
+    background:linear-gradient(160deg, rgba(140,196,168,.75), rgba(95,158,128,.7));
+    color:var(--chip-active-text);border:1px solid rgba(255,255,255,.45);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45), inset 0 -6px 10px rgba(0,0,0,.06), 0 4px 10px rgba(88,143,115,.25);
+  }
   .chip:active,.chip.pressed{transform:scale(0.96);}
   .chip .badge{font-size:0.72rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
   .note{font-size:0.85rem;color:var(--muted);margin-top:10px;line-height:1.6;}
   .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
   button{touch-action:manipulation;min-height:44px;}
   button.primary{
-    background:var(--accent);color:#fff;border:none;padding:18px 30px;border-radius:28px;font-size:1.1rem;cursor:pointer;font-weight:700;
-    box-shadow:0 2px 6px rgba(111,174,142,.3);transition:transform .06s,background .1s;
+    background:linear-gradient(160deg, rgba(140,196,168,.75), rgba(95,158,128,.7));
+    color:#fff;border:1px solid rgba(255,255,255,.45);padding:18px 30px;border-radius:28px;font-size:1.1rem;cursor:pointer;font-weight:700;
+    -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45), inset 0 -8px 14px rgba(0,0,0,.06), 0 4px 12px rgba(88,143,115,.3);
+    transition:transform .06s,background .1s;
   }
-  button.primary:hover{background:var(--accent-dark);}
-  button.primary:active,button.primary.pressed{transform:scale(0.97);background:var(--accent-dark);}
+  button.primary:hover{background:linear-gradient(160deg, rgba(122,182,151,.8), rgba(80,143,113,.75));}
+  button.primary:active,button.primary.pressed{transform:scale(0.97);}
   button.secondary{
     background:#fff;border:2px solid var(--border);padding:14px 22px;border-radius:26px;cursor:pointer;font-size:1rem;font-weight:600;
     transition:transform .06s,background .1s;
   }
   button.secondary:hover{background:#eef6f1;}
   button.secondary:active,button.secondary.pressed{transform:scale(0.97);background:#e2f0e8;}
-  #mic-btn.recording{background:#e08a8a;color:#fff;border-color:#e08a8a;}
+  #mic-btn.recording{
+    background:linear-gradient(160deg, rgba(224,138,138,.75), rgba(196,105,105,.7));
+    color:#fff;border-color:rgba(255,255,255,.45);
+  }
   #query-preview{
     white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:16px;font-size:1rem;line-height:1.6;min-height:70px;
   }
