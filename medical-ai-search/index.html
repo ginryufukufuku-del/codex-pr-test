@@ -9,8 +9,8 @@
     --bg:#f4f6f8; --card:#ffffff; --border:#dde3ea; --text:#1b2430; --muted:#66727e;
     --accent:#2563eb; --accent-dark:#1d4ed8; --chip:#eef2f7; --chip-active:#2563eb; --chip-active-text:#fff;
   }
-  *{box-sizing:border-box;}
-  html{font-size:30px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{font-size:30px;touch-action:manipulation;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
   header{padding:20px 16px 8px;max-width:960px;margin:0 auto;}
   h1{font-size:1.6rem;margin:0 0 6px;}
@@ -28,21 +28,27 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px;}
   .chip{
     border:2px solid var(--border);background:var(--chip);padding:16px 22px;border-radius:14px;
-    cursor:pointer;font-size:1.05rem;font-weight:600;user-select:none;transition:.12s;
+    cursor:pointer;font-size:1.05rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
+    touch-action:manipulation;min-height:44px;
   }
   .chip.active{background:var(--chip-active);color:var(--chip-active-text);border-color:var(--chip-active);}
+  .chip:active,.chip.pressed{transform:scale(0.96);}
   .chip .badge{font-size:0.72rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
   .note{font-size:0.85rem;color:var(--muted);margin-top:10px;line-height:1.6;}
   .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+  button{touch-action:manipulation;min-height:44px;}
   button.primary{
     background:var(--accent);color:#fff;border:none;padding:18px 30px;border-radius:12px;font-size:1.1rem;cursor:pointer;font-weight:700;
-    box-shadow:0 2px 6px rgba(37,99,235,.25);
+    box-shadow:0 2px 6px rgba(37,99,235,.25);transition:transform .06s,background .1s;
   }
   button.primary:hover{background:var(--accent-dark);}
+  button.primary:active,button.primary.pressed{transform:scale(0.97);background:var(--accent-dark);}
   button.secondary{
     background:#fff;border:2px solid var(--border);padding:14px 22px;border-radius:12px;cursor:pointer;font-size:1rem;font-weight:600;
+    transition:transform .06s,background .1s;
   }
   button.secondary:hover{background:#f0f3f7;}
+  button.secondary:active,button.secondary.pressed{transform:scale(0.97);background:#eef2f7;}
   #mic-btn.recording{background:#dc2626;color:#fff;border-color:#dc2626;}
   #query-preview{
     white-space:pre-wrap;background:#f8fafc;border:2px dashed var(--border);border-radius:10px;padding:16px;font-size:1rem;line-height:1.6;min-height:70px;
