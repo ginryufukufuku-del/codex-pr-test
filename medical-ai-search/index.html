@@ -36,9 +36,9 @@
   .field{margin-bottom:10px;}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
   .chip{
-    border:2px solid var(--border);background:var(--chip);padding:12px 18px;border-radius:999px;
+    border:2px solid var(--border);background:var(--chip);padding:9.6px 18px;border-radius:999px;
     cursor:pointer;font-size:0.95rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
-    touch-action:manipulation;min-height:44px;
+    touch-action:manipulation;min-height:35px;
   }
   .chip.active, button.primary, #mic-btn.recording{
     text-shadow:
@@ -110,7 +110,7 @@
 <main>
 
   <div class="warn">
-    <strong>ご注意（実装上の制約）:</strong> ホクト・OpenEvidence・Glass Health・Vera Health・MEDIIなどは、外部アプリから患者情報を送信して自動検索させる公開APIを提供していません（多くは医師資格認証や院内契約が必要な非公開サービスです）。そのため本ツールは「入力内容を検索文としてコピーし、選択したサービスをタブで開く」補助ツールとして動作します。各サイトを開いた後、コピーされた内容を検索欄に貼り付けてください。なお、UpToDateは有料契約が前提のため対象から外しています。Glass Health・Vera Healthの正確な料金体系は各社サイトでご確認ください。
+    <strong>ご注意（実装上の制約）:</strong> ホクト・OpenEvidence・Vera Health・MEDIIなどは、外部アプリから患者情報を送信して自動検索させる公開APIを提供していません（多くは医師資格認証や院内契約が必要な非公開サービスです）。そのため本ツールは「入力内容を検索文としてコピーし、選択したサービスをタブで開く」補助ツールとして動作します。各サイトを開いた後、コピーされた内容を検索欄に貼り付けてください。なお、UpToDateは有料契約が前提のため対象から外しています。Vera Healthの正確な料金体系は各社サイトでご確認ください。
   </div>
 
   <div class="card">
@@ -171,14 +171,6 @@ const SERVICES = [
     urlType: "manual",
     url: "https://www.openevidence.com/",
     note: "米国医師資格認証が必要。トップを開きます。"
-  },
-  {
-    id: "glasshealth",
-    category: "medical",
-    name: "Glass Health",
-    urlType: "manual",
-    url: "https://glass.health/",
-    note: "臨床意思決定支援AI。個人利用の無料プランがありますが機能制限あり（要確認）。"
   },
   {
     id: "verahealth",
