@@ -122,7 +122,7 @@
   }
   #query-preview{
     white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:16px;font-size:1rem;line-height:1.6;min-height:70px;
-    color:var(--accent-dark);
+    color:var(--accent-dark);display:flex;align-items:center;justify-content:center;text-align:center;
   }
   .result-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .result-item{
@@ -180,7 +180,7 @@
 
   <div class="card">
     <h2>患者情報<span style="font-size:0.5em;font-weight:400;">（生成されたクエリ）</span></h2>
-    <div id="query-preview">入力済みの情報</div>
+    <div id="query-preview">入力情報</div>
     <div class="btnbar">
       <button class="secondary" id="copy-btn" style="width:100%;padding-top:9px;padding-bottom:9px;color:var(--accent-dark);">クエリ<span style="font-size:0.65em;">だけ</span>コピー<span style="font-size:0.6em;font-weight:400;">（他のAI用）</span></button>
     </div>
@@ -362,7 +362,7 @@ function buildQuery() {
 
 function refreshPreview() {
   const q = buildQuery();
-  preview.textContent = q || "入力済みの情報";
+  preview.textContent = q || "入力情報";
 }
 document.getElementById("voice").addEventListener("input", refreshPreview);
 
