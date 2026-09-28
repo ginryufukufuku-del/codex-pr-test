@@ -19,8 +19,9 @@ iPhoneのJournalアプリ（音声記録）の内容を、このリポジトリ�
     ↓ GitHub Contents API (PUT /repos/{owner}/{repo}/contents/{path})
 [GitHub] vault/99-Inbox/YYYY-MM-DDTHH-mm-ss.m4a としてコミットされる
     ↓
-[Claude Code] scripts/transcribe_inbox.py がWhisper APIで自動文字起こしし、
-              同名の .md に変換（音声ファイルは削除）
+[Claude Code] scripts/transcribe_inbox.py がローカルWhisper(faster-whisper)で
+              自動文字起こしし、同名の .md に変換（音声ファイルは削除。
+              APIキー不要・音声データは外部に送信されない）
     ↓
 [Claude Code] /second-brain スキルでInboxの.mdを処理し、
               vault/00-Journal/ や 01〜03 に整理する
@@ -37,11 +38,20 @@ iPhoneのJournalアプリ（音声記録）の内容を、このリポジトリ�
 > このトークンは `vault/99-Inbox/` への書き込み権限を持ちます。
 > リポジトリに直接コミットしない（`.gitignore`や環境変数側でのみ保持する）。
 
-## 2. OpenAI APIキーを取得する（Whisper文字起こし用）
+## 2. ローカルWhisper環境をセットアップする
 
-1. https://platform.openai.com でAPIキーを発行する（Whisper APIは従量課金）。
-2. このキーはiPhone側では使わず、**Claude Codeを動かす環境の環境変数
-   `OPENAI_API_KEY`** として設定する（iOS Shortcutsには入力しない）。
+Claude Codeを動かす環境（あなたのPC/サーバー）側の準備。APIキーは不要。
+
+1. `ffmpeg` をインストールする（例: `brew install ffmpeg` / `apt install ffmpeg`）。
+2. 依存パッケージをインストール:
+   ```
+   pip install -r scripts/requirements.txt
+   ```
+3. 初回実行時にWhisperモデル（既定は `base`）が自動ダウンロードされる
+   （このときだけネットワーク接続が必要。2回目以降はローカルキャッシュを使用）。
+4. 精度を上げたい場合は環境変数 `WHISPER_MODEL_SIZE` に
+   `small` / `medium` / `large-v3` などを指定する（モデルが大きいほど
+   精度は上がるが処理が重くなる）。GPUがあれば `WHISPER_DEVICE=cuda` で高速化できる。
 
 ## 3. iOS Shortcuts を作成する
 
@@ -81,8 +91,8 @@ iPhoneのJournalアプリ（音声記録）の内容を、このリポジトリ�
 3. 数秒後、`vault/99-Inbox/` に音声ファイル（`.m4a`）がコミットされる
    （GitHub上でPRに反映される）。
 4. Claude Codeとやり取りするとき、まず
-   `python3 scripts/transcribe_inbox.py`（`OPENAI_API_KEY`必須）を実行して
-   音声を自動文字起こしし `.md` に変換する。
+   `python3 scripts/transcribe_inbox.py` を実行して
+   音声をローカルで自動文字起こしし `.md` に変換する。
 5. 続けて「Inboxを処理して」と伝えるか `/second-brain` スキルが起動する
    タイミングで、文字起こし済みの `.md` がジャーナル・各ノートへ整理される。
 
@@ -98,5 +108,8 @@ Markdown化してPUTすればよい（Whisperの文字起こしをスキップ�
 - `404 Not Found` → URLのowner/repo/pathのスペルミスを確認。
 - `422 Unprocessable Entity` → 同名ファイルが既に存在する可能性
   （ファイル名にタイムスタンプを含めているため通常発生しない）。
-- `transcribe_inbox.py` が `OPENAI_API_KEY が設定されていません` と出る
-  → Claude Codeを動かす環境側で環境変数を設定できているか確認。
+- `transcribe_inbox.py` が `ModuleNotFoundError: faster_whisper` と出る
+  → `pip install -r scripts/requirements.txt` を実行したか確認。
+- `ffmpeg`関連のエラーが出る → ffmpegがインストールされ、PATHが通っているか確認。
+- 初回実行が遅い/固まったように見える → モデルダウンロード中の可能性。
+  ネットワーク接続を確認する。

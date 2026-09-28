@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
 """
-vault/99-Inbox/ 内の音声ファイルをWhisperで自動文字起こしし、
-同じフロントマター形式のMarkdownノートに変換するスクリプト。
+vault/99-Inbox/ 内の音声ファイルをローカルWhisper（faster-whisper）で
+自動文字起こしし、同じフロントマター形式のMarkdownノートに変換するスクリプト。
+
+APIキー・ネットワーク接続は不要（初回のモデルダウンロードを除く）。
+処理はすべてこのマシン上のCPU/GPUで完結する。
 
 使い方:
-    export OPENAI_API_KEY=sk-...
+    pip install -r scripts/requirements.txt
     python3 scripts/transcribe_inbox.py
+
+環境変数（省略可）:
+    WHISPER_MODEL_SIZE  tiny / base / small / medium / large-v3 など（既定: base）
+    WHISPER_DEVICE      cpu / cuda（既定: cpu）
+    WHISPER_COMPUTE_TYPE  int8 / float16 など（既定: cpu なら int8、cudaなら float16）
 
 対象拡張子: .m4a .mp3 .wav .mp4 .mpeg .mpga .webm
 処理後、音声ファイルは削除し、同名の .md ファイルを残す
 （形式は iOS Shortcuts からのテキスト送信と揃えている）。
+
+注意: ffmpeg がシステムにインストールされている必要がある
+（`brew install ffmpeg` / `apt install ffmpeg` 等）。
 """
-import base64
 import datetime
 import os
 import sys
@@ -21,21 +31,21 @@ AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".mp4", ".mpeg", ".mpga", ".webm"}
 INBOX_DIR = Path(__file__).resolve().parent.parent / "vault" / "99-Inbox"
 
 
-def transcribe(audio_path: Path) -> str:
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY が設定されていません")
+def load_model():
+    from faster_whisper import WhisperModel
 
-    from openai import OpenAI
+    model_size = os.environ.get("WHISPER_MODEL_SIZE", "base")
+    device = os.environ.get("WHISPER_DEVICE", "cpu")
+    compute_type = os.environ.get(
+        "WHISPER_COMPUTE_TYPE", "int8" if device == "cpu" else "float16"
+    )
+    print(f"Whisperモデルを読み込み中... (model={model_size}, device={device})")
+    return WhisperModel(model_size, device=device, compute_type=compute_type)
 
-    client = OpenAI(api_key=api_key)
-    with open(audio_path, "rb") as f:
-        result = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=f,
-            language="ja",
-        )
-    return result.text.strip()
+
+def transcribe(model, audio_path: Path) -> str:
+    segments, _info = model.transcribe(str(audio_path), language="ja")
+    return "".join(segment.text for segment in segments).strip()
 
 
 def captured_timestamp(audio_path: Path) -> str:
@@ -61,15 +71,18 @@ def main() -> int:
         print("音声ファイルはありません。")
         return 0
 
+    model = load_model()
+
     for audio_path in audio_files:
         print(f"文字起こし中: {audio_path.name}")
-        text = transcribe(audio_path)
+        text = transcribe(model, audio_path)
         captured = captured_timestamp(audio_path)
 
         note_path = audio_path.with_suffix(".md")
+        model_size = os.environ.get("WHISPER_MODEL_SIZE", "base")
         note_path.write_text(
             f"---\nsource: ios-journal\ncaptured: {captured}\n"
-            f"transcribed_by: whisper-1\n---\n\n{text}\n",
+            f"transcribed_by: local-whisper ({model_size})\n---\n\n{text}\n",
             encoding="utf-8",
         )
         audio_path.unlink()

@@ -7,14 +7,14 @@ iOS Journal アプリの音声記録が、iOS Shortcuts経由で自動的にこ�
 ## ファイル形式
 
 1. Shortcuts が音声ファイルを送信: `YYYY-MM-DDTHH-mm-ss.m4a`
-2. `python3 scripts/transcribe_inbox.py`（`OPENAI_API_KEY` 必須）が
-   Whisper APIで自動文字起こしし、音声ファイルを削除して同名の `.md` を作成:
+2. `python3 scripts/transcribe_inbox.py`（APIキー不要、ローカルWhisper）が
+   自動文字起こしし、音声ファイルを削除して同名の `.md` を作成:
 
 ```markdown
 ---
 source: ios-journal
 captured: 2026-09-28T21:15:00+09:00
-transcribed_by: whisper-1
+transcribed_by: local-whisper (base)
 ---
 
 （Whisperが文字起こししたテキストが入る）

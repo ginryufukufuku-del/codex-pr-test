@@ -16,8 +16,9 @@ Journalアプリではなく Whisper で自動化している。
 セッション開始時やユーザーが「Inboxを処理して」と言ったときに以下を行う。
 
 0. `vault/99-Inbox/` に音声ファイル（`.m4a` 等）が残っていたら、まず
-   `python3 scripts/transcribe_inbox.py` を実行して自動文字起こしする
-   （`OPENAI_API_KEY` が未設定ならユーザーに設定を依頼する）。
+   `python3 scripts/transcribe_inbox.py` を実行してローカルWhisperで
+   自動文字起こしする（`faster-whisper` 未インストールならユーザーに
+   `pip install -r scripts/requirements.txt` を依頼する）。
    これにより音声ファイルは削除され、同名の `.md` が作られる。
 1. `vault/99-Inbox/` 内の `.md` ファイルを読む。ファイル名がタイムスタンプ
    （`YYYY-MM-DDTHH-mm-ss.md`）、フロントマターの `captured` がキャプチャ日時。
