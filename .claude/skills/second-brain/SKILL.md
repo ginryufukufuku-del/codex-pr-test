@@ -10,22 +10,28 @@ description: Obsidian Vault（vault/ 配下、PARA方式）とデイリージャ
 
 ## Inbox（iOS Journalからの取り込み）を処理する
 
-`vault/99-Inbox/` には iOS Shortcuts 経由で送られた、Journalアプリの音声メモの
-文字起こしがそのまま置かれている（`.gitkeep` と `README.md` 以外のファイル）。
+`vault/99-Inbox/` には iOS Shortcuts 経由で送られた、Journalアプリの音声メモが
+置かれている（`.gitkeep` と `README.md` 以外のファイル）。文字起こしは
+Journalアプリではなく Whisper で自動化している。
 セッション開始時やユーザーが「Inboxを処理して」と言ったときに以下を行う。
 
-1. `vault/99-Inbox/` 内の各ファイルを読む。ファイル名がタイムスタンプ
+0. `vault/99-Inbox/` に音声ファイル（`.m4a` 等）が残っていたら、まず
+   `python3 scripts/transcribe_inbox.py` を実行して自動文字起こしする
+   （`OPENAI_API_KEY` が未設定ならユーザーに設定を依頼する）。
+   これにより音声ファイルは削除され、同名の `.md` が作られる。
+1. `vault/99-Inbox/` 内の `.md` ファイルを読む。ファイル名がタイムスタンプ
    （`YYYY-MM-DDTHH-mm-ss.md`）、フロントマターの `captured` がキャプチャ日時。
 2. `captured` の日付部分に対応する `vault/00-Journal/YYYY-MM-DD.md` を
    （無ければテンプレートから）作成し、本文を要約・整形して追記する
    （音声の書き起こしそのままではなく、「今日の出来事」「気づき・アイデア」
-   「タスク」など該当セクションに振り分ける）。
+   「タスク」など該当セクションに振り分ける。Whisperの誤認識と思われる
+   不自然な箇所は文脈から補正してよい）。
 3. 内容にプロジェクト/領域/参照情報が含まれる場合は、下記「ノートを作る」の
    手順でノートを作成・更新し、ジャーナルからリンクする。
 4. 処理が終わったInboxファイルは削除する。
 5. 複数ファイルが同じ日付にまたがる場合は、同じジャーナルノートにまとめて追記する。
 
-Shortcuts側のセットアップ手順は `docs/ios-journal-sync.md` を参照。
+Shortcuts側のセットアップ手順とWhisperの設定は `docs/ios-journal-sync.md` を参照。
 
 ## デイリージャーナルを書く/追記する
 

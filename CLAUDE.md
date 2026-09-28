@@ -36,6 +36,9 @@ iOS Shortcuts 経由で自動コミットさせるための受け皿。セット
 - 完了した Project や使われなくなった Area は `04-Archive/` へ移動する
   （内容は変更せず、リンク切れが出たら参照側を修正する）。
 - セッション開始時や「Inboxを処理して」と言われたときは `vault/99-Inbox/` を
-  確認し、未処理ファイルがあればジャーナル・各ノートへ整理してから削除する。
+  確認する。音声ファイル（`.m4a`等）があれば先に
+  `python3 scripts/transcribe_inbox.py`（Whisper自動文字起こし、
+  `OPENAI_API_KEY`必須）で `.md` に変換し、その後ジャーナル・各ノートへ
+  整理してから削除する。
 - 詳細な作成手順・テンプレートは `/second-brain` スキル（
   `.claude/skills/second-brain/SKILL.md`）を参照する。
