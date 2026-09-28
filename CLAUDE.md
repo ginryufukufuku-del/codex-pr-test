@@ -15,7 +15,12 @@ vault/
   02-Areas/            継続的に責任を持つ領域（健康・仕事・学習など）
   03-Resources/        後で参照する知識・資料・トピック別ノート
   04-Archive/          完了/非アクティブになった Projects・Areas
+  99-Inbox/            iOS Shortcuts経由で送られた未処理の取り込みノート
 ```
+
+`99-Inbox/` は iPhone の Journal アプリの音声記録（文字起こし）を
+iOS Shortcuts 経由で自動コミットさせるための受け皿。セットアップ手順は
+`docs/ios-journal-sync.md` を参照。
 
 ## Claude Code の運用ルール
 
@@ -30,5 +35,7 @@ vault/
   を付け、フォルダの目的に合わないノートは作らない。
 - 完了した Project や使われなくなった Area は `04-Archive/` へ移動する
   （内容は変更せず、リンク切れが出たら参照側を修正する）。
+- セッション開始時や「Inboxを処理して」と言われたときは `vault/99-Inbox/` を
+  確認し、未処理ファイルがあればジャーナル・各ノートへ整理してから削除する。
 - 詳細な作成手順・テンプレートは `/second-brain` スキル（
   `.claude/skills/second-brain/SKILL.md`）を参照する。
