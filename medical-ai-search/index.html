@@ -383,6 +383,7 @@ document.getElementById("clear-btn").addEventListener("click", () => {
   const voiceEl = document.getElementById("voice");
   voiceEl.value = "";
   refreshPreview();
+  resultList.innerHTML = "";
   voiceEl.focus();
 });
 
@@ -441,6 +442,7 @@ if (isIOS) {
     recording = true;
     micBtn.innerHTML = '⏹ <span style="font-size:1.35em;">停止</span>';
     micBtn.classList.add("recording");
+    resultList.innerHTML = "";
     recognizer.start();
   }
   function stopRecording() {
