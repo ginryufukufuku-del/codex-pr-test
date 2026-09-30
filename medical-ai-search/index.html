@@ -396,9 +396,10 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 if (isIOS) {
-  micStatus.textContent = "iPhone/iPadはこのボタンでの音声入力に対応していません。この入力欄をタップし、キーボードのマイクアイコン🎤（OS標準の音声入力）を使って話してください。";
-  micBtn.disabled = true;
-  micBtn.style.opacity = "0.5";
+  micBtn.addEventListener("click", () => {
+    voiceEl.focus();
+    micStatus.textContent = "キーボードのマイクアイコン🎤をタップすると、OS標準の音声入力が始まります。";
+  });
 } else if (!SpeechRecognitionCtor) {
   micStatus.textContent = "このブラウザは音声入力に対応していません。手入力してください。";
   micBtn.disabled = true;
