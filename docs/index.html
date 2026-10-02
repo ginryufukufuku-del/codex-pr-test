@@ -317,6 +317,7 @@ function showResult(s, status, url, blocked) {
     resultList.appendChild(item);
   }
   item.href = url;
+  item.dataset.status = status;
   const showStatus = !NO_STATUS_IDS.includes(s.id);
   item.innerHTML = `
     <div>
@@ -324,6 +325,30 @@ function showResult(s, status, url, blocked) {
       ${showStatus ? `<div class="status">${status}</div>` : ""}
     </div>
   `;
+  saveState();
+}
+
+const STORE_KEY = "medai-search-state-v1";
+
+function saveState() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      voice: document.getElementById("voice").value,
+      bars: [...resultList.children].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href }))
+    }));
+  } catch (e) {}
+}
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (!saved) return;
+    document.getElementById("voice").value = saved.voice || "";
+    (saved.bars || []).forEach(b => {
+      const s = SERVICES.find(x => x.id === b.id);
+      if (s) showResult(s, b.status, b.url, false);
+    });
+  } catch (e) {}
 }
 
 SERVICES.forEach(s => {
@@ -368,14 +393,16 @@ function refreshPreview() {
   preview.textContent = q || "入力内容";
   autoGrowVoice();
 }
-document.getElementById("voice").addEventListener("input", refreshPreview);
-autoGrowVoice();
+document.getElementById("voice").addEventListener("input", () => { refreshPreview(); saveState(); });
+restoreState();
+refreshPreview();
 
 document.getElementById("clear-btn").addEventListener("click", () => {
   const voiceEl = document.getElementById("voice");
   voiceEl.value = "";
   refreshPreview();
   resultList.innerHTML = "";
+  saveState();
   voiceEl.focus();
 });
 
@@ -420,6 +447,7 @@ if (isIOS) {
     if (finalText) baseText += finalText;
     voiceEl.value = (baseText + interimText).trim();
     refreshPreview();
+    saveState();
   });
 
   recognizer.addEventListener("error", (event) => {
@@ -436,6 +464,7 @@ if (isIOS) {
     micBtn.innerHTML = '⏹ <span style="font-size:1.35em;">停止</span>';
     micBtn.classList.add("recording");
     resultList.innerHTML = "";
+    saveState();
     recognizer.start();
   }
   function stopRecording() {
