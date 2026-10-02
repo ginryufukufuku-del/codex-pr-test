@@ -414,7 +414,9 @@ const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRec
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-if (isIOS) {
+const isStandalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+
+if (isIOS && (!SpeechRecognitionCtor || isStandalone)) {
   micBtn.addEventListener("click", () => {
     voiceEl.focus();
     micStatus.textContent = "キーボードのマイクアイコン🎤をタップすると、OS標準の音声入力が始まります。";
@@ -450,8 +452,12 @@ if (isIOS) {
   });
 
   recognizer.addEventListener("error", (event) => {
-    micStatus.textContent = `音声認識エラー: ${event.error}`;
     stopRecording();
+    const denied = event.error === "not-allowed" || event.error === "service-not-allowed";
+    micStatus.textContent = denied
+      ? "音声入力が許可されていません。キーボードのマイクアイコン🎤から音声入力してください。"
+      : `音声認識エラー: ${event.error}`;
+    if (denied) voiceEl.focus();
   });
 
   recognizer.addEventListener("end", () => {
