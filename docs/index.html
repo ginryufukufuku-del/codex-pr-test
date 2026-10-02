@@ -314,7 +314,7 @@ function showResult(s, status, url, blocked) {
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
-    resultList.prepend(item);
+    resultList.appendChild(item);
   }
   item.href = url;
   const showStatus = !NO_STATUS_IDS.includes(s.id);
@@ -340,19 +340,12 @@ SERVICES.forEach(s => {
     if (s.urlType === "query") {
       targetUrl = s.url + encodeURIComponent(q.replace(/\n/g, " "));
     }
-    // ユーザー操作(クリック)の直後・同期的にwindow.openを呼ぶ。
-    // await等を先に挟むとSafari/iOSでは「ユーザー操作」と認識されずブロックされるため注意。
-    const win = window.open(targetUrl, "_blank");
-    if (win) win.opener = null;
-    const blocked = !win || win.closed;
     copyText(q);
     showResult(
       s,
-      blocked
-        ? "ポップアップがブロックされました。下のリンクをタップしてください（内容はコピー済み）"
-        : (s.urlType === "query" ? "クエリを付与して開きました" : "コピー済み・開いたページに貼り付けてください"),
+      s.urlType === "query" ? "コピー済み・タップで検索結果を開く" : "コピー済み・タップで開いて貼り付け",
       targetUrl,
-      blocked
+      false
     );
   });
   chipsContainers[s.category].appendChild(chip);
