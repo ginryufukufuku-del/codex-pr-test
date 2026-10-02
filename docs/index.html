@@ -161,8 +161,8 @@
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;">
       <h2 style="font-size:clamp(0.72rem, 5.6vw, 1.512rem);margin:0;white-space:nowrap;">患者情報<span style="font-size:0.55em;font-weight:600;">を話してください</span></h2>
       <div style="display:flex;gap:5px;flex-shrink:0;">
-        <button class="primary" id="mic-btn" style="padding:4.3px 8px;font-size:0.4rem;min-height:24px;white-space:nowrap;">🎤 <span style="font-size:1.35em;">話す</span>（入力）</button>
-        <button class="secondary clear-btn" id="clear-btn" style="padding:4.3px 22px;font-size:0.54rem;min-height:24px;white-space:nowrap;letter-spacing:3px;">🗑 消去</button>
+        <button class="primary" id="mic-btn" style="padding:4.3px 8px;font-size:0.4rem;min-height:29.5px;white-space:nowrap;">🎤 <span style="font-size:1.35em;">インプット</span></button>
+        <button class="secondary clear-btn" id="clear-btn" style="padding:4.3px 16px;font-size:0.54rem;min-height:29.5px;white-space:nowrap;letter-spacing:0;">🗑 リセット</button>
       </div>
     </div>
     <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など。</div>
@@ -468,7 +468,7 @@ if (isIOS) {
   }
   function stopRecording() {
     recording = false;
-    micBtn.innerHTML = '🎤 <span style="font-size:1.35em;">話す</span>（入力）';
+    micBtn.innerHTML = '🎤 <span style="font-size:1.35em;">インプット</span>';
     micBtn.classList.remove("recording");
     micStatus.textContent = "文字起こしが完了しました。内容を確認・修正できます。";
     try { recognizer.stop(); } catch (e) {}
