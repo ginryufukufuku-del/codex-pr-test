@@ -53,3 +53,5 @@ vault/
   整理してから削除する。
 - 詳細な作成手順・テンプレートは `/second-brain` スキル（
   `.claude/skills/second-brain/SKILL.md`）を参照する。
+- iPad・MacBook Air・Mac miniなど複数端末でこのVaultを閲覧・編集したい場合は
+  `docs/multi-device-sync.md` を参照（Obsidian Gitプラグインによる自動同期）。
