@@ -83,6 +83,13 @@
     box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
                0 6px 14px rgba(65,120,145,.32), 0 1px 2px rgba(65,120,145,.2);
   }
+  .chip.active.chip-yellowgreen{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(176,208,120,.74), rgba(122,160,72,.70));
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(100,130,50,.32), 0 1px 2px rgba(100,130,50,.2);
+  }
   .chip.active.chip-gray{
     background:
       linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
@@ -242,6 +249,7 @@ const SERVICES = [
   {
     id: "hokuto",
     category: "medical",
+    chipTone: "yellowgreen",
     name: "ホクト (Hokuto)",
     urlType: "manual",
     url: "https://hokuto.app/ai-search",
@@ -250,6 +258,7 @@ const SERVICES = [
   {
     id: "medii",
     category: "medical",
+    chipTone: "yellowgreen",
     name: "MEDII",
     urlType: "manual",
     url: "https://medii.jp/",
@@ -258,6 +267,7 @@ const SERVICES = [
   {
     id: "jme",
     category: "medical",
+    chipTone: "yellowgreen",
     name: "JME",
     urlType: "manual",
     url: "https://jme.m-review.co.jp/",
@@ -288,6 +298,15 @@ const SERVICES = [
     note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容を貼り付けてください。"
   },
   {
+    id: "copilot",
+    category: "general",
+    chipTone: "gray",
+    name: "Copilot",
+    urlType: "manual",
+    url: "https://copilot.microsoft.com/",
+    note: "Microsoft Copilot。自動入力は動作しないことを確認済みのため、コピー済みの内容を貼り付けてください。すぐに回答が欲しい場合はBingボタンの方が1タップで完結します。"
+  },
+  {
     id: "google",
     category: "general",
     chipTone: "gray",
@@ -304,15 +323,6 @@ const SERVICES = [
     urlType: "query",
     url: "https://www.bing.com/search?q=",
     note: "検索語を付けて開けます。Copilotの回答が表示される場合があります。"
-  },
-  {
-    id: "copilot",
-    category: "general",
-    chipTone: "gray",
-    name: "Copilot",
-    urlType: "manual",
-    url: "https://copilot.microsoft.com/",
-    note: "Microsoft Copilot。自動入力は動作しないことを確認済みのため、コピー済みの内容を貼り付けてください。すぐに回答が欲しい場合はBingボタンの方が1タップで完結します。"
   }
 ];
 
