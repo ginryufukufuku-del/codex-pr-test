@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+
+# Obsidianの端末ごとの表示状態（タブ・ウィンドウレイアウトなど）。
+# 同期対象にすると編集のたびに無意味なコミットが大量発生するため除外する。
+vault/.obsidian/workspace.json
+vault/.obsidian/workspace-mobile.json
