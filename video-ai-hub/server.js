@@ -15,39 +15,75 @@ const APP_TOKEN = process.env.APP_TOKEN || '';   // 公開時は必ず設定(UI�
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 
 // ---- プロバイダ・アダプタ(キーはここだけで使う) ----
+// 全プロバイダは従量課金。paid:true は /api/generate で confirmPaid:true を必須にする。
+const RUNWAY = 'https://api.dev.runwayml.com/v1';
+const hostOk = (u, re) => { try { const x = new URL(u); return x.protocol === 'https:' && re.test(x.hostname); } catch { return false; } };
+async function call(url, headers, opt = {}) {
+  const res = await fetch(url, { ...opt, headers: { 'content-type': 'application/json', ...headers }, signal: AbortSignal.timeout(30000) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`上流API ${res.status}: ${j.error?.message || j.message || j.detail || '失敗'}`);
+  return j;
+}
 const providers = {
   veo: {
-    name: 'Google Veo (Gemini API)',
-    aspects: ['16:9', '9:16'],
+    name: 'Google Veo (Gemini API)', paid: true, aspects: ['16:9', '9:16'],
     configured: () => !!process.env.GEMINI_API_KEY,
+    h: () => ({ 'x-goog-api-key': process.env.GEMINI_API_KEY }),
     async start({ prompt, aspect }) {
       const model = process.env.VEO_MODEL || 'veo-3.1-generate-preview';
-      const r = await upstream(`${GEMINI}/models/${model}:predictLongRunning`, {
-        method: 'POST',
-        body: JSON.stringify({ instances: [{ prompt }], parameters: { aspectRatio: aspect } })
-      });
+      const r = await call(`${GEMINI}/models/${model}:predictLongRunning`, this.h(),
+        { method: 'POST', body: JSON.stringify({ instances: [{ prompt }], parameters: { aspectRatio: aspect } }) });
       if (!r.name) throw new Error('操作IDが返りませんでした');
-      return r.name;
+      return { ref: r.name };
     },
-    async poll(ref) {
-      const r = await upstream(`${GEMINI}/${ref}`);
+    async poll(j) {
+      const r = await call(`${GEMINI}/${j.ref}`, this.h());
       if (!r.done) return { status: 'running' };
       if (r.error) return { status: 'failed', error: r.error.message || '失敗' };
       const v = r.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
-      return v ? { status: 'done', videoUrl: v } : { status: 'failed', error: '動画が返りませんでした(安全フィルタ等の可能性)' };
+      return v && hostOk(v, /^generativelanguage\.googleapis\.com$/) ? { status: 'done', videoUrl: v, dlAuth: true } : { status: 'failed', error: '動画が返りませんでした(安全フィルタ等の可能性)' };
     },
-    async download(url) {
-      if (!url.startsWith(GEMINI + '/') && !/^https:\/\/generativelanguage\.googleapis\.com\//.test(url)) throw new Error('不正なURL');
-      return fetch(url, { headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY }, redirect: 'follow' });
-    }
+    dlHeaders() { return this.h(); }
+  },
+  runway: {
+    name: 'Runway', paid: true, aspects: ['16:9', '9:16'],
+    configured: () => !!process.env.RUNWAY_API_KEY,
+    h: () => ({ authorization: 'Bearer ' + process.env.RUNWAY_API_KEY, 'x-runway-version': '2024-11-06' }),
+    async start({ prompt, aspect }) {
+      const r = await call(`${RUNWAY}/text_to_video`, this.h(), { method: 'POST', body: JSON.stringify({
+        model: process.env.RUNWAY_MODEL || 'gen4.5', promptText: prompt, ratio: aspect === '9:16' ? '720:1280' : '1280:720', duration: 5 }) });
+      if (!r.id) throw new Error('タスクIDが返りませんでした');
+      return { ref: r.id };
+    },
+    async poll(j) {
+      const r = await call(`${RUNWAY}/tasks/${encodeURIComponent(j.ref)}`, this.h());
+      if (r.status === 'FAILED') return { status: 'failed', error: r.failure || '失敗' };
+      const v = r.output?.[0];
+      return r.status === 'SUCCEEDED' && v && hostOk(v, /./) ? { status: 'done', videoUrl: v } : { status: 'running' };
+    },
+    dlHeaders: () => ({})   // 署名付きURLなのでキーは送らない
+  },
+  fal: {
+    name: 'Kling 等 (fal.ai経由)', paid: true, aspects: ['16:9', '9:16', '1:1'],
+    configured: () => !!process.env.FAL_KEY,
+    h: () => ({ authorization: 'Key ' + process.env.FAL_KEY }),
+    async start({ prompt, aspect }) {
+      const model = process.env.FAL_MODEL || 'fal-ai/kling-video/v2.1/master/text-to-video';
+      if (!/^[\w./-]+$/.test(model)) throw new Error('FAL_MODELが不正です');
+      const r = await call(`https://queue.fal.run/${model}`, this.h(), { method: 'POST', body: JSON.stringify({ prompt, aspect_ratio: aspect }) });
+      if (!hostOk(r.status_url, /(^|\.)fal\.(run|ai)$/) || !hostOk(r.response_url, /(^|\.)fal\.(run|ai)$/)) throw new Error('不正な応答');
+      return { ref: r.request_id, statusUrl: r.status_url, responseUrl: r.response_url };
+    },
+    async poll(j) {
+      const s = await call(j.statusUrl, this.h());
+      if (s.status !== 'COMPLETED') return { status: 'running' };
+      const r = await call(j.responseUrl, this.h());
+      const v = r.video?.url;
+      return v && hostOk(v, /./) ? { status: 'done', videoUrl: v } : { status: 'failed', error: '動画が返りませんでした' };
+    },
+    dlHeaders: () => ({})
   }
 };
-async function upstream(url, opt = {}) {
-  const res = await fetch(url, { ...opt, headers: { 'content-type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY, ...(opt.headers || {}) }, signal: AbortSignal.timeout(30000) });
-  const j = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`上流API ${res.status}: ${j.error?.message || '失敗'}`);
-  return j;
-}
 
 // ---- ジョブ(メモリ上) ----
 const jobs = new Map();
@@ -81,28 +117,28 @@ http.createServer(async (req, res) => {
     }
     const parts = url.pathname.split('/').filter(Boolean); // api, ...
     if (req.method === 'GET' && parts[1] === 'providers')
-      return send(res, 200, Object.entries(providers).map(([id, p]) => ({ id, name: p.name, aspects: p.aspects, configured: p.configured() })));
+      return send(res, 200, Object.entries(providers).map(([id, p]) => ({ id, name: p.name, paid: p.paid, aspects: p.aspects, configured: p.configured() })));
     if (req.method === 'POST' && parts[1] === 'generate') {
       const b = await body(req), p = providers[b.provider];
       if (!p || !p.configured()) return send(res, 400, { error: 'このプロバイダはサーバーにキーが未設定です' });
       const prompt = String(b.prompt || '').trim();
       if (!prompt || prompt.length > 2000) return send(res, 400, { error: 'プロンプトは1〜2000文字' });
+      if (p.paid && b.confirmPaid !== true) return send(res, 400, { error: '有料APIです。料金発生の確認が必要です(confirmPaid)' });
       const aspect = p.aspects.includes(b.aspect) ? b.aspect : p.aspects[0];
-      const ref = await p.start({ prompt, aspect });
       const id = crypto.randomUUID();
-      jobs.set(id, { provider: b.provider, ref, status: 'running' });
+      jobs.set(id, { provider: b.provider, ...(await p.start({ prompt, aspect })), status: 'running' });
       return send(res, 200, { id });
     }
     if (req.method === 'GET' && parts[1] === 'jobs' && jobs.has(parts[2])) {
       const j = jobs.get(parts[2]), p = providers[j.provider];
       if (parts[3] === 'video') {
         if (j.status !== 'done') return send(res, 409, { error: '未完了' });
-        const up = await p.download(j.videoUrl);
+        const up = await fetch(j.videoUrl, { headers: p.dlHeaders(), redirect: 'follow', signal: AbortSignal.timeout(120000) });
         if (!up.ok) return send(res, 502, { error: '動画取得失敗' });
         res.writeHead(200, { 'content-type': up.headers.get('content-type') || 'video/mp4', 'cache-control': 'no-store' });
         return up.body ? require('stream').Readable.fromWeb(up.body).pipe(res) : res.end();
       }
-      if (j.status === 'running') Object.assign(j, await p.poll(j.ref));
+      if (j.status === 'running') Object.assign(j, await p.poll(j));
       return send(res, 200, { status: j.status, error: j.error });   // videoUrl(上流URL)は返さない
     }
     send(res, 404, { error: 'not found' });

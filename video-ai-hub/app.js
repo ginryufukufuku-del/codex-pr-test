@@ -87,11 +87,14 @@ async function initApi() {
   } catch { return; }          // 静的ホスティング時はAPIセクションを出さない
   if (!apiProvs.length) return;
   $('apiSec').hidden = false;
-  $('apiProv').innerHTML = apiProvs.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  $('apiProv').innerHTML = apiProvs.map(p => `<option value="${esc(p.id)}">${esc(p.name)}【有料】</option>`).join('');
   const setAsp = () => { $('apiAspect').innerHTML = apiProvs.find(p => p.id === $('apiProv').value).aspects.map(a => `<option>${esc(a)}</option>`).join(''); };
   $('apiProv').onchange = setAsp; setAsp();
 }
+$('paidOk').onchange = () => { $('genBtn').disabled = !$('paidOk').checked; };
 $('genBtn').onclick = async () => {
+  if (!$('paidOk').checked) return;          // 有料確認なしでは呼ばない
+  $('paidOk').checked = false; $('genBtn').disabled = true;   // 1回ごとに再確認
   const pr = $('prompt').value.trim(), st = $('genSt'), btn = $('genBtn');
   if (!pr) return alert('プロンプトを入力してください');
   btn.disabled = true; $('vid').hidden = true; st.textContent = '送信中…';
@@ -99,7 +102,7 @@ $('genBtn').onclick = async () => {
   const j = { id: Date.now(), provider: pv.name + '(API)', prompt: pr, status: '生成中', result: '', memo: '', at: new Date().toLocaleString('ja-JP') };
   db.jobs.unshift(j); save(); renderJobs();
   try {
-    let r = await api('/api/generate', { method: 'POST', body: JSON.stringify({ provider: pv.id, prompt: pr, aspect: $('apiAspect').value }) });
+    let r = await api('/api/generate', { method: 'POST', body: JSON.stringify({ provider: pv.id, prompt: pr, aspect: $('apiAspect').value, confirmPaid: true }) });
     const g = await r.json(); if (!r.ok) throw new Error(g.error);
     for (let i = 0; i < 120; i++) {           // 最大約10分
       await new Promise(ok => setTimeout(ok, 5000));
@@ -114,6 +117,6 @@ $('genBtn').onclick = async () => {
     }
     throw new Error('タイムアウト');
   } catch (e) { j.status = '失敗'; j.memo = String(e.message).slice(0, 200); st.textContent = '失敗: ' + j.memo; }
-  finally { btn.disabled = false; save(); renderJobs(); }
+  finally { save(); renderJobs(); }
 };
 initApi();

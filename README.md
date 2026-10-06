@@ -44,6 +44,8 @@ GitHub Pages で公開すると、スマホからURLで開けます(リポジト
 起動: `cd video-ai-hub && cp .env.example .env`(`GEMINI_API_KEY` を記入)→ `node server.js` → http://127.0.0.1:8000
 - APIキーはサーバー(`.env`/環境変数)のみで保持。ブラウザへは返さず、動画もサーバー経由で中継。`.env`はgit管理外。
 - 既定は `127.0.0.1` のみ待受。外部公開する場合は必ず `APP_TOKEN` を設定し、HTTPS(リバースプロキシ)を併用。
-- 現在のAPI対応: Google Veo(Gemini API)。`server.js` の `providers` に追加して拡張。
+- 現在のAPI対応: Google Veo(`GEMINI_API_KEY`)/ Runway(`RUNWAY_API_KEY`)/ Kling等(fal.ai経由、`FAL_KEY`)。`server.js` の `providers` に追加して拡張。
+- **全API呼び出しは有料**。UIの「有料」チェックを入れないと生成ボタンは押せず(生成ごとに再確認)、サーバーも `confirmPaid` なしは拒否します。
+- Runway/fal.ai は第三者情報ベースの実装で、有効なキーでの動作は未検証。モデル名は `RUNWAY_MODEL` / `FAL_MODEL` で変更可。
 - キー未設定/静的ホスティング時はAPIセクションが非表示になり、リンク集として動作。
 - Sora(Web/アプリ)は2026年4月に提供終了のため掲載していません。料金・仕様は各公式で確認してください。
