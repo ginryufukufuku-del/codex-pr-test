@@ -10,7 +10,7 @@ try {
 } catch {}
 
 const HOST = process.env.HOST || '127.0.0.1';   // 既定はローカルのみ
-const PORT = +process.env.PORT || 8000;
+const PORT = process.env.PORT === undefined || process.env.PORT === '' ? 8000 : +process.env.PORT;   // '0' は空きポート自動選択(デスクトップアプリ用)
 const APP_TOKEN = process.env.APP_TOKEN || '';   // 公開時は必ず設定(UIで入力)
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -124,7 +124,7 @@ const body = req => new Promise((ok, ng) => { let d = ''; req.on('data', c => { 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
 const STATIC = new Set(['index.html', 'app.js', 'style.css']);
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   res.setHeader('x-content-type-options', 'nosniff');
   res.setHeader('referrer-policy', 'no-referrer');
@@ -174,4 +174,6 @@ http.createServer(async (req, res) => {
     console.error('error:', e.message);                     // キーは出力しない
     send(res, 500, { error: String(e.message).slice(0, 200) });
   }
-}).listen(PORT, HOST, () => console.log(`http://${HOST}:${PORT}  (APP_TOKEN: ${APP_TOKEN ? '有効' : '未設定'})`));
+});
+server.listen(PORT, HOST, () => console.log(`http://${HOST}:${server.address().port}  (APP_TOKEN: ${APP_TOKEN ? '有効' : '未設定'})`));
+module.exports = server;   // デスクトップアプリ(Electron)から読み込めるようにする

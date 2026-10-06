@@ -32,3 +32,6 @@ GitHub CLIとCodexを使ったPull Requestワークフローを検証するた�
 - Runway は第三者情報ベース、fal.ai はモデルIDのみ公式ページで確認(縦横比はKlingのみ送信、他は未確認のため未送信)の実装で、有効なキーでの動作は未検証。モデル名は `RUNWAY_MODEL` / `LUMA_MODEL` で変更可。
 - キー未設定/静的ホスティング時はAPIセクションが非表示になり、リンク集として動作。
 - Sora(Web/アプリ)は2026年4月に提供終了のため掲載していません。料金・仕様は各公式で確認してください。
+
+### デスクトップアプリ(Mac)
+`desktop/` に、`video-ai-hub/` をMacアプリ(アイコンをダブルクリックで起動、Node.js不要)にする Electron 版があります。手順は `desktop/README.md`。
