@@ -26,3 +26,13 @@ form.add input[name=url]{flex:1 1 100%}
 .ctl{font-size:.7em;display:flex;justify-content:space-between}
 .kind{font-size:.65em;color:#1565c0;margin-left:6px}
 textarea{width:100%;box-sizing:border-box;margin-top:8px}
+@media (max-width:600px){
+  body{font-size:18px}
+  header{flex-wrap:wrap;gap:8px;padding:10px 14px}
+  main{padding:12px}
+  .dis{flex:1 1 calc(50% - 6px);padding:14px 8px}
+  .grid{grid-template-columns:1fr}
+  .hbtn,button,select{min-height:44px}
+  form.add input,#tools input,select{min-height:44px;font-size:16px;width:100%;box-sizing:border-box}
+  #tools button,form.add button{flex:1 1 45%}
+}
