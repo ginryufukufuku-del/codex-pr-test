@@ -36,4 +36,14 @@ textarea{width:100%;margin-bottom:6px}input{min-width:0;max-width:100%}
 footer{padding:12px 16px;font-size:.85em;color:#555}
 @media(max-width:600px){button,input,select{min-height:44px}#apiSec select,#apiSec input{width:100%;max-width:100%}.grid{grid-template-columns:1fr}}
 video{width:100%;max-height:60vh;margin-top:8px;border-radius:8px;background:#000}
-.paid{display:block;background:#ffebee;color:#b71c1c;border:1px solid #e57373;border-radius:8px;padding:8px;margin:8px 0;font-size:1em;line-height:1.5}
+.paid{display:flex;gap:10px;align-items:flex-start;background:#ffebee;color:#b71c1c;border:1px solid #e57373;border-radius:8px;padding:8px;margin:8px 0;font-size:1em;line-height:1.5}
+#apiSec .paid input{flex:none;width:24px;max-width:24px;height:24px;min-height:0;margin:2px 0 0}
+@media(max-width:600px){
+  header{flex-wrap:wrap;gap:10px}
+  header h1{flex:1 1 100%}
+  header>div{flex:1 1 100%;display:flex;gap:10px}
+  header>div button{flex:1}
+  .job p:first-child{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .job p:first-child small{flex-basis:100%;order:3}
+  .job p:first-child button{order:4}
+}

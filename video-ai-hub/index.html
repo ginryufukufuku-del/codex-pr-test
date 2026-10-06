@@ -16,8 +16,8 @@
     <h2>① プロンプト作成</h2>
     <form id="pf">
       <input name="subject" placeholder="被写体・シーン(例: 夕暮れの海辺を走る柴犬)" required>
-      <input name="camera" placeholder="カメラ(例: ゆっくりドリーイン、ローアングル)">
-      <input name="style" placeholder="スタイル・光(例: シネマティック、黄金色の光)">
+      <input name="camera" placeholder="カメラ(例: ドリーイン)">
+      <input name="style" placeholder="スタイル(例: シネマティック)">
       <select name="aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select>
       <select name="dur"><option>5秒</option><option>8秒</option><option>10秒</option></select>
       <button>プロンプト生成</button>
@@ -29,7 +29,7 @@
     <h2>② APIで生成(サーバー経由・キーは非公開)</h2>
     <div id="tokenRow" hidden><input id="token" type="password" placeholder="アクセストークン(APP_TOKEN)" autocomplete="off"></div>
     <select id="apiProv"></select> <select id="apiModel" hidden></select> <select id="apiAspect"></select>
-    <label class="paid"><input type="checkbox" id="paidOk"> <b>【有料】</b>このAPI呼び出しは従量課金です。料金が発生することを理解しました(生成ごとにチェックが必要)</label><br><button id="genBtn" disabled>生成(有料API)</button> <span id="genSt" class="hint"></span>
+    <label class="paid"><input type="checkbox" id="paidOk"><span><b>【有料】</b>このAPI呼び出しは従量課金です。料金が発生することを理解しました(生成ごとにチェックが必要)</span></label><br><button id="genBtn" disabled>生成(有料API)</button> <span id="genSt" class="hint"></span>
     <video id="vid" controls hidden></video>
   </section>
   <section>
