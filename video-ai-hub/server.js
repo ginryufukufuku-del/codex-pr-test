@@ -83,13 +83,22 @@ const providers = {
     dlHeaders: () => ({})
   },
   fal: {
-    name: 'Kling 等 (fal.ai経由)', paid: true, aspects: ['16:9', '9:16', '1:1'],
+    name: 'fal.ai経由(Kling/Hailuo/Wan/Seedance)', paid: true, aspects: ['16:9', '9:16', '1:1'],
+    // 公式ページでIDを確認済みのモデルのみ許可。aspect:true のモデルだけ aspect_ratio を送る(他は未確認のため送らない)
+    models: [
+      { id: 'fal-ai/kling-video/v2.1/master/text-to-video', label: 'Kling v2.1 Master', aspect: true },
+      { id: 'fal-ai/minimax/hailuo-02/standard/text-to-video', label: 'MiniMax Hailuo 02 Standard (768p)', aspect: false },
+      { id: 'fal-ai/minimax/hailuo-2.3/standard/text-to-video', label: 'MiniMax Hailuo 2.3 Standard (768p)', aspect: false },
+      { id: 'alibaba/wan-3.0/text-to-video', label: 'Alibaba Wan 3.0', aspect: false },
+      { id: 'bytedance/seedance-2.0/text-to-video', label: 'ByteDance Seedance 2.0', aspect: false }
+    ],
     configured: () => !!process.env.FAL_KEY,
     h: () => ({ authorization: 'Key ' + process.env.FAL_KEY }),
-    async start({ prompt, aspect }) {
-      const model = process.env.FAL_MODEL || 'fal-ai/kling-video/v2.1/master/text-to-video';
-      if (!/^[\w./-]+$/.test(model)) throw new Error('FAL_MODELが不正です');
-      const r = await call(`https://queue.fal.run/${model}`, this.h(), { method: 'POST', body: JSON.stringify({ prompt, aspect_ratio: aspect }) });
+    async start({ prompt, aspect, model }) {
+      const m = model === undefined ? this.models[0] : this.models.find(x => x.id === model);
+      if (!m) throw new Error('未対応のモデルです');
+      const body = m.aspect ? { prompt, aspect_ratio: aspect } : { prompt };
+      const r = await call(`https://queue.fal.run/${m.id}`, this.h(), { method: 'POST', body: JSON.stringify(body) });
       if (!hostOk(r.status_url, /(^|\.)fal\.(run|ai)$/) || !hostOk(r.response_url, /(^|\.)fal\.(run|ai)$/)) throw new Error('不正な応答');
       return { ref: r.request_id, statusUrl: r.status_url, responseUrl: r.response_url };
     },
@@ -136,7 +145,7 @@ http.createServer(async (req, res) => {
     }
     const parts = url.pathname.split('/').filter(Boolean); // api, ...
     if (req.method === 'GET' && parts[1] === 'providers')
-      return send(res, 200, Object.entries(providers).map(([id, p]) => ({ id, name: p.name, paid: p.paid, aspects: p.aspects, configured: p.configured() })));
+      return send(res, 200, Object.entries(providers).map(([id, p]) => ({ id, name: p.name, paid: p.paid, aspects: p.aspects, models: p.models, configured: p.configured() })));
     if (req.method === 'POST' && parts[1] === 'generate') {
       const b = await body(req), p = providers[b.provider];
       if (!p || !p.configured()) return send(res, 400, { error: 'このプロバイダはサーバーにキーが未設定です' });
@@ -145,7 +154,7 @@ http.createServer(async (req, res) => {
       if (p.paid && b.confirmPaid !== true) return send(res, 400, { error: '有料APIです。料金発生の確認が必要です(confirmPaid)' });
       const aspect = p.aspects.includes(b.aspect) ? b.aspect : p.aspects[0];
       const id = crypto.randomUUID();
-      jobs.set(id, { provider: b.provider, ...(await p.start({ prompt, aspect })), status: 'running' });
+      jobs.set(id, { provider: b.provider, ...(await p.start({ prompt, aspect, model: b.model })), status: 'running' });
       return send(res, 200, { id });
     }
     if (req.method === 'GET' && parts[1] === 'jobs' && jobs.has(parts[2])) {

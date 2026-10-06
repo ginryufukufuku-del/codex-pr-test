@@ -88,8 +88,16 @@ async function initApi() {
   if (!apiProvs.length) return;
   $('apiSec').hidden = false;
   $('apiProv').innerHTML = apiProvs.map(p => `<option value="${esc(p.id)}">${esc(p.name)}【有料】</option>`).join('');
-  const setAsp = () => { $('apiAspect').innerHTML = apiProvs.find(p => p.id === $('apiProv').value).aspects.map(a => `<option>${esc(a)}</option>`).join(''); };
-  $('apiProv').onchange = setAsp; setAsp();
+  const setAsp = () => {
+    const p = apiProvs.find(x => x.id === $('apiProv').value), m = $('apiModel');
+    $('apiAspect').innerHTML = p.aspects.map(a => `<option>${esc(a)}</option>`).join('');
+    m.hidden = !p.models;
+    if (p.models) { m.innerHTML = p.models.map((x, i) => `<option value="${esc(x.id)}" data-a="${x.aspect}">${esc(x.label)}</option>`).join(''); }
+    setAspUse();
+  };
+  // 縦横比を送らないモデルでは選択を無効化(指定が無視されることを明示)
+  const setAspUse = () => { const o = $('apiModel').selectedOptions[0]; $('apiAspect').disabled = !$('apiModel').hidden && o?.dataset.a === 'false'; };
+  $('apiProv').onchange = setAsp; $('apiModel').onchange = setAspUse; setAsp();
 }
 $('paidOk').onchange = () => { $('genBtn').disabled = !$('paidOk').checked; };
 $('genBtn').onclick = async () => {
@@ -102,7 +110,7 @@ $('genBtn').onclick = async () => {
   const j = { id: Date.now(), provider: pv.name + '(API)', prompt: pr, status: '生成中', result: '', memo: '', at: new Date().toLocaleString('ja-JP') };
   db.jobs.unshift(j); save(); renderJobs();
   try {
-    let r = await api('/api/generate', { method: 'POST', body: JSON.stringify({ provider: pv.id, prompt: pr, aspect: $('apiAspect').value, confirmPaid: true }) });
+    let r = await api('/api/generate', { method: 'POST', body: JSON.stringify({ provider: pv.id, prompt: pr, aspect: $('apiAspect').value, model: $('apiModel').hidden ? undefined : $('apiModel').value, confirmPaid: true }) });
     const g = await r.json(); if (!r.ok) throw new Error(g.error);
     for (let i = 0; i < 120; i++) {           // 最大約10分
       await new Promise(ok => setTimeout(ok, 5000));
