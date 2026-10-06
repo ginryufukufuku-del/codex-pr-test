@@ -1,0 +1,34 @@
+{
+  "_note": "リンクは仮データ。verified=false の項目は公開前に必ずURL・内容・利用条件を確認すること。",
+  "diseases": [
+    {
+      "id": "diabetes",
+      "name": "糖尿病",
+      "summary": "血糖値が高い状態が続く病気。",
+      "videos": [
+        { "title": "糖尿病とは(動画を差し替え)", "url": "https://www.youtube.com/results?search_query=糖尿病+とは+医師+解説", "channel": "YouTube検索(仮)", "verified": false }
+      ],
+      "channels": [
+        { "title": "糖尿病 専門医チャンネルを探す(仮)", "url": "https://www.youtube.com/results?search_query=糖尿病+専門医+チャンネル", "verified": false }
+      ],
+      "sites": [
+        { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false },
+        { "title": "MSDマニュアル家庭版", "url": "https://www.msdmanuals.com/ja-jp/ホーム", "verified": false }
+      ]
+    },
+    {
+      "id": "hypertension",
+      "name": "高血圧",
+      "summary": "血圧が慢性的に高い状態。",
+      "videos": [
+        { "title": "高血圧とは(動画を差し替え)", "url": "https://www.youtube.com/results?search_query=高血圧+とは+医師+解説", "channel": "YouTube検索(仮)", "verified": false }
+      ],
+      "channels": [
+        { "title": "高血圧 専門医チャンネルを探す(仮)", "url": "https://www.youtube.com/results?search_query=高血圧+専門医+チャンネル", "verified": false }
+      ],
+      "sites": [
+        { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false }
+      ]
+    }
+  ]
+}
