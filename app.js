@@ -7,7 +7,12 @@ function cards(el, items) {
   ).join('');
 }
 
+// URL全体・短縮URL・IDのどれを貼っても動画IDを取り出す
+const ytId = x => (String(x).match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/) || String(x).match(/^([\w-]{11})$/) || [])[1] || '';
+
 function play(v) {
+  v = {...v, id: ytId(v.id)};
+  if (!v.id) return;
   const p = $('player');
   p.hidden = false;
   p.innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}?rel=0" title="${esc(v.title)}" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>` +
