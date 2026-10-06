@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>動画生成AI ハブ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>🎬 動画生成AI ハブ</h1>
+  <div><button id="exportBtn">保存</button> <button id="importBtn">読込</button>
+  <input id="importFile" type="file" accept=".json" hidden></div></header>
+<div class="note">各社サービスへの<b>リンク集 + プロンプト管理 + 生成履歴の比較</b>ツールです。APIキーは扱いません(ブラウザから直接APIを呼ぶとキーが漏れるため)。データはこのブラウザ内にのみ保存されます。</div>
+<main>
+  <section>
+    <h2>① プロンプト作成</h2>
+    <form id="pf">
+      <input name="subject" placeholder="被写体・シーン(例: 夕暮れの海辺を走る柴犬)" required>
+      <input name="camera" placeholder="カメラ(例: ゆっくりドリーイン、ローアングル)">
+      <input name="style" placeholder="スタイル・光(例: シネマティック、黄金色の光)">
+      <select name="aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select>
+      <select name="dur"><option>5秒</option><option>8秒</option><option>10秒</option></select>
+      <button>プロンプト生成</button>
+    </form>
+    <textarea id="prompt" rows="4" placeholder="ここに生成されたプロンプト(直接編集可)"></textarea>
+    <button id="copyBtn">コピー</button>
+  </section>
+  <section>
+    <h2>② サービスを選んで開く</h2>
+    <p class="hint">「開く」でプロンプトをコピーして公式サイトを新しいタブで開きます。生成後は「記録」で履歴に残せます。</p>
+    <div id="providers" class="grid"></div>
+    <details><summary>サービスを追加</summary>
+      <form id="addp"><input name="name" placeholder="名前" required><input name="url" placeholder="https://…" required><input name="note" placeholder="メモ(任意)"><button>追加</button></form>
+    </details>
+  </section>
+  <section>
+    <h2>③ 生成履歴・比較</h2>
+    <div id="jobs"></div>
+  </section>
+</main>
+<footer>※ サービス内容・料金・提供状況は変わります。必ず各公式サイトで最新情報を確認してください。</footer>
+<script src="app.js"></script>
+</body>
+</html>

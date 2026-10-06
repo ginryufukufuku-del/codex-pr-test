@@ -38,3 +38,8 @@ GitHub CLIとCodexを使ったPull Requestワークフローを検証するた�
 ### スマホで開く
 GitHub Pages で公開すると、スマホからURLで開けます(リポジトリの Settings → Pages → Source を「GitHub Actions」にし、main にマージすると自動公開)。
 注意: 公開URLは誰でも開けます。患者情報は入れないこと。
+
+## 動画生成AI ハブ(`video-ai-hub/`)
+動画生成AIサービスのリンク集・プロンプト作成・生成履歴比較をまとめる静的Webアプリ。APIキーは扱わず、データはブラウザ内のみに保存。
+起動: `cd video-ai-hub && python3 -m http.server 8000`
+注意: Sora(Web/アプリ)は2026年4月に提供終了のため掲載していません。サービス情報は各公式サイトで確認してください。
