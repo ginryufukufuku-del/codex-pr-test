@@ -3,7 +3,7 @@ header{display:flex;justify-content:flex-start;align-items:center;background:#45
 h1{margin:0 1em 0 0;font-size:1.5em}  /* PC: タイトルの後ろに1文字分あけてボタンを続ける */h2{font-size:1.3em;margin:0 0 10px}
 .note{background:#ede7f6;padding:6px 16px;font-size:.55em;line-height:1.5}  /* この説明文だけ極小 */
 main{max-width:960px;margin:auto;padding:12px}
-section{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px #0002}
+section{background:#eef6fd;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px #0002}
 input,select,textarea,button{font:inherit;padding:8px;border-radius:8px;border:1px solid #bbb;box-sizing:border-box}
 /* リキッドグラス風ボタン: 半透明+ぼかし、左上にハイライト、右下に影 */
 button{position:relative;overflow:hidden;border-radius:16px;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;font-weight:800;font-size:1.2em;letter-spacing:.03em;color:#fff;cursor:pointer;border:1px solid rgba(255,255,255,.5);
@@ -48,3 +48,5 @@ video{width:100%;max-height:60vh;margin-top:8px;border-radius:8px;background:#00
   .job p:first-child button{order:4}
 }
 header button{padding-left:0;padding-right:0;min-width:88px}  /* PC幅: 59px→約1.5倍の88px */
+/* 枠の中の「窓」(入力欄・選択欄・サービスのカード)は真っ白のまま */
+input,textarea,select,.card{background-color:#fff}
