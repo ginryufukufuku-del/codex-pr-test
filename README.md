@@ -25,4 +25,4 @@ GitHub CLIとCodexを使ったPull Requestワークフローを検証するた�
 ## 外来説明ビジュアル(プロトタイプ)
 疾患を選ぶと、解説動画・専門チャンネル・無料サイトへ誘導する静的Webアプリ。
 起動: `python3 -m http.server 8000` → http://localhost:8000
-疾患の追加は `data/diseases.json` を編集。
+疾患の追加は `data/diseases.json` を編集。動画は `id`(YouTube動画ID)を設定するとアプリ内で再生。

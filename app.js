@@ -7,11 +7,33 @@ function cards(el, items) {
   ).join('');
 }
 
+function play(v) {
+  const p = $('player');
+  p.hidden = false;
+  p.innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}?rel=0" title="${esc(v.title)}" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>` +
+    `<p class="alt">${esc(v.title)} / 再生できない場合: <a href="https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}" target="_blank" rel="noopener noreferrer">YouTubeで開く</a></p>`;
+  p.scrollIntoView({behavior: 'smooth'});
+}
+
+function videoCards(el, items) {
+  el.innerHTML = '';
+  items.forEach(v => {
+    if (!v.id) { cards(el.appendChild(document.createElement('div')), [v]); return; }
+    const b = document.createElement('button');
+    b.className = 'card';
+    b.innerHTML = `▶ ${esc(v.title)}${v.channel ? `<br><small>${esc(v.channel)}</small>` : ''}`;
+    b.onclick = () => play(v);
+    el.append(b);
+  });
+}
+
 function show(d, btn) {
+  $('player').hidden = true;
+  $('player').innerHTML = '';
   document.querySelectorAll('.dis').forEach(b => b.classList.toggle('on', b === btn));
   $('name').textContent = d.name;
   $('summary').textContent = d.summary;
-  cards($('videos'), d.videos);
+  videoCards($('videos'), d.videos);
   cards($('channels'), d.channels);
   cards($('sites'), d.sites);
   $('detail').hidden = false;
