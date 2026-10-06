@@ -1,34 +1,31 @@
 {
-  "_note": "動画は \"id\"(YouTube動画ID、URLのv=以降11文字)を入れるとアプリ内再生。id未設定は検索リンク表示。投稿者が埋め込みを禁止している動画は再生不可。リンクは仮データ。verified=false の項目は公開前に必ずURL・内容・利用条件を確認すること。",
+  "_note": "初期データ。画面の「設定」から追加・編集できる(ブラウザに保存)。verified=false は未確認。",
   "diseases": [
     {
-      "id": "diabetes",
-      "name": "糖尿病",
-      "summary": "血糖値が高い状態が続く病気。",
-      "videos": [
-        { "title": "糖尿病とは(動画を差し替え)", "url": "https://www.youtube.com/results?search_query=糖尿病+とは+医師+解説", "channel": "YouTube検索(仮)", "verified": false }
-      ],
+      "id": "knee-oa", "name": "変形性膝関節症", "summary": "膝の軟骨がすり減り、痛みや変形が出る病気。",
+      "videos": [],
+      "channels": [],
+      "sites": []
+    },
+    {
+      "id": "lss", "name": "腰部脊柱管狭窄症", "summary": "背骨の中の神経の通り道が狭くなり、足のしびれや歩行時の痛みが出る病気。",
+      "videos": [],
       "channels": [
-        { "title": "糖尿病 専門医チャンネルを探す(仮)", "url": "https://www.youtube.com/results?search_query=糖尿病+専門医+チャンネル", "verified": false }
+        { "title": "よしむら脳神経外科・脊椎外科 YouTubeクリニック(紹介ページ)", "url": "https://yutura.net/channel/93195/popular/uAxSGAJRgeY/", "verified": false }
       ],
       "sites": [
-        { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false },
-        { "title": "MSDマニュアル家庭版", "url": "https://www.msdmanuals.com/ja-jp/ホーム", "verified": false }
+        { "title": "MSDマニュアル家庭版:腰部脊柱管狭窄症", "url": "https://www.msdmanuals.com/ja-jp/home/骨、関節、筋肉の病気/腰痛と首の痛み/腰部脊柱管狭窄症", "verified": false }
       ]
     },
     {
-      "id": "hypertension",
-      "name": "高血圧",
-      "summary": "血圧が慢性的に高い状態。",
-      "videos": [
-        { "title": "高血圧とは(動画を差し替え)", "url": "https://www.youtube.com/results?search_query=高血圧+とは+医師+解説", "channel": "YouTube検索(仮)", "verified": false }
-      ],
-      "channels": [
-        { "title": "高血圧 専門医チャンネルを探す(仮)", "url": "https://www.youtube.com/results?search_query=高血圧+専門医+チャンネル", "verified": false }
-      ],
-      "sites": [
-        { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false }
-      ]
+      "id": "diabetes", "name": "糖尿病", "summary": "血糖値が高い状態が続く病気。",
+      "videos": [], "channels": [],
+      "sites": [ { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false } ]
+    },
+    {
+      "id": "hypertension", "name": "高血圧", "summary": "血圧が慢性的に高い状態。",
+      "videos": [], "channels": [],
+      "sites": [ { "title": "e-ヘルスネット(厚生労働省)", "url": "https://www.e-healthnet.mhlw.go.jp/", "verified": false } ]
     }
   ]
 }

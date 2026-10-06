@@ -7,22 +7,25 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><h1>外来説明ビジュアル</h1></header>
+<header>
+  <h1>外来説明ビジュアル</h1>
+  <button id="toggleEdit" class="hbtn">⚙ 設定(追加・編集)</button>
+</header>
 <main>
   <nav id="diseases" aria-label="疾患"></nav>
-  <section id="detail" hidden>
-    <h2 id="name"></h2>
-    <p id="summary"></p>
-    <h3>① 解説動画</h3>
-    <div id="player" hidden></div>
-    <div id="videos" class="grid"></div>
-    <h3>② 専門チャンネル</h3>
-    <div id="channels" class="grid"></div>
-    <h3>③ 無料で使えるサイト</h3>
-    <div id="sites" class="grid"></div>
+  <section id="tools" hidden>
+    <b>設定モード</b>
+    <input id="newDisease" placeholder="新しい疾患名" size="14">
+    <button id="addDisease">疾患を追加</button>
+    <button id="exportBtn">保存(ファイル出力)</button>
+    <button id="importBtn">読込</button>
+    <button id="resetBtn">初期データに戻す</button>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
+    <p class="hint">変更はこのブラウザに自動保存されます。別のPCで使うには「保存」したファイルを「読込」してください。</p>
   </section>
+  <section id="detail" hidden></section>
 </main>
-<footer>※「要確認」表示のリンクは公開前に確認が必要です。</footer>
+<footer>※「要確認」のリンクは、内容を確認して「確認済み」にチェックするまで表示されます。</footer>
 <script src="app.js"></script>
 </body>
 </html>
