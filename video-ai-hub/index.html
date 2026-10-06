@@ -28,7 +28,7 @@
   <section id="apiSec" hidden>
     <h2>② APIで生成(サーバー経由・キーは非公開)</h2>
     <div id="tokenRow" hidden><input id="token" type="password" placeholder="アクセストークン(APP_TOKEN)" autocomplete="off"></div>
-    <select id="apiProv"></select> <select id="apiAspect"></select>
+    <select id="apiProv"></select> <select id="apiModel" hidden></select> <select id="apiAspect"></select>
     <label class="paid"><input type="checkbox" id="paidOk"> <b>【有料】</b>このAPI呼び出しは従量課金です。料金が発生することを理解しました(生成ごとにチェックが必要)</label><br><button id="genBtn" disabled>生成(有料API)</button> <span id="genSt" class="hint"></span>
     <video id="vid" controls hidden></video>
   </section>
