@@ -42,8 +42,9 @@ video{width:100%;max-height:60vh;margin-top:8px;border-radius:8px;background:#00
   header{flex-wrap:wrap;gap:10px}
   header h1{flex:1 1 100%}
   header>div{flex:1 1 100%;display:flex;gap:10px}
-  header>div button{flex:1}
+  header>div button{flex:0 0 calc((100% - 10px) / 3)}  /* 以前の2/3の幅 */
   .job p:first-child{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .job p:first-child small{flex-basis:100%;order:3}
   .job p:first-child button{order:4}
 }
+header button{padding-left:0;padding-right:0}  /* PC幅: 文字幅の限界まで縮める */
