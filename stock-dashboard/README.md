@@ -13,6 +13,9 @@ cp .env.example .env.local   # ANTHROPIC_API_KEY / APP_PASSWORD を設定
 npm install && npm run dev   # iPadからは http://<PCのIP>:3000
 ```
 
+## テスト
+`npx tsx scripts/csv-test.ts`（CSVパーサのサンプル検証。実CSVでの確認は別途必要）
+
 ## データソースの注意
 - 株価: Yahoo Finance **非公式**チャートAPI(`7203.T`形式)。公式APIではなく、仕様変更・規約上の制限があり得る。TOPIXは連動ETF(1306)で代用。
 - ニュース: Google News RSS(銘柄別) / Yahoo!ニュースRSS(市場全体)。
