@@ -13,6 +13,12 @@
    `xattr -cr "/Applications/動画生成AIハブ.app"`
 6. メニュー **動画生成AIハブ → APIキー設定…**(⌘,)でキーを入力(使うサービスだけ)
 
+## アイコン(マスコット)の差し替え
+1. Canva の画像 https://www.canva.com/M/MAHXPirtwJA を開き、**共有 → ダウンロード → PNG** で保存
+2. GitHub のこのリポジトリで `desktop/build/` を開き、**Add file → Upload files** で、保存した画像を `mascot-source.png` という名前でアップロード(コミット)
+3. Actions で **Build Mac app** を実行 → 自動で角丸・透明な 1024px アイコンに整えてアプリに使われます
+   (手元で試す場合: `pip3 install pillow` のあと `python3 scripts/make-icon.py build/mascot-source.png build/icon.png`)
+
 ## 安全面
 - APIキーはMacのキーチェーン連携(safeStorage)で暗号化して保存。画面には再表示しません。
 - 内部サーバーは `127.0.0.1` の空きポートでのみ待受け、起動ごとのランダムなトークンで保護(外部からは使えません)。

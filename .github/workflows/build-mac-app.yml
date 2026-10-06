@@ -12,6 +12,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Make icon from the mascot image (if present)
+        run: |
+          if [ -f desktop/build/mascot-source.png ]; then
+            python3 -m venv /tmp/iconenv
+            /tmp/iconenv/bin/pip install --quiet pillow
+            /tmp/iconenv/bin/python desktop/scripts/make-icon.py desktop/build/mascot-source.png desktop/build/icon.png
+          fi
       - name: Build
         working-directory: desktop
         run: |
