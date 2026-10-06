@@ -16,6 +16,7 @@ const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 
 // ---- プロバイダ・アダプタ(キーはここだけで使う) ----
 // 全プロバイダは従量課金。paid:true は /api/generate で confirmPaid:true を必須にする。
+const LUMA = 'https://api.lumalabs.ai/dream-machine/v1';
 const RUNWAY = 'https://api.dev.runwayml.com/v1';
 const hostOk = (u, re) => { try { const x = new URL(u); return x.protocol === 'https:' && re.test(x.hostname); } catch { return false; } };
 async function call(url, headers, opt = {}) {
@@ -62,6 +63,24 @@ const providers = {
       return r.status === 'SUCCEEDED' && v && hostOk(v, /./) ? { status: 'done', videoUrl: v } : { status: 'running' };
     },
     dlHeaders: () => ({})   // 署名付きURLなのでキーは送らない
+  },
+  luma: {
+    name: 'Luma Dream Machine', paid: true, aspects: ['16:9', '9:16', '1:1'],
+    configured: () => !!process.env.LUMA_API_KEY,
+    h: () => ({ authorization: 'Bearer ' + process.env.LUMA_API_KEY }),
+    async start({ prompt, aspect }) {
+      const r = await call(`${LUMA}/generations/video`, this.h(), { method: 'POST', body: JSON.stringify({
+        prompt, model: process.env.LUMA_MODEL || 'ray-2', aspect_ratio: aspect }) });
+      if (!r.id) throw new Error('生成IDが返りませんでした');
+      return { ref: r.id };
+    },
+    async poll(j) {
+      const r = await call(`${LUMA}/generations/${encodeURIComponent(j.ref)}`, this.h());
+      if (r.state === 'failed') return { status: 'failed', error: r.failure_reason || '失敗' };
+      const v = r.assets?.video;
+      return r.state === 'completed' && v && hostOk(v, /./) ? { status: 'done', videoUrl: v } : { status: 'running' };
+    },
+    dlHeaders: () => ({})
   },
   fal: {
     name: 'Kling 等 (fal.ai経由)', paid: true, aspects: ['16:9', '9:16', '1:1'],
