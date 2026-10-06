@@ -25,8 +25,15 @@
     <textarea id="prompt" rows="4" placeholder="ここに生成されたプロンプト(直接編集可)"></textarea>
     <button id="copyBtn">コピー</button>
   </section>
+  <section id="apiSec" hidden>
+    <h2>② APIで生成(サーバー経由・キーは非公開)</h2>
+    <div id="tokenRow" hidden><input id="token" type="password" placeholder="アクセストークン(APP_TOKEN)" autocomplete="off"></div>
+    <select id="apiProv"></select> <select id="apiAspect"></select>
+    <button id="genBtn">生成</button> <span id="genSt" class="hint"></span>
+    <video id="vid" controls hidden></video>
+  </section>
   <section>
-    <h2>② サービスを選んで開く</h2>
+    <h2>③ サービスを選んで開く</h2>
     <p class="hint">「開く」でプロンプトをコピーして公式サイトを新しいタブで開きます。生成後は「記録」で履歴に残せます。</p>
     <div id="providers" class="grid"></div>
     <details><summary>サービスを追加</summary>
@@ -34,7 +41,7 @@
     </details>
   </section>
   <section>
-    <h2>③ 生成履歴・比較</h2>
+    <h2>④ 生成履歴・比較</h2>
     <div id="jobs"></div>
   </section>
 </main>

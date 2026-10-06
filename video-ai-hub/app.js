@@ -69,3 +69,51 @@ $('importBtn').onclick = () => $('importFile').click();
 $('importFile').onchange = async e => { try { const d = JSON.parse(await e.target.files[0].text()); if (!Array.isArray(d.providers) || !Array.isArray(d.jobs)) throw 0; db = d; save(); renderProviders(); renderJobs(); } catch { alert('読み込めませんでした'); } };
 
 renderProviders(); renderJobs();
+
+// ---- API生成(サーバー経由。キーはサーバー側のみ) ----
+let apiProvs = [];
+const hdr = () => $('token').value ? { 'x-app-token': $('token').value } : {};
+async function api(path, opt = {}) {
+  const r = await fetch(path, { ...opt, headers: { 'content-type': 'application/json', ...hdr() } });
+  if (r.status === 401) $('tokenRow').hidden = false;
+  return r;
+}
+async function initApi() {
+  try {
+    const r = await api('/api/providers');
+    if (r.status === 401) { $('apiSec').hidden = false; $('genSt').textContent = 'トークンを入力して再読み込みしてください'; return; }
+    if (!r.ok) return;
+    apiProvs = (await r.json()).filter(p => p.configured);
+  } catch { return; }          // 静的ホスティング時はAPIセクションを出さない
+  if (!apiProvs.length) return;
+  $('apiSec').hidden = false;
+  $('apiProv').innerHTML = apiProvs.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  const setAsp = () => { $('apiAspect').innerHTML = apiProvs.find(p => p.id === $('apiProv').value).aspects.map(a => `<option>${esc(a)}</option>`).join(''); };
+  $('apiProv').onchange = setAsp; setAsp();
+}
+$('genBtn').onclick = async () => {
+  const pr = $('prompt').value.trim(), st = $('genSt'), btn = $('genBtn');
+  if (!pr) return alert('プロンプトを入力してください');
+  btn.disabled = true; $('vid').hidden = true; st.textContent = '送信中…';
+  const pv = apiProvs.find(p => p.id === $('apiProv').value);
+  const j = { id: Date.now(), provider: pv.name + '(API)', prompt: pr, status: '生成中', result: '', memo: '', at: new Date().toLocaleString('ja-JP') };
+  db.jobs.unshift(j); save(); renderJobs();
+  try {
+    let r = await api('/api/generate', { method: 'POST', body: JSON.stringify({ provider: pv.id, prompt: pr, aspect: $('apiAspect').value }) });
+    const g = await r.json(); if (!r.ok) throw new Error(g.error);
+    for (let i = 0; i < 120; i++) {           // 最大約10分
+      await new Promise(ok => setTimeout(ok, 5000));
+      r = await api('/api/jobs/' + g.id); const s = await r.json(); if (!r.ok) throw new Error(s.error);
+      st.textContent = '生成中… ' + (i + 1) * 5 + '秒';
+      if (s.status === 'failed') throw new Error(s.error || '失敗');
+      if (s.status === 'done') {
+        r = await fetch('/api/jobs/' + g.id + '/video', { headers: hdr() }); if (!r.ok) throw new Error('動画取得失敗');
+        $('vid').src = URL.createObjectURL(await r.blob()); $('vid').hidden = false;
+        j.status = '成功'; j.memo = 'API生成(再生はこのセッション内のみ。保存は動画を右クリック)'; st.textContent = '完了'; return;
+      }
+    }
+    throw new Error('タイムアウト');
+  } catch (e) { j.status = '失敗'; j.memo = String(e.message).slice(0, 200); st.textContent = '失敗: ' + j.memo; }
+  finally { btn.disabled = false; save(); renderJobs(); }
+};
+initApi();
