@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>動画制作スタジオ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 編集室。上部に素材の進み具合、タブで「素材集め→プレビュー→DaVinci」の工程を進む。脚本・絵コンテ スタジオと同じ紙とインクの配色で、録画だけ赤 */
+:root{
+  --paper:#EEF2F4; --sheet:#FFFFFF; --ink:#17202A; --ink-2:#56636F; --rule:#D3DBE1; --rule-2:#B8C4CC;
+  --blue:#2A75A8; --blue-soft:#DCEAF3; --red:#BE3B2B; --red-soft:#F6DFD9; --ochre:#9A6B0C; --ochre-soft:#F4E9CF; --ok:#2F7D4F; --ok-soft:#DDEFE3;
+  --screen:#0E1318;
+  --f-display:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 1px 0 rgba(23,32,42,.05),0 6px 20px -12px rgba(23,32,42,.25);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11171D; --sheet:#182029; --ink:#E4E9ED; --ink-2:#9AA8B4; --rule:#2A3540; --rule-2:#3A4855;
+  --blue:#7DB5DC; --blue-soft:#1C3242; --red:#EC7C6C; --red-soft:#3D221E; --ochre:#E0B455; --ochre-soft:#3A2F17; --ok:#7CC49A; --ok-soft:#1C3326;
+  --screen:#06090C; --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11171D; --sheet:#182029; --ink:#E4E9ED; --ink-2:#9AA8B4; --rule:#2A3540; --rule-2:#3A4855;
+  --blue:#7DB5DC; --blue-soft:#1C3242; --red:#EC7C6C; --red-soft:#3D221E; --ochre:#E0B455; --ochre-soft:#3A2F17; --ok:#7CC49A; --ok-soft:#1C3326;
+  --screen:#06090C; --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+a{color:var(--blue)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
+.top .bar1{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1 1 260px}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:1.25rem;margin:0;letter-spacing:.04em;white-space:nowrap}
+.brand .pt{color:var(--ink-2);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.meter{display:flex;align-items:center;gap:10px;flex:0 1 320px;min-width:200px}
+.meter .bar{flex:1;height:8px;background:var(--rule);border-radius:4px;overflow:hidden}
+.meter .fill{height:100%;background:var(--ok);border-radius:4px}
+.meter .num{font-family:var(--f-mono);font-size:.82rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.save{font-size:.75rem;color:var(--ink-2)}.save.err{color:var(--red)}
+.tabs{display:flex;flex-wrap:nowrap;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:8px 14px 9px;cursor:pointer;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
+.tab small{font-family:var(--f-mono);font-size:.7rem;margin-right:6px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+main{padding-block:22px 80px}
+h2{font-family:var(--f-display);font-weight:700;font-size:1.35rem;margin:0 0 4px;text-wrap:balance}
+h3{font-size:.8rem;letter-spacing:.12em;color:var(--ink-2);font-weight:700;margin:0 0 8px}
+.lead{color:var(--ink-2);margin:0 0 18px;max-width:70ch}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--ink-2);font-weight:500;min-width:0}
+input[type=text],input[type=number],select,textarea{background:var(--sheet);border:1px solid var(--rule-2);border-radius:4px;padding:6px 8px;color:var(--ink);font-size:.88rem;width:100%;min-width:0}
+textarea{resize:vertical;line-height:1.5}
+.btn{border:1px solid var(--rule-2);background:var(--sheet);padding:7px 13px;border-radius:4px;cursor:pointer;font-size:.88rem;font-weight:500;white-space:nowrap;display:inline-block}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.btn.rec{background:var(--red);border-color:var(--red);color:var(--sheet)}
+.btn.rec:hover{filter:brightness(1.1);color:var(--sheet)}
+.btn.danger,.btn.danger:hover{background:var(--red);border-color:var(--red);color:var(--sheet)}
+.btn.sm{padding:3px 9px;font-size:.78rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule-2);background:var(--sheet);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.82rem}
+.chip[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue)}
+.note{font-size:.8rem;color:var(--ink-2)}
+.warn{background:var(--ochre-soft);border-left:3px solid var(--ochre);padding:10px 12px;font-size:.85rem;border-radius:0 4px 4px 0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.pill.wait{background:var(--ochre-soft);color:var(--ochre)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.sk{background:var(--blue-soft);color:var(--blue)}
+
+/* 制作ボード */
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow)}
+.cols,.cut{display:grid;grid-template-columns:58px 180px minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.2fr)}
+.cols{font-size:.7rem;font-weight:700;letter-spacing:.12em;color:var(--ink-2);background:var(--paper);border-bottom:1px solid var(--rule-2)}
+.cols div{padding:6px 10px;border-left:1px solid var(--rule)}.cols div:first-child{border-left:0}
+.cut{border-bottom:1px solid var(--rule-2)}
+.cut>div{padding:10px;border-left:1px solid var(--rule);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cut>div:first-child{border-left:0}
+.cno{font-family:var(--f-mono);font-weight:600;font-size:1.05rem;line-height:1.2}
+.cno small{display:block;font-weight:400;font-size:.7rem;color:var(--ink-2)}
+.thumb{width:100%;height:auto;display:block;border:1.5px solid var(--ink);background:var(--screen)}
+.act{font-size:.85rem}
+.dlg{font-family:var(--f-display);font-size:.88rem}
+.meta{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-2)}
+.file{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.file .name{font-family:var(--f-mono);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.prompt{font-family:var(--f-mono);font-size:.72rem}
+.empty{text-align:center;padding:40px 18px}
+.empty .big{font-family:var(--f-display);font-size:1.4rem;font-weight:700;margin:0 0 6px}
+
+/* プレビュー */
+.player{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.screen{background:var(--screen);border-radius:6px;overflow:hidden;line-height:0}
+.screen canvas{width:100%;height:auto;max-height:70vh;object-fit:contain;display:block;margin:0 auto}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.prog{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;margin-top:10px;cursor:pointer}
+.prog i{display:block;height:100%;background:var(--blue);width:0}
+.prog.rec i{background:var(--red)}
+.tcbig{font-family:var(--f-mono);font-size:1.4rem;font-weight:600;font-variant-numeric:tabular-nums}
+.recdot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-right:6px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+code,pre{font-family:var(--f-mono);font-size:.8rem}
+pre{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:10px;overflow-x:auto;margin:6px 0 0;white-space:pre}
+.export textarea{font-family:var(--f-mono);font-size:.76rem;min-height:220px}
+table.tt{width:100%;border-collapse:collapse;font-size:.86rem}
+table.tt th,table.tt td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.tt th{white-space:nowrap;font-weight:700}
+.tbl{overflow-x:auto}
+
+@media (max-width:980px){
+  .cols{display:none}
+  .cut{grid-template-columns:56px minmax(0,1fr) minmax(0,1fr);grid-template-areas:"no th ct" "no mk mk" "no pr pr"}
+  .cut>div:nth-child(1){grid-area:no}.cut>div:nth-child(2){grid-area:th}.cut>div:nth-child(3){grid-area:ct}
+  .cut>div:nth-child(4){grid-area:mk;border-top:1px solid var(--rule)}.cut>div:nth-child(5){grid-area:pr;border-top:1px solid var(--rule)}
+  .player{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .cut{grid-template-columns:minmax(0,1fr);grid-template-areas:"no" "th" "ct" "mk" "pr"}
+  .cut>div{border-left:0!important}
+  .cut>div:nth-child(1){flex-direction:row;gap:12px;align-items:baseline}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar1">
+    <div class="brand"><h1>動画制作スタジオ</h1><span class="pt" id="pt"></span></div>
+    <div class="meter" title="素材がそろったカット / 全カット"><div class="bar"><div class="fill" id="mfill"></div></div><span class="num" id="mnum"></span></div>
+    <span class="save" id="save"></span>
+  </div>
+  <nav class="wrap tabs" role="tablist" id="tabs"></nav>
+</header>
+<main class="wrap" id="main"></main>
+<input type="file" id="imp" accept=".json,application/json" hidden>
+<input type="file" id="mediaIn" accept="video/*,image/*" hidden>
+
+<script>
+"use strict";
+const KEY = "video-studio.project.v1", SCRIPT_KEY = "script-studio.project.v1";
+const SAMPLE = {"v":1,"title":"最後の観測者","logline":"十年間ひとりで宇宙観測を続けた少女が、亡き父の信号への「返信」を受け取り、待つことの意味を知る。","theme":"届かないと思っていた想いは、時間を越えて届く","durationMin":3,"genre":"sf","world":"SF（宇宙・未来）","tone":"叙情的","audience":"一般（中高生以上）","aspect":"16:9","fps":24,"structure":"kishotenketsu","asl":4.5,"checks":{},"refs":[],"characters":[{"id":"7cfqcbe","name":"ミナ","role":"主人公","age":"17","desc":"観測ステーションに一人残った観測員。几帳面で、感情を表に出さない。","goal":"父との約束どおり観測を続ける","speech":"短く、淡々と話す","color":0},{"id":"waw1clq","name":"ノア","role":"仲間","age":"—","desc":"ステーション管理AI。声と光の球体で表現する。","goal":"ミナを守る","speech":"丁寧語。少しだけユーモア","color":1},{"id":"992ss5d","name":"父","role":"メンター","age":"45","desc":"ミナの父。十年前に帰還便で消息を絶った天文学者。記録映像で登場。","goal":"娘に観測を託す","speech":"穏やかで、ゆっくり","color":4}],"beats":[{"id":"b9d44g0","name":"起","purpose":"人物と世界、日常を見せる","pct":20},{"id":"8shag0z","name":"承","purpose":"出来事が起き、関係や問題が広がる","pct":30},{"id":"1gzvcfc","name":"転","purpose":"予想外の変化で状況がひっくり返る","pct":30},{"id":"8jfh6og","name":"結","purpose":"変化の結果と余韻を描く","pct":20}],"scenes":[{"id":"zpgsrfa","beatId":"b9d44g0","place":"観測ステーション・ドーム","time":"夜","transitionIn":"F.I.（フェードイン）","summary":"ミナの孤独な日常。十年間、返事のない観測を続けている。","chars":["7cfqcbe","waw1clq"],"cuts":[{"id":"lxk5zre","shot":"EWS","angle":"アイレベル","move":"ドリーアウト","comp":"引き（余白大）","action":"漆黒の宇宙に、小さな観測ステーションが浮かんでいる。","dialogue":"","sound":"BGM：静かなピアノ","sec":6,"sketch":""},{"id":"nfligll","shot":"LS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ドームの中。巨大な望遠鏡の前に、ミナが一人座っている。","dialogue":"","sound":"","sec":5,"sketch":""},{"id":"blh2x5r","shot":"MS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、端末に向かってログを読み上げる。","dialogue":"ミナ「観測ログ、三千六百五十日目。異常なし」","sound":"","sec":6,"sketch":""},{"id":"s9ehta1","shot":"INS","angle":"ハイ（俯瞰）","move":"FIX","comp":"日の丸（中央）","action":"端末の画面。「受信：0件」の表示。","dialogue":"","sound":"","sec":4,"sketch":""},{"id":"d8x9abo","shot":"MCU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"天井から、柔らかな光の球体（ノア）が降りてくる。","dialogue":"ノア「ミナ、今日も返事はありません」","sound":"","sec":5,"sketch":""},{"id":"6y78gg3","shot":"CU","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、画面から目を離さない。","dialogue":"ミナ「知ってる。でも、記録はつける」","sound":"","sec":5,"sketch":""},{"id":"zs79pqc","shot":"LS","angle":"アイレベル","move":"FIX","comp":"引き（余白大）","action":"窓辺に立つミナ。外には無数の星。","dialogue":"","sound":"","sec":5,"sketch":""}]},{"id":"lmxzh08","beatId":"8shag0z","place":"同・居住区","time":"夜","transitionIn":"O.L.（ディゾルブ）","summary":"父が残したメモリーカード。記録映像の父が「観測を続けてくれ」と語る。","chars":["7cfqcbe","992ss5d"],"cuts":[{"id":"hhh8jrf","shot":"MS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、棚の奥から古いメモリーカードを取り出す。","dialogue":"","sound":"","sec":5,"sketch":""},{"id":"mb40fde","shot":"INS","angle":"ハイ（俯瞰）","move":"FIX","comp":"日の丸（中央）","action":"カードに手書きの文字「ミナへ　父」。","dialogue":"","sound":"","sec":4,"sketch":""},{"id":"c5wdfic","shot":"CU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"カードを端末に差し込む。","dialogue":"","sound":"SE：起動音","sec":3,"sketch":""},{"id":"tahme9t","shot":"MS","angle":"アイレベル","move":"ドリーイン","comp":"日の丸（中央）","action":"ホログラムの父が浮かび上がる。","dialogue":"父（声）「ミナ、これを見ているなら、私は戻れなかったということだ」","sound":"","sec":7,"sketch":""},{"id":"r1jgpge","shot":"CU","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナの瞳がわずかに揺れる。","dialogue":"","sound":"","sec":5,"sketch":""},{"id":"lsmn815","shot":"MCU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"父、穏やかに微笑む。","dialogue":"父（声）「星の光は、何年も前の光だ。だから観測を続けてくれ。いつか、届くから」","sound":"","sec":8,"sketch":""},{"id":"tpro0of","shot":"MS","angle":"肩越し（OTS）","move":"FIX","comp":"前景ナメ","action":"ミナ越しの父。ホログラムにノイズが走り、消える。","dialogue":"","sound":"SE：ノイズ","sec":6,"sketch":""},{"id":"aqrvd2y","shot":"CU","angle":"アイレベル","move":"FIX","comp":"三分割","action":"暗くなった部屋で、ミナがつぶやく。","dialogue":"ミナ「……届くって、何が」","sound":"","sec":5,"sketch":""},{"id":"fehoaz0","shot":"LS","angle":"アイレベル","move":"ズームアウト","comp":"引き（余白大）","action":"居住区にミナが一人。カメラが引いていく。","dialogue":"","sound":"","sec":6,"sketch":""},{"id":"teqad3w","shot":"INS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"窓の外の星が、ひとつ瞬く。","dialogue":"","sound":"","sec":5,"sketch":""}]},{"id":"00t3xga","beatId":"1gzvcfc","place":"同・ドーム","time":"深夜","transitionIn":"スマッシュカット","summary":"警報。地球から、十年前の父の信号への返信が届く。","chars":["7cfqcbe","waw1clq"],"cuts":[{"id":"khwa1ze","shot":"FS","angle":"ダッチ（傾き）","move":"手持ち","comp":"対角線","action":"警報。ドーム全体が赤く染まる。","dialogue":"","sound":"SE：警報音","sec":4,"sketch":""},{"id":"w8pc4ht","shot":"MCU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"ノアの光が激しく明滅する。","dialogue":"ノア「未知の信号を受信。発信元は、地球です」","sound":"","sec":5,"sketch":""},{"id":"7o9xw4g","shot":"CU","angle":"ロー（あおり）","move":"FIX","comp":"三分割","action":"ミナ、はっと顔を上げる。","dialogue":"","sound":"","sec":3,"sketch":""},{"id":"nhhrru9","shot":"MS","angle":"アイレベル","move":"手持ち","comp":"対角線","action":"ミナ、端末へ走る。","dialogue":"","sound":"","sec":4,"sketch":""},{"id":"se1400t","shot":"INS","angle":"ハイ（俯瞰）","move":"FIX","comp":"日の丸（中央）","action":"モニターの波形。規則正しいパルス。","dialogue":"","sound":"","sec":5,"sketch":""},{"id":"bczjodh","shot":"CU","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、息をのむ。","dialogue":"ミナ「これ……父さんの観測コード」","sound":"","sec":4,"sketch":""},{"id":"n5umier","shot":"MCU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"ノア、静かに告げる。","dialogue":"ノア「十年前に父上が送った信号への、返信です」","sound":"","sec":6,"sketch":""},{"id":"5m3wlcj","shot":"ECU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"ミナの瞳に、星が映り込む。","dialogue":"","sound":"","sec":5,"sketch":""},{"id":"dg6db2x","shot":"MS","angle":"ロー（あおり）","move":"ドリーイン","comp":"三分割","action":"ミナ、震える手で応答キーに触れる。","dialogue":"","sound":"","sec":6,"sketch":""},{"id":"gfs4mt0","shot":"INS","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"指先がキーを押し込む。","dialogue":"","sound":"SE：決定音","sec":4,"sketch":""},{"id":"9et3bt3","shot":"LS","angle":"ロー（あおり）","move":"クレーン","comp":"対角線","action":"望遠鏡がゆっくりと回転を始める。","dialogue":"","sound":"BGM：盛り上がる","sec":8,"sketch":""}]},{"id":"dlfd2rd","beatId":"8jfh6og","place":"同・ドーム","time":"早朝","transitionIn":"O.L.（ディゾルブ）","summary":"ミナが地球へ返信を送る。待つことを受け入れ、物語が閉じる。","chars":["7cfqcbe","waw1clq"],"cuts":[{"id":"1j7zy9a","shot":"EWS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ステーションの向こうに、恒星が昇る。","dialogue":"","sound":"","sec":7,"sketch":""},{"id":"ps6ipyz","shot":"MS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、マイクに向かう。","dialogue":"ミナ「こちら観測ステーション。観測は、続いています」","sound":"","sec":6,"sketch":""},{"id":"wfy83iq","shot":"MCU","angle":"アイレベル","move":"FIX","comp":"日の丸（中央）","action":"ノアの光が穏やかに揺れる。","dialogue":"ノア「送信完了。到着まで、十年です」","sound":"","sec":5,"sketch":""},{"id":"4w1b7gs","shot":"CU","angle":"アイレベル","move":"ドリーイン","comp":"三分割","action":"ミナ、初めて微笑む。","dialogue":"ミナ「待てるよ。慣れてるから」","sound":"","sec":5,"sketch":""},{"id":"35itpc5","shot":"LS","angle":"アイレベル","move":"FIX","comp":"三分割","action":"ミナ、ログに新しい一行を書き込む。","dialogue":"","sound":"","sec":6,"sketch":""},{"id":"hlq3shr","shot":"EWS","angle":"アイレベル","move":"ドリーアウト","comp":"引き（余白大）","action":"遠ざかるステーション。F.O.","dialogue":"","sound":"BGM：エンディング","sec":7,"sketch":""}]}]};
+const ASPECTS = { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [960, 960], "2.39:1": [1280, 536], "4:3": [960, 720] };
+const METHODS = ["未定", "実写撮影", "AI動画生成", "ストック素材", "図解・テロップ", "絵コンテのまま"];
+const SHOT_EN = {EWS:"extreme wide shot",LS:"wide shot",FS:"full shot",KS:"medium long shot",MS:"medium shot",MCU:"medium close-up",CU:"close-up",ECU:"extreme close-up",INS:"insert shot of an object"};
+const ANGLE_EN = {"アイレベル":"eye level","ハイ（俯瞰）":"high angle","ロー（あおり）":"low angle","真俯瞰":"top-down overhead","ダッチ（傾き）":"dutch angle","主観（POV）":"POV shot","肩越し（OTS）":"over-the-shoulder"};
+const MOVE_EN = {"FIX":"static camera","パン →":"pan right","パン ←":"pan left","ティルト ↑":"tilt up","ティルト ↓":"tilt down","ドリーイン":"dolly in","ドリーアウト":"dolly out","ズームイン":"zoom in","ズームアウト":"zoom out","トラック（横移動）":"tracking shot","クレーン":"crane shot","手持ち":"handheld camera","ステディカム":"steadicam","ドローン":"drone shot"};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mmss = s => { s = Math.round(s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+const fps = () => +P?.fps || 24;
+const tc = (s, hour = 0) => { const f = fps(), t = Math.round(s * f); const p = n => String(n).padStart(2, "0"); return `${p(hour + Math.floor(t / (3600 * f)))}:${p(Math.floor(t / (60 * f)) % 60)}:${p(Math.floor(t / f) % 60)}:${p(t % f)}`; };
+const srtTime = s => { const ms = Math.round(s * 1000), p = (n, l = 2) => String(n).padStart(l, "0"); return `${p(Math.floor(ms / 3600000))}:${p(Math.floor(ms / 60000) % 60)}:${p(Math.floor(ms / 1000) % 60)},${p(ms % 1000, 3)}`; };
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const opts = (list, v) => list.map(x => `<option${x === v ? " selected" : ""}>${esc(x)}</option>`).join("");
+
+/* ============ 状態 ============ */
+let P = null;
+const ui = { tab: "board", filter: "all", exportText: "", exportName: "", pickFor: null };
+function validProject(o) { return o && Array.isArray(o.scenes) && o.scenes.some(s => Array.isArray(s.cuts)); }
+function migrate(o) {
+  o.fps = +o.fps || 24; o.aspect = o.aspect || "16:9"; o.beats = o.beats || []; o.characters = o.characters || [];
+  o.render = Object.assign({ subs: true, names: false, telop: "", audio: true }, o.render || {});
+  o.scenes.forEach(s => (s.cuts || []).forEach(c => { c.method = c.method || "未定"; c.mediaIn = +c.mediaIn || 0; c.media = c.media || ""; c.aiPrompt = c.aiPrompt || ""; c.sec = Math.max(.5, +c.sec || 3); }));
+  return o;
+}
+function load() {
+  try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); if (validProject(o)) return migrate(o); } } catch (e) {}
+  try { const r = localStorage.getItem(SCRIPT_KEY); if (r) { const o = JSON.parse(r); if (validProject(o)) { ui.fromScript = true; return migrate(o); } } } catch (e) {}
+  return SAMPLE ? (ui.sample = true, migrate(JSON.parse(JSON.stringify(SAMPLE)))) : null;
+}
+function save() { if (!P) return; try { localStorage.setItem(KEY, JSON.stringify(P)); setSave("自動保存しました"); } catch (e) { setSave("ブラウザに保存できません。JSONで書き出してください", true); } }
+const saveSoon = debounce(save, 500);
+function setSave(t, err) { const el = $("#save"); el.textContent = t; el.classList.toggle("err", !!err); }
+
+function rows() {
+  const order = P.beats.map(b => b.id);
+  const scenes = P.scenes.map((s, i) => [s, i]).sort((a, b) => ((order.indexOf(a[0].beatId) + 1 || 999) - (order.indexOf(b[0].beatId) + 1 || 999)) || a[1] - b[1]).map(x => x[0]);
+  const out = []; let n = 0, t = 0;
+  scenes.forEach((s, si) => s.cuts.forEach(c => { out.push({ no: ++n, sno: si + 1, s, c, start: t, sec: +c.sec }); t += +c.sec; }));
+  return out;
+}
+const totalSec = () => rows().reduce((a, r) => a + r.sec, 0);
+const findRow = id => rows().find(r => r.c.id === id);
+function dialogueLines(text, keepNames) {
+  return (text || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+    const m = l.match(/^([^「」：:]{1,20})「(.*?)」?$/) || l.match(/^([^：:「]{1,20})[：:]\s*(.+)$/);
+    return m ? (keepNames ? `${m[1]}「${m[2]}」` : m[2]) : l; });
+}
+function defaultPrompt(r) {
+  const c = r.c, s = r.s, chars = P.characters.filter(ch => (s.chars || []).includes(ch.id) && ch.name && ch.name !== "N");
+  const who = chars.length ? " Characters: " + chars.map(ch => `${ch.name}${ch.age && ch.age !== "—" ? ` (${ch.age})` : ""}: ${ch.desc}`).join(" / ") + "." : "";
+  return `${SHOT_EN[c.shot] || "shot"}, ${ANGLE_EN[c.angle] || "eye level"}, ${MOVE_EN[c.move] || "static camera"}. ${s.place}（${s.time}）. ${c.action}${who} Style: ${P.world || ""}, ${P.tone || ""}. Aspect ratio ${P.aspect}, about ${c.sec} seconds, one continuous shot.`;
+}
+const promptOf = r => r.c.aiPrompt || defaultPrompt(r);
+
+/* ============ 素材（IndexedDB） ============ */
+let dbp = null;
+function db() {
+  if (!dbp) dbp = new Promise((ok, ng) => { try { const q = indexedDB.open("video-studio", 1); q.onupgradeneeded = () => q.result.createObjectStore("media"); q.onsuccess = () => ok(q.result); q.onerror = () => ng(q.error); } catch (e) { ng(e); } });
+  return dbp;
+}
+async function idb(mode, fn) { const d = await db(); return new Promise((ok, ng) => { const tx = d.transaction("media", mode); const st = tx.objectStore("media"); const q = fn(st); tx.oncomplete = () => ok(q?.result); tx.onerror = () => ng(tx.error); }); }
+const urls = {};
+async function mediaOf(cutId) {
+  if (urls[cutId]) return urls[cutId];
+  try { const m = await idb("readonly", st => st.get(cutId)); if (m) { urls[cutId] = { url: URL.createObjectURL(m.blob), type: m.type, name: m.name }; return urls[cutId]; } } catch (e) {}
+  return null;
+}
+async function putMedia(cutId, file) {
+  if (urls[cutId]) URL.revokeObjectURL(urls[cutId].url);
+  delete urls[cutId];
+  try { await idb("readwrite", st => st.put({ blob: file, type: file.type, name: file.name }, cutId)); }
+  catch (e) { urls[cutId] = { url: URL.createObjectURL(file), type: file.type, name: file.name }; setSave("素材をブラウザに保存できません。このページを開いている間だけ使えます", true); }
+}
+async function delMedia(cutId) { if (urls[cutId]) URL.revokeObjectURL(urls[cutId].url); delete urls[cutId]; try { await idb("readwrite", st => st.delete(cutId)); } catch (e) {} }
+const isVideo = m => m && m.type.startsWith("video/");
+
+/* ============ 描画 ============ */
+const loadImg = src => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = src; });
+function fit(ctx, src, sw, sh, w, h) { const k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h); ctx.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh); }
+function wrapText(ctx, text, maxW) {
+  const out = []; for (const para of String(text).split("\n")) { let line = ""; for (const ch of para) { if (ctx.measureText(line + ch).width > maxW && line) { out.push(line); line = ch; } else line += ch; } out.push(line); } return out;
+}
+const FONT = () => getComputedStyle(document.body).fontFamily;
+function drawCard(ctx, w, h, r) {
+  ctx.fillStyle = "#1B2430"; ctx.fillRect(0, 0, w, h);
+  const u = h / 20;
+  ctx.fillStyle = "#7DB5DC"; ctx.font = `600 ${u * 1.4}px "JetBrains Mono",monospace`; ctx.textBaseline = "top";
+  ctx.fillText(`C${r.no}`, u * 1.2, u * 1.2);
+  ctx.fillStyle = "#9AA8B4"; ctx.font = `500 ${u * .75}px ${FONT()}`;
+  ctx.fillText(`${r.c.shot}・${r.c.angle}・${r.c.move}　${r.sec}秒`, u * 1.2, u * 3.1);
+  ctx.fillText(`S${r.sno} ○${r.s.place || "場所未定"}（${r.s.time}）`, u * 1.2, u * 4.1);
+  ctx.fillStyle = "#E4E9ED"; ctx.font = `500 ${u * 1.05}px ${FONT()}`;
+  wrapText(ctx, r.c.action || "（ト書きなし）", w - u * 2.4).slice(0, 6).forEach((l, i) => ctx.fillText(l, u * 1.2, u * 6 + i * u * 1.5));
+  ctx.fillStyle = "#E0B455"; ctx.font = `700 ${u * .8}px ${FONT()}`;
+  ctx.fillText(`素材待ち：${r.c.method}`, u * 1.2, h - u * 2);
+}
+function drawSubs(ctx, w, h, r) {
+  if (!P.render.subs) return;
+  const lines = dialogueLines(r.c.dialogue, P.render.names); if (!lines.length) return;
+  const fs = Math.round(h / 20); ctx.font = `700 ${fs}px ${FONT()}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  const wrapped = lines.flatMap(l => wrapText(ctx, l, w * .86)).slice(-3);
+  wrapped.forEach((l, i) => { const y = h - fs * .9 - (wrapped.length - 1 - i) * fs * 1.3;
+    ctx.lineWidth = fs * .18; ctx.strokeStyle = "rgba(0,0,0,.85)"; ctx.lineJoin = "round"; ctx.strokeText(l, w / 2, y); ctx.fillStyle = "#fff"; ctx.fillText(l, w / 2, y); });
+  ctx.textAlign = "left";
+}
+function drawTelop(ctx, w, h) {
+  const t = P.render.telop.trim(); if (!t) return;
+  const fs = Math.round(h / 28); ctx.font = `700 ${fs}px ${FONT()}`; ctx.textBaseline = "middle";
+  const tw = Math.min(ctx.measureText(t).width, w * .6);
+  ctx.fillStyle = "rgba(190,59,43,.92)"; ctx.fillRect(fs * .8, fs * .8, tw + fs * 1.2, fs * 1.8);
+  ctx.fillStyle = "#fff"; ctx.fillText(t, fs * 1.4, fs * 1.7, w * .6);
+}
+async function paintThumb(cv, r) {
+  const [W, H] = ASPECTS[P.aspect] || ASPECTS["16:9"]; const w = 360, h = Math.round(w * H / W); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d"); const m = await mediaOf(r.c.id);
+  try {
+    if (m && isVideo(m)) { const v = document.createElement("video"); v.muted = true; v.preload = "auto"; v.src = m.url;
+      await once(v, "loadeddata"); v.currentTime = Math.min(r.c.mediaIn + .05, Math.max(0, v.duration - .1)); await once(v, "seeked"); fit(ctx, v, v.videoWidth, v.videoHeight, w, h); v.removeAttribute("src"); v.load(); return; }
+    if (m) { const i = await loadImg(m.url); fit(ctx, i, i.width, i.height, w, h); return; }
+    if (r.c.sketch) { const i = await loadImg(r.c.sketch); fit(ctx, i, i.width, i.height, w, h); return; }
+  } catch (e) {}
+  drawCard(ctx, w, h, r);
+}
+const once = (el, ev) => new Promise((ok, ng) => { const f = () => { el.removeEventListener(ev, f); el.removeEventListener("error", g); ok(); }; const g = () => { el.removeEventListener(ev, f); ng(new Error("media")); }; el.addEventListener(ev, f); el.addEventListener("error", g); });
+
+/* ============ 画面 ============ */
+const TABS = [["board", "制作ボード"], ["preview", "プレビュー・書き出し"], ["resolve", "DaVinci 連携"], ["learn", "学ぶ"]];
+async function updateMeter() {
+  if (!P) { $("#mnum").textContent = ""; $("#pt").textContent = ""; return; }
+  const rs = rows(); let have = 0; for (const r of rs) if (await mediaOf(r.c.id)) have++;
+  $("#mfill").style.width = (rs.length ? have / rs.length * 100 : 0) + "%";
+  $("#mnum").textContent = `素材 ${have} / ${rs.length} カット・${mmss(totalSec())}`;
+  $("#pt").textContent = "『" + (P.title || "無題") + "』";
+}
+function render() {
+  $("#tabs").innerHTML = TABS.map(([id, n], i) => `<button class="tab" role="tab" aria-selected="${ui.tab === id}" data-act="tab" data-v="${id}"><small>0${i + 1}</small>${n}</button>`).join("");
+  const m = $("#main");
+  stopPlay();
+  if (!P && ui.tab !== "learn") { m.innerHTML = emptyView(); updateMeter(); return; }
+  ({ board: renderBoard, preview: renderPreview, resolve: renderResolve, learn: renderLearn }[ui.tab])(m);
+  updateMeter();
+}
+function emptyView() {
+  return `<div class="panel empty"><p class="big">脚本と絵コンテを読み込んでください</p>
+    <p class="note">「脚本・絵コンテ スタジオ」の「脚本・書き出し」タブで、プロジェクト（.json）を書き出して読み込みます。</p>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn primary" data-act="import">JSONを読み込む</button>${SAMPLE ? `<button class="btn" data-act="sample">サンプルで試す</button>` : ""}</div></div>`;
+}
+function projectBar() {
+  return `<div class="row" style="margin-bottom:14px">
+    <button class="btn sm" data-act="import">JSONを読み込む</button>
+    <button class="btn sm" data-act="pullScript" title="同じブラウザの脚本・絵コンテ スタジオから最新を取り込み、素材の割り当ては残します">脚本スタジオの最新を取り込む</button>
+    ${SAMPLE ? `<button class="btn sm" data-act="sample">サンプル</button>` : ""}
+    ${ui.sample ? `<span class="pill sk">サンプルを表示中</span>` : ui.fromScript ? `<span class="pill sk">脚本スタジオから読み込み</span>` : ""}</div>`;
+}
+
+/* ---- 01 制作ボード ---- */
+async function renderBoard(m) {
+  const rs = rows();
+  const counts = {}; METHODS.forEach(x => counts[x] = 0); rs.forEach(r => counts[r.c.method] = (counts[r.c.method] || 0) + 1);
+  const has = {}; await Promise.all(rs.map(async r => has[r.c.id] = !!(await mediaOf(r.c.id))));
+  const show = rs.filter(r => ui.filter === "all" || (ui.filter === "wait" ? !has[r.c.id] : ui.filter === "have" ? has[r.c.id] : r.c.method === ui.filter));
+  m.innerHTML = `${projectBar()}<h2>制作ボード</h2>
+  <p class="lead">カットごとに「どう作るか」を決め、撮影した動画・AIで生成した動画・画像を割り当てます。素材がないカットは、絵コンテか文字のカードで仮に埋まります。</p>
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <div class="chips">${[["all", "すべて"], ["wait", "素材待ち"], ["have", "素材あり"], ...METHODS.filter(x => counts[x]).map(x => [x, `${x} ${counts[x]}`])].map(([k, n]) => `<button class="chip" aria-pressed="${ui.filter === k}" data-act="filter" data-v="${esc(k)}">${esc(n)}</button>`).join("")}</div>
+    <button class="btn sm" data-act="autoMethod">未定のカットを自動で振り分け</button></div>
+  <section class="sheet">
+    <div class="cols" aria-hidden="true"><div>CUT</div><div>画面</div><div>内容</div><div>作り方・素材</div><div>AI動画プロンプト</div></div>
+    ${show.map(r => cutRow(r, has[r.c.id])).join("") || `<div class="empty note">該当するカットはありません。</div>`}
+  </section>`;
+  document.querySelectorAll("canvas[data-thumb]").forEach(cv => { const r = rs.find(x => x.c.id === cv.dataset.thumb); if (r) paintThumb(cv, r); });
+}
+function cutRow(r, have) {
+  const c = r.c, med = urls[c.id];
+  const st = have ? `<span class="pill ok">素材あり</span>` : c.sketch ? `<span class="pill sk">絵コンテで仮置き</span>` : `<span class="pill wait">素材待ち</span>`;
+  return `<div class="cut" id="cut-${c.id}">
+    <div><span class="cno">C${r.no}<small>S${r.sno}</small></span><span class="meta">${tc(r.start)}</span><span class="meta">${c.sec}秒</span></div>
+    <div><canvas class="thumb" data-thumb="${c.id}"></canvas>${st}</div>
+    <div><span class="meta">${esc(c.shot)}・${esc(c.angle)}・${esc(c.move)}</span><span class="meta">○${esc(r.s.place)}（${esc(r.s.time)}）</span>
+      <div class="act">${esc(c.action)}</div>${c.dialogue ? `<div class="dlg">${esc(c.dialogue).replace(/\n/g, "<br>")}</div>` : ""}${c.sound ? `<div class="meta">〔${esc(c.sound)}〕</div>` : ""}</div>
+    <div><label class="f">作り方<select id="m-${c.id}" data-cut="${c.id}" data-k="method">${opts(METHODS, c.method)}</select></label>
+      <div class="file"><button class="btn sm" data-act="pick" data-id="${c.id}">${have ? "素材を差し替え" : "素材を割り当て"}</button>${have ? `<button class="btn sm" data-act="unpick" data-id="${c.id}">外す</button>` : ""}</div>
+      ${have ? `<span class="name" title="${esc(c.media)}">${esc(c.media)}</span>` : `<span class="note">または素材フォルダに <code>C${String(r.no).padStart(3, "0")}.mp4</code> の名前で置く</span>`}
+      ${have && isVideo(med) ? `<label class="f">素材の使い始め（秒）<input type="number" id="in-${c.id}" data-cut="${c.id}" data-k="mediaIn" value="${c.mediaIn}" min="0" step="0.1"></label>` : ""}</div>
+    <div><textarea class="prompt" id="p-${c.id}" rows="5" data-cut="${c.id}" data-k="aiPrompt" aria-label="AI動画プロンプト">${esc(promptOf(r))}</textarea>
+      <div class="row"><button class="btn sm" data-act="copyPrompt" data-id="${c.id}">コピー</button>${c.aiPrompt ? `<button class="btn sm" data-act="resetPrompt" data-id="${c.id}">自動に戻す</button>` : ""}<span class="note" id="pm-${c.id}"></span></div></div>
+  </div>`;
+}
+
+/* ---- 02 プレビュー・書き出し ---- */
+function renderPreview(m) {
+  const [W, H] = ASPECTS[P.aspect] || ASPECTS["16:9"], rs = rows();
+  m.innerHTML = `${projectBar()}<h2>プレビュー・書き出し</h2>
+  <p class="lead">カットを設定した秒数でつないで再生します。「動画を書き出す」を押すと、再生しながら録画して1本の動画ファイルにします（実時間かかります）。仕上げ用の高画質版は「DaVinci 連携」の手順で作ります。</p>
+  <div class="player">
+    <div><div class="screen"><canvas id="cv" width="${W}" height="${H}"></canvas></div>
+      <div class="prog" id="prog" title="クリックでその位置へ"><i id="pbar"></i></div>
+      <div class="transport">
+        <button class="btn primary" data-act="play" id="playBtn">▶ 再生</button>
+        <button class="btn" data-act="stop">■ 停止</button>
+        <button class="btn rec" data-act="record" id="recBtn">● 動画を書き出す</button>
+        <span class="tcbig" id="tcv">${tc(0)}</span><span class="note mono">/ ${tc(totalSec())}</span>
+      </div>
+      <p class="note" id="recmsg"></p>
+    </div>
+    <div class="panel stack">
+      <div id="now" class="stack" style="gap:4px"><span class="note">再生中のカットがここに出ます。</span></div>
+      <hr style="border:0;border-top:1px solid var(--rule);margin:0;width:100%">
+      <label class="row note"><input type="checkbox" id="o-subs" data-r="subs"${P.render.subs ? " checked" : ""}> セリフを字幕で出す</label>
+      <label class="row note"><input type="checkbox" id="o-names" data-r="names"${P.render.names ? " checked" : ""}> 字幕に話者名を入れる</label>
+      <label class="row note"><input type="checkbox" id="o-audio" data-r="audio"${P.render.audio ? " checked" : ""}> 素材の音を使う</label>
+      <label class="f">常時テロップ（画面左上に出し続ける文字）<input type="text" id="o-telop" data-r="telop" value="${esc(P.render.telop)}" placeholder="例：大腸内視鏡検査の流れ"></label>
+      <label class="f">再生を始めるカット<select id="o-from">${rs.map(r => `<option value="${r.no - 1}">C${r.no}　${esc((r.c.action || "").slice(0, 16))}</option>`).join("")}</select></label>
+      <p class="note" style="margin:0">書き出しは ${W}×${H}・WebM（Safari は MP4）です。録画中はこのタブを前面に出したままにしてください。</p>
+    </div>
+  </div>`;
+  const cv = $("#cv"), ctx = cv.getContext("2d"), r0 = rs[0]; if (r0) drawFrameStatic(ctx, cv.width, cv.height, r0);
+  $("#prog").addEventListener("click", e => { const rect = e.currentTarget.getBoundingClientRect(); const t = (e.clientX - rect.left) / rect.width * totalSec();
+    const idx = Math.max(0, rows().findIndex(r => r.start + r.sec > t)); $("#o-from").value = idx; startPlay(idx, false); });
+}
+async function drawFrameStatic(ctx, w, h, r) {
+  const m = await mediaOf(r.c.id);
+  try { if (m && !isVideo(m)) { const i = await loadImg(m.url); fit(ctx, i, i.width, i.height, w, h); }
+    else if (m) { const v = document.createElement("video"); v.muted = true; v.src = m.url; await once(v, "loadeddata"); v.currentTime = r.c.mediaIn + .05; await once(v, "seeked"); fit(ctx, v, v.videoWidth, v.videoHeight, w, h); }
+    else if (r.c.sketch) { const i = await loadImg(r.c.sketch); fit(ctx, i, i.width, i.height, w, h); }
+    else drawCard(ctx, w, h, r); } catch (e) { drawCard(ctx, w, h, r); }
+  drawTelop(ctx, w, h); drawSubs(ctx, w, h, r);
+}
+
+/* ---- 再生エンジン ---- */
+const E = { on: false, rec: null, raf: 0, list: [], idx: 0, cur: null, next: null, t0: 0, actx: null, dest: null, busy: false };
+async function prep(r) {
+  const m = await mediaOf(r.c.id);
+  try {
+    if (m && isVideo(m)) { const v = document.createElement("video"); v.src = m.url; v.preload = "auto"; v.playsInline = true; v.muted = !P.render.audio;
+      await once(v, "loadeddata"); v.currentTime = r.c.mediaIn; await once(v, "seeked"); return { r, v }; }
+    if (m) return { r, img: await loadImg(m.url) };
+    if (r.c.sketch) return { r, img: await loadImg(r.c.sketch) };
+  } catch (e) {}
+  return { r };
+}
+function audioCtx() {
+  if (!E.actx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; E.actx = new AC(); E.dest = E.actx.createMediaStreamDestination(); }
+  if (E.actx.state === "suspended") E.actx.resume(); return E.actx;
+}
+function begin(item) {
+  E.t0 = performance.now();
+  if (item.v) {
+    if (P.render.audio) { const ac = audioCtx(); if (ac) { const src = ac.createMediaElementSource(item.v); src.connect(E.dest); src.connect(ac.destination); } }
+    item.v.play().catch(() => {});
+  }
+  const n = $("#now"); if (n) { const r = item.r; n.innerHTML = `<span class="mono" style="font-weight:600">C${r.no}　<span class="note">S${r.sno}・${r.sec}秒・${esc(r.c.method)}</span></span><span class="note">${esc(r.c.shot)}・${esc(r.c.move)}</span><span>${esc(r.c.action)}</span>`; }
+}
+function finishItem(item) { if (item?.v) { item.v.pause(); item.v.removeAttribute("src"); item.v.load(); } }
+async function startPlay(fromIdx, record) {
+  stopPlay(); const cv = $("#cv"); if (!cv) return;
+  E.list = rows(); if (!E.list.length) return; E.idx = Math.min(fromIdx, E.list.length - 1); E.on = true;
+  $("#prog").classList.toggle("rec", !!record);
+  if (record) {
+    const stream = cv.captureStream(30); const ac = P.render.audio ? audioCtx() : null; if (ac) E.dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    const type = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    if (!type) { $("#recmsg").textContent = "このブラウザは録画に対応していません。Chrome か Edge を使うか、make_video.py で書き出してください。"; E.on = false; return; }
+    const chunks = []; E.rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 8e6 });
+    E.rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    E.rec.onstop = () => { const blob = new Blob(chunks, { type: type.split(";")[0] }); const ext = type.includes("mp4") ? "mp4" : "webm";
+      const name = `${(P.title || "movie").replace(/[\\/:*?"<>|]/g, "_")}.${ext}`; const url = URL.createObjectURL(blob);
+      $("#recmsg").innerHTML = `書き出しました（${(blob.size / 1048576).toFixed(1)}MB）。<a href="${url}" download="${esc(name)}">${esc(name)} を保存</a>　<span class="note">保存できない環境では make_video.py を使ってください。</span>`; };
+    E.rec.start(1000); $("#recmsg").innerHTML = `<span class="recdot"></span>録画中… 終わるまでこのタブを前面に出したままにしてください。`;
+  }
+  E.cur = await prep(E.list[E.idx]); if (!E.on) return; begin(E.cur);
+  E.next = E.idx + 1 < E.list.length ? prep(E.list[E.idx + 1]) : null;
+  const ctx = cv.getContext("2d"), W = cv.width, H = cv.height, total = totalSec();
+  const tick = async () => {
+    if (!E.on) return;
+    const it = E.cur, r = it.r, el = Math.min((performance.now() - E.t0) / 1000, r.sec);
+    if (it.v && it.v.readyState >= 2) fit(ctx, it.v, it.v.videoWidth, it.v.videoHeight, W, H);
+    else if (it.img) fit(ctx, it.img, it.img.width, it.img.height, W, H);
+    else if (!it.v) drawCard(ctx, W, H, r);
+    drawTelop(ctx, W, H); drawSubs(ctx, W, H, r);
+    const at = r.start + el; $("#pbar").style.width = (at / total * 100) + "%"; $("#tcv").textContent = tc(at);
+    if (el >= r.sec && !E.busy) {
+      if (E.idx + 1 >= E.list.length) { finishItem(it); stopPlay(); return; }
+      E.busy = true; const nx = await E.next; if (!E.on) { finishItem(nx); return; } finishItem(it); E.idx++; E.cur = nx; begin(nx);
+      E.next = E.idx + 1 < E.list.length ? prep(E.list[E.idx + 1]) : null; E.busy = false;
+    }
+    E.raf = requestAnimationFrame(tick);
+  };
+  E.raf = requestAnimationFrame(tick);
+}
+function stopPlay() {
+  if (!E.on && !E.rec) return;
+  E.on = false; cancelAnimationFrame(E.raf); finishItem(E.cur); E.cur = null;
+  E.next?.then(finishItem); E.next = null; E.busy = false;
+  if (E.rec && E.rec.state !== "inactive") E.rec.stop(); E.rec = null;
+  const b = $("#playBtn"); if (b) b.textContent = "▶ 再生";
+}
+
+/* ---- 03 DaVinci 連携 ---- */
+function renderResolve(m) {
+  const safe = (P.title || "project").replace(/[\\/:*?"<>|]/g, "_");
+  m.innerHTML = `${projectBar()}<h2>DaVinci Resolve 連携</h2>
+  <p class="lead">素材をそろえたら、付属の <code>make_video.py</code> で尺どおりにつないだ動画と、DaVinci Resolve に読み込むためのファイルを作ります。色の調整、音の仕上げ、テロップの作り込みは Resolve で行います。</p>
+  <div class="grid2" style="align-items:start">
+    <div class="panel"><h3>手順</h3><ol class="steps">
+      <li><div><b>素材をフォルダに集める</b><br><span class="note">「制作ボード」で割り当てたファイルを1つのフォルダ（例：<code>media</code>）に入れます。割り当てていないカットは、<code>C001.mp4</code> のようにカット番号の名前で置けます。</span></div></li>
+      <li><div><b>プロジェクトを書き出す</b><br><span class="note">右の「プロジェクト（.json）」を保存します。素材の割り当てと作り方も入っています。</span></div></li>
+      <li><div><b>動画を組み立てる</b>（ffmpeg が必要）<pre>python3 make_video.py "${esc(safe)}.json" --media media --out build</pre>
+        <span class="note">軽い下書きは <code>--height 720</code>、字幕の焼き込みは <code>--burn-subs</code> を付けます。素材がないカットは、絵コンテか文字のカードで尺を埋めます。</span></div></li>
+      <li><div><b>Resolve に読み込む</b><br><span class="note"><code>build/resolve_import.py</code> を Resolve のスクリプトフォルダに置き、メニュー「ワークスペース &gt; スクリプト」から実行すると、全カットを並べたタイムラインができます。無料版でも、メニューから実行するスクリプトは動きます。<br>
+        Mac：<code>~/Library/Application Support/Blackmagic Design/DaVinci Resolve/Fusion/Scripts/Utility/</code><br>
+        Windows：<code>%APPDATA%\\Blackmagic Design\\DaVinci Resolve\\Support\\Fusion\\Scripts\\Utility\\</code></span></div></li>
+      <li><div><b>手で読み込む場合</b><br><span class="note">素材をメディアプールに入れてから「ファイル &gt; 読み込み &gt; タイムライン」で EDL を、字幕は SRT を読み込みます。</span></div></li>
+      <li><div><b>仕上げて書き出す</b><br><span class="note">カラー、Fairlight（音）、テロップを整え、「デリバー」ページで書き出します。</span></div></li>
+    </ol></div>
+    <div class="panel stack export"><h3>書き出すファイル</h3>
+      <div class="row">
+        <button class="btn sm" data-act="exp" data-v="json">プロジェクト（.json）</button>
+        <button class="btn sm" data-act="exp" data-v="srt">字幕（.srt）</button>
+        <button class="btn sm" data-act="exp" data-v="edl">編集リスト（.edl）</button>
+        <button class="btn sm" data-act="exp" data-v="csv">素材リスト（.csv）</button>
+        <button class="btn sm" data-act="exp" data-v="prompts">AIプロンプト一覧</button></div>
+      <textarea id="exp-out" readonly aria-label="書き出し結果" placeholder="上のボタンを押すと、ここに内容が出ます">${esc(ui.exportText)}</textarea>
+      <div class="row"><button class="btn primary sm" data-act="copy">コピー</button><button class="btn sm" data-act="download">ファイルに保存</button><span class="note" id="exp-msg">${esc(ui.exportName)}</span></div>
+      <p class="note" style="margin:0">EDL は、割り当てた素材のファイル名と「使い始め」を参照します。素材がないカットは黒（BL）になります。</p>
+    </div>
+  </div>`;
+}
+function srtText() {
+  let n = 0; return rows().map(r => { const l = dialogueLines(r.c.dialogue, P.render.names); if (!l.length) return ""; n++;
+    return `${n}\n${srtTime(r.start)} --> ${srtTime(r.start + r.sec - .05)}\n${l.join("\n")}\n`; }).filter(Boolean).join("\n");
+}
+function edlText() {
+  const out = [`TITLE: ${P.title || "untitled"}`, "FCM: NON-DROP FRAME", ""];
+  rows().forEach(r => { const has = !!r.c.media, inS = has ? r.c.mediaIn : 0;
+    out.push(`${String(r.no).padStart(3, "0")}  ${has ? "AX      " : "BL      "} V     C        ${tc(inS)} ${tc(inS + r.sec)} ${tc(r.start, 1)} ${tc(r.start + r.sec, 1)}`);
+    if (has) out.push(`* FROM CLIP NAME: ${r.c.media}`);
+    out.push(`* COMMENT: C${r.no} ${(r.c.action || "").slice(0, 50)}`, ""); });
+  return out.join("\n");
+}
+function csvText() {
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["カット","シーン","場所","画面サイズ","アングル","カメラワーク","ト書き","セリフ","秒","IN","作り方","素材ファイル","使い始め","AIプロンプト"];
+  return "﻿" + [head, ...rows().map(r => [`C${r.no}`, `S${r.sno}`, r.s.place, r.c.shot, r.c.angle, r.c.move, r.c.action, r.c.dialogue, r.sec, tc(r.start), r.c.method, r.c.media || `C${String(r.no).padStart(3, "0")}.mp4`, r.c.mediaIn, promptOf(r)])].map(x => x.map(q).join(",")).join("\r\n");
+}
+function promptsText() { return rows().filter(r => r.c.method === "AI動画生成" || r.c.method === "未定").map(r => `C${r.no}（${r.sec}秒）\n${promptOf(r)}\n`).join("\n") || "作り方が「AI動画生成」か「未定」のカットがありません。"; }
+
+/* ---- 04 学ぶ ---- */
+function renderLearn(m) {
+  const L = [
+    ["DaVinci Resolve 公式トレーニング", "https://www.blackmagicdesign.com/jp/products/davinciresolve/training", "初心者向けガイドブック（PDF）と練習用素材が無料。編集、カラー、音声を順に学べます。"],
+    ["PIVOT 公式チャンネル", "https://www.youtube.com/@pivot00", "ビジネス対談。冒頭の掴み、話者テロップ、図解インサート、チャプターの付け方を見る。"],
+    ["ABEMA Prime（アベプラ）", "https://www.youtube.com/@prime_abema", "討論番組。VTRでの事実整理、複数カメラの切り返し、論点テロップを見る。"],
+    ["ReHacQ（リハック）", "https://www.youtube.com/channel/UCG_oqDSlIYEspNpd2H4zWhw", "対談・討論。長尺の対談をテーマ別に分けて公開する方法を見る。"],
+    ["StudioBinder（英語）", "https://www.youtube.com/results?search_query=StudioBinder", "撮影・演出技法。ショットサイズ、カメラの動き、編集のつなぎ方を名作映画の場面で解説。"],
+  ];
+  const T = [
+    ["素材は少し長めに撮る・作る", "カットの前後に1〜2秒の余白があると、編集で間を調整できます。AI動画も、使う尺より長めに生成して切り出します。"],
+    ["AI動画は1カット1動作", "1つのプロンプトに動きを詰め込みすぎない。画面サイズ・アングル・カメラの動きを必ず書き、同じ人物は毎回同じ説明文を入れると見た目がそろいやすくなります。"],
+    ["ジャンプカットとリアクション", "対談は間や言い直しを切り、聞き手の表情を挟んでテンポを作ります。"],
+    ["音は映像より先に整える", "セリフが聞き取れないと内容が伝わりません。BGMはセリフの下に小さく敷きます。"],
+    ["字幕と常時テロップ", "スマホで音を消して見る人も多いので、セリフ字幕と今のテーマのテロップを入れます。"],
+    ["権利の確認", "参考動画の映像や音楽を無断で使わない。ストック素材やAI生成サービスは、利用規約で商用利用の可否を確かめます。医療の映像は患者の同意と個人情報に注意します。"],
+  ];
+  m.innerHTML = `<h2>学ぶ</h2><p class="lead">編集と映像づくりの参考です。チャンネルの見どころは、こうした番組でよく見られる一般的な手法をまとめたものです。</p>
+  <div class="grid2">${L.map(([n, u, d]) => `<div class="panel stack" style="gap:6px"><a href="${u}" target="_blank" rel="noopener" style="font-family:var(--f-display);font-weight:700;font-size:1.05rem">${esc(n)} ↗</a><span class="note">${esc(d)}</span></div>`).join("")}</div>
+  <div class="panel" style="margin-top:16px"><h3>制作のコツ</h3><div class="tbl"><table class="tt"><tbody>${T.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table></div></div>`;
+}
+
+/* ============ 操作 ============ */
+function armed(btn, label) { if (btn.dataset.armed === "1") return true; const old = btn.textContent; btn.dataset.armed = "1"; btn.textContent = label; btn.classList.add("danger");
+  setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ""; btn.textContent = old; btn.classList.remove("danger"); } }, 3500); return false; }
+function cutById(id) { for (const s of P.scenes) for (const c of s.cuts) if (c.id === id) return c; return null; }
+function mergeFrom(src) {
+  const old = {}; if (P) P.scenes.forEach(s => s.cuts.forEach(c => old[c.id] = c));
+  const n = migrate(src); n.render = P?.render || n.render;
+  n.scenes.forEach(s => s.cuts.forEach(c => { const o = old[c.id]; if (o) Object.assign(c, { method: o.method, media: o.media, mediaIn: o.mediaIn, aiPrompt: o.aiPrompt }); }));
+  return n;
+}
+const ACT = {
+  tab: t => { ui.tab = t.dataset.v; render(); scrollTo(0, 0); },
+  import: () => $("#imp").click(),
+  sample: t => { if (P && !ui.sample && !armed(t, "今の作品を置き換えます。もう一度")) return; P = migrate(JSON.parse(JSON.stringify(SAMPLE))); ui.sample = true; ui.fromScript = false; save(); render(); },
+  pullScript: () => { try { const o = JSON.parse(localStorage.getItem(SCRIPT_KEY) || "null"); if (!validProject(o)) throw 0; P = mergeFrom(o); ui.sample = false; ui.fromScript = true; save(); render(); setSave("脚本スタジオの最新を取り込みました"); }
+    catch (e) { setSave("このブラウザに脚本スタジオのデータが見つかりません。JSONで読み込んでください", true); } },
+  filter: t => { ui.filter = t.dataset.v; render(); },
+  autoMethod: () => { rows().forEach(r => { if (r.c.method !== "未定") return; r.c.method = r.c.shot === "INS" ? "図解・テロップ" : /対談|討論|講義|医師|看護|話者|語りかけ/.test(r.c.action + r.s.summary) ? "実写撮影" : "AI動画生成"; }); saveSoon(); render(); },
+  pick: (t, id) => { ui.pickFor = id; $("#mediaIn").value = ""; $("#mediaIn").click(); },
+  unpick: async (t, id) => { await delMedia(id); const c = cutById(id); c.media = ""; c.mediaIn = 0; saveSoon(); render(); },
+  copyPrompt: (t, id) => copyText($("#p-" + id), $("#pm-" + id)),
+  resetPrompt: (t, id) => { cutById(id).aiPrompt = ""; saveSoon(); render(); },
+  play: () => startPlay(+($("#o-from")?.value || 0), false),
+  stop: () => stopPlay(),
+  record: t => { if (!armed(t, `${mmss(totalSec())} かかります。もう一度押すと開始`)) return; startPlay(0, true); },
+  exp: t => { const v = t.dataset.v, safe = (P.title || "project").replace(/[\\/:*?"<>|]/g, "_");
+    const map = { json: [() => JSON.stringify(P, null, 1), `${safe}.json`], srt: [srtText, `${safe}.srt`], edl: [edlText, `${safe}.edl`], csv: [csvText, `${safe}_素材リスト.csv`], prompts: [promptsText, `${safe}_AIプロンプト.txt`] };
+    ui.exportText = map[v][0](); ui.exportName = map[v][1]; render(); },
+  copy: () => copyText($("#exp-out"), $("#exp-msg")),
+  download: () => { if (!ui.exportText) { $("#exp-msg").textContent = "先に書き出す内容を選んでください"; return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ui.exportText], { type: "text/plain;charset=utf-8" })); a.download = ui.exportName; document.body.appendChild(a); a.click(); a.remove();
+    $("#exp-msg").textContent = `${ui.exportName} を保存しました（保存できない環境では「コピー」を使ってください）`; },
+};
+function copyText(ta, msg) { if (!ta?.value) return; const done = ok => { if (msg) msg.textContent = ok ? "コピーしました" : "選択しました。Ctrl+C（⌘C）でコピーしてください"; };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), () => { ta.select(); done(false); }); else { ta.select(); done(false); } }
+document.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (!t) return; const f = ACT[t.dataset.act]; if (f) { e.preventDefault(); f(t, t.dataset.id, e); } });
+function onEdit(e) {
+  const el = e.target, d = el.dataset; if (!P) return;
+  if (d.r) { P.render[d.r] = el.type === "checkbox" ? el.checked : el.value; saveSoon(); if (!E.on) { const cv = $("#cv"); const r = rows()[+($("#o-from")?.value || 0)]; if (cv && r) drawFrameStatic(cv.getContext("2d"), cv.width, cv.height, r); } return; }
+  if (d.cut) { const c = cutById(d.cut); if (!c) return; c[d.k] = d.k === "mediaIn" ? Math.max(0, parseFloat(el.value) || 0) : el.value;
+    if (d.k === "method" && e.type === "change") render();
+    if (d.k === "mediaIn" && e.type === "change") { const cv = document.querySelector(`canvas[data-thumb="${c.id}"]`); const r = findRow(c.id); if (cv && r) paintThumb(cv, r); }
+    saveSoon(); }
+}
+document.addEventListener("input", onEdit);
+document.addEventListener("change", async e => {
+  if (e.target.id === "imp") { const f = e.target.files[0]; if (!f) return;
+    try { const o = JSON.parse(await f.text()); if (!validProject(o)) throw 0; P = mergeFrom(o); ui.sample = false; ui.fromScript = false; save(); ui.tab = "board"; render(); setSave(`「${f.name}」を読み込みました`); }
+    catch (err) { setSave("読み込めませんでした。脚本・絵コンテ スタジオで書き出したJSONか確認してください", true); }
+    e.target.value = ""; return; }
+  if (e.target.id === "mediaIn") { const f = e.target.files[0], id = ui.pickFor; if (!f || !id) return;
+    await putMedia(id, f); const c = cutById(id); c.media = f.name; c.mediaIn = 0; if (c.method === "未定") c.method = f.type.startsWith("image/") ? "ストック素材" : "実写撮影";
+    save(); render(); return; }
+  onEdit(e);
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden && E.rec) $("#recmsg").textContent = "タブが裏に回ると録画が乱れることがあります。前面に戻してください。"; });
+
+P = load();
+render();
+setSave(P ? (ui.fromScript ? "脚本スタジオのデータを読み込みました" : "このブラウザに自動保存") : "");
+</script>
+</body>
+</html>

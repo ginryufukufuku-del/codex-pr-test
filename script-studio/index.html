@@ -174,6 +174,9 @@ table.tt td.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:ta
 .script.v .tr{text-align:end}
 .script .sec{font-family:var(--f-body);font-size:.85rem;color:var(--ink-2);margin-top:1em}
 .export{display:grid;gap:10px}
+.refrow{display:grid;gap:8px;grid-template-columns:minmax(0,2fr) 90px 90px 100px auto;align-items:end;border-top:1px solid var(--rule);padding-top:10px}
+.refrow .wide{grid-column:1/-1}
+@media (max-width:640px){.refrow{grid-template-columns:1fr 1fr}.refrow>label:first-child{grid-column:1/-1}}
 .export textarea{font-family:var(--f-mono);font-size:.78rem;min-height:220px}
 
 /* modal */
@@ -246,6 +249,8 @@ const GENRES = [
   { id:"patient", name:"臨床医療・患者説明",asl:7,   st:"patient",       en:"medical patient education video", med:true, explainer:true },
   { id:"clinical",name:"医療者教育（症例・手技）", asl:8, st:"clinical", en:"clinical training video", med:true, explainer:true },
   { id:"edu",     name:"教育・解説",        asl:7,   st:"docu",          en:"educational explainer", explainer:true },
+  { id:"webtalk", name:"ビジネス対談・ウェブ番組", asl:6, st:"talk", en:"web talk show interview", explainer:true, talk:true },
+  { id:"debate",  name:"討論・ニュース番組", asl:5, st:"debate", en:"news debate program", explainer:true, talk:true },
   { id:"pr",      name:"企業PR・啓発",      asl:4,   st:"promo",         en:"corporate promotional film", explainer:true },
   { id:"cm",      name:"CM・プロモーション",asl:2.5, st:"promo",         en:"commercial" },
   { id:"mv",      name:"ミュージックビデオ",asl:2.5, st:"johakyu",       en:"music video" },
@@ -272,6 +277,12 @@ const STRUCTS = {
     ["手技・介入","手順を工程ごとに見せる（手元のアップ多め）",30],["合併症・注意点","起こりうるトラブルと対処",15],["まとめ・確認","要点の復習と確認問題",10]]},
   docu:{ name:"ドキュメンタリー・解説型", beats:[
     ["フック","最初の10秒で問いを立てる",10],["背景","前提と経緯を伝える",20],["課題","何が問題なのかを具体的に",25],["取り組み","人や手段が課題に向き合う",25],["変化・結論","何が変わったか、何が残るか",20]]},
+  talk:{ name:"対談・インタビュー型（ウェブ番組）", beats:[
+    ["コールドオープン","本編でいちばん強い発言を冒頭に置く",5],["タイトル・導入","テーマと出演者を紹介し、見る理由を示す",10],
+    ["本題①","前提と現状を整理する",25],["本題②","核心の論点を深掘りする",30],["本題③","具体例・実践・反論",20],["まとめ・告知","要点の整理と関連動画への誘導",10]]},
+  debate:{ name:"討論番組型", beats:[
+    ["つかみ","ニュース映像で論点を示す",10],["VTR・背景","事実関係をVTRや図で整理する",20],["論点提示","賛否・立場をはっきりさせる",10],
+    ["討論","立場の違う出演者が議論する",45],["まとめ","司会が論点を整理し、視聴者に問いかける",15]]},
   promo:{ name:"PR・CM（課題→解決）型", beats:[
     ["フック","最初の数秒で目を止める",15],["課題","視聴者の困りごとを見せる",25],["解決","商品・サービス・活動が解決する",35],["根拠・効果","具体的な変化や事実",15],["呼びかけ","次の行動（CTA）",10]]},
 };
@@ -317,6 +328,39 @@ const PATTERN_EXPLAIN = [
   {shot:"CU",angle:0,move:0,comp:0,action:"聞き手の表情（不安→納得）"},
 ];
 
+const PATTERN_TALK = [
+  {shot:"LS",angle:0,move:0,comp:2,action:"出演者の引き（スタジオ全景）"},
+  {shot:"MS",angle:0,move:0,comp:0,action:"話者の発言（名前テロップ）"},
+  {shot:"MCU",angle:0,move:0,comp:0,action:"聞き手のリアクション"},
+  {shot:"INS",angle:0,move:0,comp:1,action:"図解・データのテロップ"},
+  {shot:"CU",angle:0,move:7,comp:0,action:"強調したい発言（寄り）"},
+  {shot:"MS",angle:6,move:0,comp:4,action:"聞き手越しの話者"},
+];
+const patternFor = g => g.talk ? PATTERN_TALK : g.explainer ? PATTERN_EXPLAIN : PATTERN_STORY;
+
+/* ============ 参考・学習 ============ */
+const REFS = [
+  { name:"PIVOT 公式チャンネル", url:"https://www.youtube.com/@pivot00", kind:"ビジネス対談・解説",
+    look:["冒頭で本編の印象的な発言を見せてから本題に入る","画面上部や隅にテーマを常に表示し、途中から見ても内容が分かる","話者の名前と肩書をテロップで出す","図やデータは別画面（インサート）で見せる","長尺でもチャプターで区切り、見たい所へ飛べるようにする"] },
+  { name:"ABEMA Prime（アベプラ）", url:"https://www.youtube.com/@prime_abema", kind:"討論型ニュース番組",
+    look:["ニュース映像やVTRで事実関係を整理してから討論に入る","賛否など立場の違う出演者を並べ、対立軸をはっきりさせる","複数カメラを切り替え、発言者とリアクションを交互に見せる","論点を短いテロップで常時表示する","放送の一部を切り出し、YouTube向けに短く再編集する"] },
+  { name:"ReHacQ（リハック）", url:"https://www.youtube.com/channel/UCG_oqDSlIYEspNpd2H4zWhw", kind:"対談・討論",
+    look:["政治・経済などのテーマを、出演者同士の対談・討論で掘り下げる","タイトルとサムネイルで対立や問いを示す","長尺の対談を、テーマ別に分けて公開する"] },
+  { name:"StudioBinder（英語）", url:"https://www.youtube.com/results?search_query=StudioBinder", kind:"映画の撮影・演出技法",
+    look:["ショットサイズ、カメラの動き、構図などの基本を名作映画の場面で解説","絵コンテ、ショットリスト、脚本分解など準備の進め方"] },
+  { name:"DaVinci Resolve 公式トレーニング", url:"https://www.blackmagicdesign.com/jp/products/davinciresolve/training", kind:"編集・色・音（無料教材）",
+    look:["初心者向けガイドブック（PDF）と練習用素材が無料で公開されている","編集、カラーコレクション、音声の基本を順に学べる"] },
+];
+const CRAFT = [
+  ["最初の数秒で引き込む","結論、いちばん強い発言、問いのどれかを冒頭に置く。タイトル映像や挨拶は後ろに回す。"],
+  ["常時テロップ","今のテーマを画面の隅に出し続ける。途中から見た人や、音を消して見る人にも内容が伝わる。"],
+  ["ジャンプカット","対談の間（ま）や言い直しを切り詰めてテンポを上げる。カット頭に軽い寄り（ズーム）を入れると繋ぎ目が目立ちにくい。"],
+  ["切り返しとリアクション","発言者だけでなく、聞き手の表情を挟む。感情の動きと会話のリズムが伝わる。"],
+  ["図解インサート","数字・比較・手順は話だけにせず、図やテロップの画面に切り替える。医療説明では特に有効。"],
+  ["チャプター","説明欄に「0:00 導入」のように時刻を書くとYouTubeのチャプターになる。最初は0:00、3つ以上、各10秒以上が条件。"],
+  ["サムネイルとタイトル","内容の約束をひとつに絞る。動画の中で必ずその答えを出す。"],
+];
+
 /* ============ ユーティリティ ============ */
 const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -341,7 +385,7 @@ const ui = { tab: "setup", sceneId: null, vertical: false, exportText: "", expor
 
 function blankProject() {
   return { v:1, title:"無題の作品", logline:"", theme:"", durationMin:5, genre:"drama", world:WORLDS[0], tone:TONES[0],
-    audience:"", aspect:"16:9", fps:24, structure:"kishotenketsu", asl:5, checks:{}, characters:[], beats:[], scenes:[] };
+    audience:"", aspect:"16:9", fps:24, structure:"kishotenketsu", asl:5, checks:{}, refs:[], characters:[], beats:[], scenes:[] };
 }
 function migrate(p) {
   const b = blankProject();
@@ -351,6 +395,7 @@ function migrate(p) {
   o.scenes = (o.scenes || []).map(s => Object.assign({ id: uid(), beatId: o.beats[0]?.id, place:"", time:"昼", transitionIn:"カット", summary:"", chars:[], cuts:[] }, s,
     { cuts: (s.cuts || []).map(c => Object.assign(makeCut(PATTERN_STORY[1], 3), c)) }));
   o.checks = o.checks || {};
+  o.refs = Array.isArray(o.refs) ? o.refs : [];
   return o;
 }
 function load() {
@@ -382,7 +427,7 @@ function normalizeOrder() { P.scenes = orderedScenes(); }
 /* ============ 自動下書き ============ */
 function generate() {
   const st = STRUCTS[P.structure], dur = targetSec(), asl = clamp(+P.asl || 5, 1, 30);
-  const pat = G(P.genre).explainer ? PATTERN_EXPLAIN : PATTERN_STORY;
+  const pat = patternFor(G(P.genre));
   P.beats = st.beats.map(([name, purpose, pct]) => ({ id: uid(), name, purpose, pct }));
   const sceneLen = clamp(dur / 10, 30, 120);
   P.scenes = [];
@@ -625,7 +670,7 @@ function sizeCanvas(cv, width) { const ar = ASPECTS[P.aspect] || 16 / 9; cv.widt
 function paintThumbs() { document.querySelectorAll("canvas[data-thumb]").forEach(cv => { const [c] = findCut(cv.dataset.thumb); if (c) { sizeCanvas(cv, P.aspect === "9:16" ? 240 : 480); paintFrame(cv, c); } }); }
 
 /* ============ 共通UI ============ */
-const TABS = [["setup","企画"],["cast","人物"],["structure","構成"],["board","絵コンテ"],["timeline","タイムライン"],["script","脚本・書き出し"]];
+const TABS = [["setup","企画"],["cast","人物"],["structure","構成"],["board","絵コンテ"],["timeline","タイムライン"],["script","脚本・書き出し"],["learn","学ぶ"]];
 function renderTabs() {
   $("#tabs").innerHTML = TABS.map(([id, n], i) => `<button class="tab" role="tab" aria-selected="${ui.tab === id}" data-act="tab" data-v="${id}"><small>${String(i + 1).padStart(2, "0")}</small>${n}</button>`).join("");
 }
@@ -639,7 +684,7 @@ function updateMeter() {
 function render() {
   renderTabs(); updateMeter();
   const m = $("#main");
-  ({ setup: renderSetup, cast: renderCast, structure: renderStructure, board: renderBoard, timeline: renderTimeline, script: renderScript }[ui.tab])(m);
+  ({ setup: renderSetup, cast: renderCast, structure: renderStructure, board: renderBoard, timeline: renderTimeline, script: renderScript, learn: renderLearn }[ui.tab])(m);
   paintThumbs();
 }
 function armed(btn, label) {
@@ -898,6 +943,17 @@ function promptText() {
   }));
   return lines.join("\n");
 }
+function chapterText() {
+  normalizeOrder();
+  const starts = cutStarts(), rows = [];
+  P.beats.forEach(b => { const s = P.scenes.find(x => x.beatId === b.id && x.cuts.length); if (s) rows.push([starts[s.cuts[0].id], b.name]); });
+  rows.sort((a, b) => a[0] - b[0]);
+  const end = totalSec(), warn = [];
+  if (!rows.length || rows[0][0] !== 0) warn.push("最初のチャプターが0:00になっていません");
+  if (rows.length < 3) warn.push("チャプターは3つ以上必要です");
+  rows.forEach((r, i) => { const len = (rows[i + 1]?.[0] ?? end) - r[0]; if (len < 10) warn.push(`「${r[1]}」が10秒未満です`); });
+  return rows.map(([t, n]) => `${mmss(t)} ${n}`).join("\n") + (warn.length ? "\n\n# 注意：" + warn.join("／") : "") + "\n";
+}
 function renderScript(m) {
   const lines = scriptLines();
   m.innerHTML = `<h2>脚本・書き出し</h2><p class="lead">絵コンテのト書きとセリフから、シナリオ形式（柱・ト書き・セリフ）の脚本を組み立てます。</p>
@@ -913,6 +969,7 @@ function renderScript(m) {
         <button class="btn sm" data-act="exp" data-v="script">脚本（.txt）</button>
         <button class="btn sm" data-act="exp" data-v="csv">絵コンテ表（.csv）</button>
         <button class="btn sm" data-act="exp" data-v="prompt">AI動画プロンプト</button>
+        <button class="btn sm" data-act="exp" data-v="chapters">YouTubeチャプター</button>
         <button class="btn sm" data-act="exp" data-v="json">プロジェクト（.json）</button></div>
       <textarea id="exp-out" readonly aria-label="書き出し結果" placeholder="上のボタンを押すと、ここに内容が出ます">${esc(ui.exportText)}</textarea>
       <div class="row"><button class="btn primary sm" data-act="copy">コピー</button><button class="btn sm" data-act="download">ファイルに保存</button>
@@ -927,6 +984,31 @@ function renderScript(m) {
       <p class="note" style="margin:0">作業内容はこのブラウザに自動保存されます。別の端末で使うときや控えを残すときは、JSONで書き出してください。</p>
     </div>
   </div>`;
+}
+
+/* ============ 07 学ぶ ============ */
+function renderLearn(m) {
+  m.innerHTML = `<h2>学ぶ</h2><p class="lead">人気の動画がどう組み立てられているかを見て、型を自分の企画に取り入れます。下の「見るポイント」は、こうした番組でよく見られる一般的な手法です。最新の作り方は各チャンネルの動画で確かめてください。</p>
+  <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))">
+    ${REFS.map(r => `<div class="panel stack" style="gap:8px"><div><h3 style="margin:0">${esc(r.kind)}</h3>
+      <a href="${esc(r.url)}" target="_blank" rel="noopener" style="font-family:var(--f-display);font-weight:700;font-size:1.1rem;color:var(--blue)">${esc(r.name)} ↗</a></div>
+      <ul style="margin:0;padding-left:1.2em;font-size:.88rem">${r.look.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>すぐ使える手法</h3><div class="tbl-scroll"><table class="tt"><tbody>
+    ${CRAFT.map(([k, v]) => `<tr><th style="white-space:nowrap;color:var(--ink);letter-spacing:0;font-size:.88rem">${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note">「企画」でジャンルを「ビジネス対談・ウェブ番組」や「討論・ニュース番組」にすると、これらの型で下書きを作れます。</p></div>
+  <div class="panel stack" style="margin-top:16px"><div><h3>参考動画の分析メモ</h3>
+    <p class="note" style="margin:0">1本選んで、尺とカット数を数えてみます。平均カット長が分かると、自分の作品の「平均カット長」を決める根拠になります。</p></div>
+    ${P.refs.map(r => { const asl = r.cuts > 0 ? (r.dur * 60 / r.cuts).toFixed(1) : "—"; return `<div class="refrow">
+      <label class="f">動画のタイトル・URL<input type="text" id="rt-${r.id}" data-ref="${r.id}" data-k="title" value="${esc(r.title)}"></label>
+      <label class="f">尺（分）<input type="number" id="rd-${r.id}" data-ref="${r.id}" data-k="dur" value="${r.dur}" min="0" step="0.5"></label>
+      <label class="f">カット数<input type="number" id="rc-${r.id}" data-ref="${r.id}" data-k="cuts" value="${r.cuts}" min="0" step="1"></label>
+      <div class="f note">平均カット長<b class="mono" id="ra-${r.id}" style="font-size:1.1rem;color:var(--ink)">${asl}秒</b></div>
+      <button class="btn sm ghost" data-act="delRef" data-id="${r.id}">削除</button>
+      <label class="f wide">構成・手法のメモ（冒頭の掴み、テロップ、切り返しなど）<textarea id="rn-${r.id}" rows="2" data-ref="${r.id}" data-k="notes">${esc(r.notes)}</textarea></label></div>`; }).join("")}
+    <div><button class="btn sm" data-act="addRef">＋ 参考動画を追加</button></div>
+  </div>
+  <div class="warn" style="margin-top:16px">参考動画は、構成や手法を学ぶために見てください。映像・音声・テロップを自分の作品に無断で使うことはできません。引用するときは、著作権法の引用の条件を満たす必要があります。</div>`;
 }
 
 /* ============ モーダル：手描き ============ */
@@ -1020,7 +1102,7 @@ const ACT = {
   openScene: (t, id) => { ui.sceneId = id; ui.tab = "board"; render(); window.scrollTo(0, 0); },
   jumpCut: (t, id) => { const [, s] = findCut(id); ui.sceneId = s.id; ui.tab = "board"; render(); document.getElementById("cut-" + id)?.scrollIntoView({ block: "center" }); },
   toggleChar: (t, id) => { const s = findScene(id), v = t.dataset.v; s.chars = s.chars.includes(v) ? s.chars.filter(x => x !== v) : [...s.chars, v]; saveSoon(); render(); },
-  addCut: (t, id) => { const s = findScene(id); const prev = s.cuts.at(-1); const pat = (G(P.genre).explainer ? PATTERN_EXPLAIN : PATTERN_STORY)[s.cuts.length % 6];
+  addCut: (t, id) => { const s = findScene(id); const prev = s.cuts.at(-1); const pat = patternFor(G(P.genre))[s.cuts.length % 6];
     const c = makeCut(pat, r2(+P.asl || 4)); c.action = ""; s.cuts.push(c); saveSoon(); render(); document.getElementById("ct-" + c.id)?.focus(); },
   dupCut: (t, id) => { const [c, s] = findCut(id); const i = s.cuts.indexOf(c); s.cuts.splice(i + 1, 0, Object.assign({}, c, { id: uid() })); saveSoon(); render(); },
   delCut: (t, id) => { if (!armed(t, "もう一度")) return; const [c, s] = findCut(id); s.cuts = s.cuts.filter(x => x !== c); saveSoon(); render(); },
@@ -1041,9 +1123,11 @@ const ACT = {
   anPlay: t => { if (!anim) return; if (!anim.playing && anim.idx === anim.all.length - 1 && anim.t === 0) { anim.idx = 0; anim.show(); } anim.playing = !anim.playing; t.textContent = anim.playing ? "一時停止" : "再生"; },
   anPrev: () => { if (!anim) return; anim.idx = Math.max(0, anim.idx - 1); anim.t = 0; anim.show(); },
   anNext: () => { if (!anim) return; anim.idx = Math.min(anim.all.length - 1, anim.idx + 1); anim.t = 0; anim.show(); },
+  addRef: () => { P.refs.push({ id: uid(), title: "", dur: 10, cuts: 0, notes: "" }); saveSoon(); render(); },
+  delRef: (t, id) => { P.refs = P.refs.filter(r => r.id !== id); saveSoon(); render(); },
   vert: t => { ui.vertical = t.dataset.v === "1"; render(); },
   exp: t => { const v = t.dataset.v; const safe = (P.title || "project").replace(/[\\/:*?"<>|]/g, "_");
-    const map = { script: [scriptText, `${safe}_脚本.txt`], csv: [csvText, `${safe}_絵コンテ.csv`], prompt: [promptText, `${safe}_AIプロンプト.txt`], json: [() => JSON.stringify(P, null, 1), `${safe}.json`] };
+    const map = { script: [scriptText, `${safe}_脚本.txt`], csv: [csvText, `${safe}_絵コンテ.csv`], prompt: [promptText, `${safe}_AIプロンプト.txt`], chapters: [chapterText, `${safe}_チャプター.txt`], json: [() => JSON.stringify(P, null, 1), `${safe}.json`] };
     ui.exportText = map[v][0](); ui.exportName = map[v][1]; if (ui.tab !== "script") ui.tab = "script"; render(); document.getElementById("exp-out")?.scrollIntoView({ block: "nearest" }); },
   copy: () => { const ta = $("#exp-out"); if (!ta.value) return; const done = ok => { $("#exp-msg").textContent = ok ? "コピーしました" : "テキストを選択しました。Ctrl+C（⌘C）でコピーしてください"; };
     if (navigator.clipboard?.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), () => { ta.select(); done(false); }); else { ta.select(); done(false); } },
@@ -1079,6 +1163,8 @@ function onEdit(e) {
     if (d.bind === "structure" && e.type === "change") { render(); }
     if (d.bind === "aspect" && e.type === "change") paintThumbs();
     const est = $("#estim"); if (est) est.textContent = estimateText();
+  } else if (d.ref) { const r = P.refs.find(x => x.id === d.ref); if (!r) return; r[d.k] = v;
+    const a = document.getElementById("ra-" + r.id); if (a) a.textContent = (r.cuts > 0 ? (r.dur * 60 / r.cuts).toFixed(1) : "—") + "秒"; saveSoon(); return;
   } else if (d.char) { const c = P.characters.find(x => x.id === d.char); if (c) c[d.k] = v; }
   else if (d.beat) { const b = P.beats.find(x => x.id === d.beat); if (b) b[d.k] = d.k === "pct" ? clamp(v, 0, 100) : v; if (d.k === "pct" && e.type === "change") render(); }
   else if (d.scene) { const s = findScene(d.scene); if (!s) return; s[d.k] = v;
