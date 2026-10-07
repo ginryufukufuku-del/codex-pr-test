@@ -19,7 +19,7 @@ export default function Chart({ code }: { code: string }) {
   }, [code, range]);
 
   const W = 800, H = 420, P = 40;
-  let body = <text x={W / 2} y={H / 2} fill="#8b98a8" textAnchor="middle">{err || "読み込み中…"}</text>;
+  let body = <text x={W / 2} y={H / 2} fill="#6b7685" textAnchor="middle">{err || "読み込み中…"}</text>;
   if (data?.length) {
     const cs = data.map((d) => d.c);
     const min = Math.min(...data.map((d) => d.l)), max = Math.max(...data.map((d) => d.h));
@@ -35,12 +35,12 @@ export default function Chart({ code }: { code: string }) {
       <>
         {[min, (min + max) / 2, max].map((v) => (
           <g key={v}>
-            <line x1={P} x2={W - P} y1={y(v)} y2={y(v)} stroke="#2a3441" />
-            <text x={4} y={y(v) + 4} fill="#8b98a8" fontSize={12}>{Math.round(v).toLocaleString()}</text>
+            <line x1={P} x2={W - P} y1={y(v)} y2={y(v)} stroke="#e1e6ec" />
+            <text x={4} y={y(v) + 4} fill="#6b7685" fontSize={12}>{Math.round(v).toLocaleString()}</text>
           </g>
         ))}
         {data.map((d, i) => {
-          const c = d.c >= d.o ? "#ef5350" : "#26a69a";
+          const c = d.c >= d.o ? "#d32f2f" : "#00897b";
           return (
             <g key={i} stroke={c} fill={c}>
               <line x1={x(i)} x2={x(i)} y1={y(d.h)} y2={y(d.l)} />
@@ -48,8 +48,8 @@ export default function Chart({ code }: { code: string }) {
             </g>
           );
         })}
-        <path d={path(ma(5))} fill="none" stroke="#ffb74d" strokeWidth={1.5} />
-        <path d={path(ma(25))} fill="none" stroke="#4c9aff" strokeWidth={1.5} />
+        <path d={path(ma(5))} fill="none" stroke="#f59e0b" strokeWidth={1.5} />
+        <path d={path(ma(25))} fill="none" stroke="#2563eb" strokeWidth={1.5} />
       </>
     );
   }
@@ -59,7 +59,7 @@ export default function Chart({ code }: { code: string }) {
         {RANGES.map((r) => (
           <button key={r} className={r === range ? "on" : ""} onClick={() => setRange(r)}>{r}</button>
         ))}
-        <span className="warn">ローソク足 / <span style={{ color: "#ffb74d" }}>MA5</span> <span style={{ color: "#4c9aff" }}>MA25</span></span>
+        <span className="warn">ローソク足 / <span style={{ color: "#f59e0b" }}>MA5</span> <span style={{ color: "#2563eb" }}>MA25</span></span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }}>{body}</svg>
     </div>
