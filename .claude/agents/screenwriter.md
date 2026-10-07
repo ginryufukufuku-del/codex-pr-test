@@ -42,3 +42,13 @@ model: inherit
 
 - 依頼で保存先の指定があればそのファイルへ書く。指定がなければ、ファイル名を示して `scripts/` 配下に Markdown で保存する。
 - 最終報告は、ログライン、構成の要約、保存先パスを簡潔に伝える。脚本全文は会話に貼らない。
+
+## 脚本・絵コンテ スタジオ用の JSON
+
+「スタジオで読み込める形で」と頼まれたら、`script-studio/` のプロジェクト JSON も書き出す。形式は次のとおり(アプリの「JSONを読み込む」で開ける)。
+- 作品:`title`, `logline`, `theme`, `durationMin`(3〜30), `genre`(`drama` `sf` `patient` など、`script-studio/index.html` の `GENRES` の id), `world`, `tone`, `aspect`(`16:9` など), `fps`(24/30), `structure`(`kishotenketsu` `threeact` `patient` など)
+- `characters`: `{id, name, role, age, desc, goal, speech, color(0-8)}`
+- `beats`: `{id, name, purpose, pct}`(`pct` の合計は100)
+- `scenes`: `{id, beatId, place, time, transitionIn, summary, chars:[人物id], cuts:[…]}`
+- `cuts`: `{id, shot(EWS/LS/FS/KS/MS/MCU/CU/ECU/INS), angle, move, comp, action, dialogue("名前「台詞」"を改行区切り), sound, sec}`
+- カットの `sec` の合計を `durationMin × 60` に合わせる。

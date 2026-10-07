@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>脚本・絵コンテ スタジオ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 絵コンテ用紙。上部に尺メーター付きの固定ヘッダー、タブで工程を切替、コンテは「CUT/画面/内容/セリフ/秒」の用紙罫線で組む */
+:root{
+  --paper:#EEF2F4; --sheet:#FFFFFF; --ink:#17202A; --ink-2:#56636F; --rule:#D3DBE1; --rule-2:#B8C4CC;
+  --blue:#2A75A8; --blue-soft:#DCEAF3; --red:#BE3B2B; --red-soft:#F6DFD9; --ochre:#9A6B0C; --ochre-soft:#F4E9CF; --ok:#2F7D4F;
+  --b0:#2A75A8; --b1:#3C8C7E; --b2:#8A8A2E; --b3:#B07A1E; --b4:#B2533A; --b5:#8C4E86; --b6:#5464A8; --b7:#4F7A3A; --b8:#7A6A5A;
+  --f-display:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 1px 0 rgba(23,32,42,.05),0 6px 20px -12px rgba(23,32,42,.25);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11171D; --sheet:#182029; --ink:#E4E9ED; --ink-2:#9AA8B4; --rule:#2A3540; --rule-2:#3A4855;
+  --blue:#7DB5DC; --blue-soft:#1C3242; --red:#EC7C6C; --red-soft:#3D221E; --ochre:#E0B455; --ochre-soft:#3A2F17; --ok:#7CC49A;
+  --b0:#5A9FCC; --b1:#5DB3A3; --b2:#B5B54E; --b3:#D29A3E; --b4:#D9765C; --b5:#B577AE; --b6:#7F8ED1; --b7:#7FAA62; --b8:#A8968A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11171D; --sheet:#182029; --ink:#E4E9ED; --ink-2:#9AA8B4; --rule:#2A3540; --rule-2:#3A4855;
+  --blue:#7DB5DC; --blue-soft:#1C3242; --red:#EC7C6C; --red-soft:#3D221E; --ochre:#E0B455; --ochre-soft:#3A2F17; --ok:#7CC49A;
+  --b0:#5A9FCC; --b1:#5DB3A3; --b2:#B5B54E; --b3:#D29A3E; --b4:#D9765C; --b5:#B577AE; --b6:#7F8ED1; --b7:#7FAA62; --b8:#A8968A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1 1 260px}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:1.25rem;margin:0;letter-spacing:.04em;white-space:nowrap}
+.brand .ptitle{color:var(--ink-2);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.meter{display:flex;align-items:center;gap:10px;flex:0 1 340px;min-width:220px}
+.meter .bar{flex:1;height:8px;background:var(--rule);border-radius:4px;position:relative;overflow:hidden}
+.meter .fill{position:absolute;inset:0 auto 0 0;background:var(--blue);border-radius:4px}
+.meter .fill.over{background:var(--red)}.meter .fill.under{background:var(--ochre)}
+.meter .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.85rem;white-space:nowrap}
+.save{font-size:.75rem;color:var(--ink-2)}.save.err{color:var(--red)}
+.top .tabs{display:flex;flex-wrap:nowrap;gap:2px;overflow-x:auto;scrollbar-width:none;padding-block:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:8px 14px 9px;cursor:pointer;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
+.tab small{font-family:var(--f-mono);font-size:.7rem;margin-right:6px;color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+.tab:hover{color:var(--ink)}
+
+main{padding-block:22px 80px}
+h2{font-family:var(--f-display);font-weight:700;font-size:1.35rem;margin:0 0 4px;text-wrap:balance}
+h3{font-size:.8rem;letter-spacing:.12em;color:var(--ink-2);font-weight:700;margin:0 0 8px;text-transform:uppercase}
+.lead{color:var(--ink-2);margin:0 0 18px;max-width:68ch}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:18px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--ink-2);font-weight:500;min-width:0}
+input[type=text],input[type=number],select,textarea{background:var(--sheet);border:1px solid var(--rule-2);border-radius:4px;padding:7px 9px;color:var(--ink);font-size:.92rem;width:100%;min-width:0}
+textarea{resize:vertical;line-height:1.55}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.btn{border:1px solid var(--rule-2);background:var(--sheet);padding:7px 13px;border-radius:4px;cursor:pointer;font-size:.88rem;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.btn.danger,.btn.danger:hover{background:var(--red);border-color:var(--red);color:var(--sheet)}
+.btn.sm{padding:3px 8px;font-size:.78rem}
+.btn.ghost{border-color:transparent;background:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule-2);background:var(--sheet);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.85rem;line-height:1.3;text-align:left}
+.chip small{display:block;font-size:.7rem;color:var(--ink-2);font-family:var(--f-mono)}
+.chip[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--ink)}
+.chip.med{border-style:dashed}
+.note{font-size:.8rem;color:var(--ink-2)}
+.warn{background:var(--ochre-soft);border-left:3px solid var(--ochre);padding:10px 12px;font-size:.85rem;border-radius:0 4px 4px 0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.big{font-family:var(--f-display);font-size:2rem;font-weight:800;line-height:1}
+.dur{display:flex;align-items:baseline;gap:12px}
+.dur .unit{color:var(--ink-2);font-size:.85rem}
+
+/* structure bar */
+.sbar{display:flex;height:30px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.sbar div{display:flex;align-items:center;justify-content:center;color:var(--sheet);font-size:.75rem;font-weight:700;min-width:0;overflow:hidden;white-space:nowrap;padding:0 4px}
+.beat{display:grid;grid-template-columns:14px minmax(0,1fr) 90px;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--rule)}
+.beat:first-child{border-top:0}
+.dot{width:12px;height:12px;border-radius:50%;margin-top:9px}
+.beat .meta{font-size:.8rem;color:var(--ink-2);text-align:right}
+.scn-list{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.scn-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:.85rem;padding:4px 8px;background:var(--paper);border-radius:4px}
+.scn-row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp{height:6px;background:var(--rule);border-radius:3px;position:relative;margin-top:6px}
+.cmp i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+
+/* characters */
+.cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+.cc{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--c,var(--blue))}
+.cc .h{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:8px}
+
+/* storyboard */
+.board{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start}
+.scenes{position:sticky;top:120px;max-height:calc(100vh - 140px);overflow:auto;background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+.scenes .grp{padding:8px 12px 4px;font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.scenes button.s{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:6px;width:100%;text-align:left;border:0;background:none;padding:7px 12px;cursor:pointer;font-size:.85rem;border-left:3px solid transparent}
+.scenes button.s:hover{background:var(--paper)}
+.scenes button.s[aria-current="true"]{background:var(--blue-soft);border-left-color:var(--blue)}
+.scenes .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);min-width:0}
+.sh-head{padding:16px;border-bottom:2px solid var(--ink);display:grid;gap:10px}
+.sh-head .hrow{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1.3fr);gap:10px}
+.hashira{font-family:var(--f-display);font-weight:700;font-size:1.1rem}
+.cols{display:grid;grid-template-columns:64px minmax(180px,250px) minmax(0,1.3fr) minmax(0,1fr) 92px;border-bottom:1px solid var(--rule-2);font-size:.7rem;font-weight:700;letter-spacing:.14em;color:var(--ink-2);background:var(--paper)}
+.cols div{padding:6px 10px;border-left:1px solid var(--rule)}
+.cols div:first-child{border-left:0}
+.cut{display:grid;grid-template-columns:64px minmax(180px,250px) minmax(0,1.3fr) minmax(0,1fr) 92px;border-bottom:1px solid var(--rule-2)}
+.cut>div{padding:10px;border-left:1px solid var(--rule);min-width:0;display:flex;flex-direction:column;gap:6px}
+.cut>div:first-child{border-left:0}
+.cno{font-family:var(--f-mono);font-weight:600;font-size:1.05rem}
+.cno small{display:block;font-weight:400;font-size:.7rem;color:var(--ink-2)}
+.frame{position:relative;cursor:pointer;border:1.5px solid var(--ink);line-height:0;background:var(--sheet)}
+.frame canvas{width:100%;height:auto;display:block}
+.frame .pen{position:absolute;right:4px;bottom:4px;background:var(--sheet);border:1px solid var(--rule-2);border-radius:3px;font-size:.7rem;line-height:1.4;padding:1px 6px;opacity:.9}
+.frame:hover{border-color:var(--blue)}
+.sel4{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.sel4 select{font-size:.78rem;padding:4px 6px}
+.tc{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.secin{font-family:var(--f-mono);text-align:right}
+.ctools{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.addcut{padding:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sum-line{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--ink-2)}
+.sum-line b{color:var(--ink);font-family:var(--f-mono);font-weight:600}
+
+/* timeline */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stats div{background:var(--sheet);padding:12px 14px}
+.stats .k{font-size:.72rem;color:var(--ink-2);letter-spacing:.08em}
+.stats .v{font-family:var(--f-mono);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stats .v.over{color:var(--red)}.stats .v.under{color:var(--ochre)}.stats .v.ok{color:var(--ok)}
+.tl-scroll{overflow-x:auto}
+.tl{min-width:640px;position:relative}
+.ruler{position:relative;height:22px;border-bottom:1px solid var(--rule-2);font-family:var(--f-mono);font-size:.68rem;color:var(--ink-2)}
+.ruler span{position:absolute;top:2px;transform:translateX(-50%)}
+.ruler span:first-child{transform:none}.ruler span:first-child::after{left:0}
+.ruler span.end{transform:translateX(-100%)}.ruler span.end::after{left:auto;right:0}
+.ruler span::after{content:"";position:absolute;left:50%;top:14px;height:6px;border-left:1px solid var(--rule-2)}
+.lane{display:flex;height:34px;margin-top:6px}
+.lane button{border:0;border-right:1px solid var(--sheet);padding:0;cursor:pointer;min-width:1px;color:var(--sheet);font-family:var(--f-mono);font-size:.62rem;overflow:hidden}
+.lane button:hover{filter:brightness(1.15)}
+.lane.sc button{height:22px;opacity:.55}
+.lane.target div{height:14px;border-right:1px solid var(--sheet);opacity:.35}
+.lane-l{font-size:.7rem;color:var(--ink-2);margin-top:10px}
+table.tt{width:100%;border-collapse:collapse;font-size:.85rem}
+table.tt th,table.tt td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+table.tt th{font-size:.72rem;letter-spacing:.08em;color:var(--ink-2);font-weight:700}
+table.tt td.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl-scroll{overflow-x:auto}
+
+/* script */
+.script{font-family:var(--f-display);font-size:1rem;line-height:2;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:28px clamp(16px,5vw,56px);box-shadow:var(--shadow)}
+.script.v{writing-mode:vertical-rl;height:72vh;overflow-x:auto;line-height:2.1}
+.script .ttl{font-size:1.6rem;font-weight:800;margin:0 0 .4em}
+.script .hs{font-weight:700;margin-top:1.4em}
+.script .tg{padding-inline-start:3em;color:var(--ink)}
+.script .dl{padding-inline-start:0}
+.script .tr{text-align:end;color:var(--ink-2)}
+.script.v .tr{text-align:end}
+.script .sec{font-family:var(--f-body);font-size:.85rem;color:var(--ink-2);margin-top:1em}
+.export{display:grid;gap:10px}
+.export textarea{font-family:var(--f-mono);font-size:.78rem;min-height:220px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,14,18,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--sheet);border-radius:8px;max-width:1000px;width:100%;max-height:100%;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.mbox canvas{display:block;max-width:100%;max-height:62vh;margin:0 auto;border:1.5px solid var(--ink);touch-action:none;background:#fff}
+.mbox select{width:auto}
+.anim-cap{min-height:5.5em;font-size:.95rem}
+.anim-cap .dlg{font-family:var(--f-display);font-size:1.1rem}
+.prog{height:4px;background:var(--rule);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--red);width:0}
+.swatch{width:22px;height:22px;border-radius:50%;border:2px solid var(--rule-2);cursor:pointer;padding:0}
+.swatch[aria-pressed="true"]{outline:2px solid var(--blue);outline-offset:2px}
+
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--rule);font-size:.88rem}
+.checks input{margin-top:5px;accent-color:var(--blue)}
+
+@media (max-width:900px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .scenes{position:static;max-height:240px}
+  .cols{display:none}
+  .cut{grid-template-columns:56px minmax(0,1fr) 88px;grid-template-areas:"no fr sec" "no ct ct" "no dl dl"}
+  .cut>div:nth-child(1){grid-area:no}.cut>div:nth-child(2){grid-area:fr}.cut>div:nth-child(3){grid-area:ct;border-top:1px solid var(--rule)}
+  .cut>div:nth-child(4){grid-area:dl;border-top:1px solid var(--rule)}.cut>div:nth-child(5){grid-area:sec}
+  .sh-head .hrow{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .cut{grid-template-columns:minmax(0,1fr) 88px;grid-template-areas:"no sec" "fr fr" "ct ct" "dl dl"}
+  .cut>div:nth-child(2){border-left:0;border-top:1px solid var(--rule)}
+  .cut>div:nth-child(3),.cut>div:nth-child(4){border-left:0}
+  .beat{grid-template-columns:14px minmax(0,1fr)}.beat .meta{grid-column:2;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>脚本・絵コンテ スタジオ</h1><span class="ptitle" id="ptitle"></span></div>
+    <div class="meter" title="合計尺 / 目標尺">
+      <div class="bar"><div class="fill" id="mfill"></div></div>
+      <span class="num" id="mnum"></span>
+    </div>
+    <div class="row"><button class="btn sm" data-act="anim">▶ プレビュー</button><span class="save" id="save"></span></div>
+  </div>
+  <nav class="wrap tabs" role="tablist" id="tabs"></nav>
+</header>
+<main class="wrap" id="main"></main>
+<div class="modal" id="modal" hidden></div>
+
+<script>
+"use strict";
+/* ============ 定数データ ============ */
+const KEY = "script-studio.project.v1";
+const FPS_OPTIONS = [24, 30];
+const ASPECTS = { "16:9": 16/9, "9:16": 9/16, "1:1": 1, "2.39:1": 2.39, "4:3": 4/3 };
+
+// asl = 平均カット長の目安（秒）。編集方針に合わせて変更可
+const GENRES = [
+  { id:"drama",   name:"ドラマ",            asl:5,   st:"kishotenketsu", en:"cinematic drama" },
+  { id:"sf",      name:"SF",                asl:4,   st:"threeact",      en:"science fiction film" },
+  { id:"fantasy", name:"ファンタジー",      asl:4.5, st:"threeact",      en:"fantasy film" },
+  { id:"mystery", name:"ミステリー・サスペンス", asl:4, st:"threeact",   en:"suspense thriller" },
+  { id:"horror",  name:"ホラー",            asl:3.5, st:"johakyu",       en:"horror film" },
+  { id:"comedy",  name:"コメディ",          asl:4,   st:"kishotenketsu", en:"comedy" },
+  { id:"romance", name:"恋愛",              asl:5.5, st:"kishotenketsu", en:"romance film" },
+  { id:"action",  name:"アクション",        asl:2.5, st:"threeact",      en:"action film" },
+  { id:"docu",    name:"ドキュメンタリー",  asl:6,   st:"docu",          en:"documentary", explainer:true },
+  { id:"meddrama",name:"医療ドラマ",        asl:4.5, st:"threeact",      en:"medical drama", med:true },
+  { id:"patient", name:"臨床医療・患者説明",asl:7,   st:"patient",       en:"medical patient education video", med:true, explainer:true },
+  { id:"clinical",name:"医療者教育（症例・手技）", asl:8, st:"clinical", en:"clinical training video", med:true, explainer:true },
+  { id:"edu",     name:"教育・解説",        asl:7,   st:"docu",          en:"educational explainer", explainer:true },
+  { id:"pr",      name:"企業PR・啓発",      asl:4,   st:"promo",         en:"corporate promotional film", explainer:true },
+  { id:"cm",      name:"CM・プロモーション",asl:2.5, st:"promo",         en:"commercial" },
+  { id:"mv",      name:"ミュージックビデオ",asl:2.5, st:"johakyu",       en:"music video" },
+];
+const WORLDS = ["現実（現代）","日常系","近未来","SF（宇宙・未来）","ファンタジー","異世界","歴史・時代劇","医療現場"];
+const TONES  = ["シリアス","ハートフル","コミカル","緊迫","叙情的","ダーク","明るく前向き","落ち着いて信頼できる"];
+
+// [ビート名, 役割, 尺の割合%]
+const STRUCTS = {
+  kishotenketsu:{ name:"起承転結", beats:[
+    ["起","人物と世界、日常を見せる",20],["承","出来事が起き、関係や問題が広がる",30],
+    ["転","予想外の変化で状況がひっくり返る",30],["結","変化の結果と余韻を描く",20]]},
+  threeact:{ name:"三幕構成（1:2:1）", beats:[
+    ["日常","主人公と世界を提示する",10],["きっかけ","日常を壊す出来事が起きる",5],["決断","主人公が行動を選ぶ（第1幕の終わり）",10],
+    ["試練","障害と対立が積み重なる",20],["中間点","目的や関係が大きく変わる",5],["追い込み","敵や問題が強くなり、逃げ場がなくなる",20],
+    ["どん底","最大の喪失・失敗",5],["クライマックス","最後の対決・選択",15],["結末","変化した主人公と新しい日常",10]]},
+  johakyu:{ name:"序破急", beats:[["序","静かに始め、雰囲気と状況を示す",25],["破","展開を崩し、緊張を高める",50],["急","一気に頂点へ運び、短く締める",25]]},
+  patient:{ name:"医療・患者説明型", beats:[
+    ["導入・共感","視聴者の不安や疑問に寄り添い、動画の目的を示す",10],["病気・検査の基礎","病気や検査の基本を図解で説明する",20],
+    ["症状と受診の目安","注意すべき症状と受診のタイミング",15],["検査・診断の流れ","準備から結果までの流れを順に見せる",15],
+    ["治療の選択肢","主な治療法と、それぞれの特徴",20],["生活・セルフケア","日常生活での注意点",10],["まとめ・相談窓口","要点の整理と相談先",10]]},
+  clinical:{ name:"医療者教育（症例・手技）型", beats:[
+    ["学習目標","この動画で身につくことを示す",10],["症例提示","患者背景・主訴・所見",15],["評価・鑑別","アセスメントと鑑別の考え方",20],
+    ["手技・介入","手順を工程ごとに見せる（手元のアップ多め）",30],["合併症・注意点","起こりうるトラブルと対処",15],["まとめ・確認","要点の復習と確認問題",10]]},
+  docu:{ name:"ドキュメンタリー・解説型", beats:[
+    ["フック","最初の10秒で問いを立てる",10],["背景","前提と経緯を伝える",20],["課題","何が問題なのかを具体的に",25],["取り組み","人や手段が課題に向き合う",25],["変化・結論","何が変わったか、何が残るか",20]]},
+  promo:{ name:"PR・CM（課題→解決）型", beats:[
+    ["フック","最初の数秒で目を止める",15],["課題","視聴者の困りごとを見せる",25],["解決","商品・サービス・活動が解決する",35],["根拠・効果","具体的な変化や事実",15],["呼びかけ","次の行動（CTA）",10]]},
+};
+
+const SHOTS = [["EWS","大遠景 EWS"],["LS","ロング LS"],["FS","フル FS"],["KS","ニー KS"],["MS","ミディアム MS"],["MCU","バスト MCU"],["CU","アップ CU"],["ECU","超アップ ECU"],["INS","インサート（物）"]];
+const SHOT_EN = {EWS:"extreme wide shot",LS:"wide shot",FS:"full shot",KS:"medium long shot",MS:"medium shot",MCU:"medium close-up",CU:"close-up",ECU:"extreme close-up",INS:"insert shot of an object"};
+const ANGLES = ["アイレベル","ハイ（俯瞰）","ロー（あおり）","真俯瞰","ダッチ（傾き）","主観（POV）","肩越し（OTS）"];
+const ANGLE_EN = ["eye level","high angle","low angle","top-down overhead","dutch angle","POV shot","over-the-shoulder"];
+const MOVES = ["FIX","パン →","パン ←","ティルト ↑","ティルト ↓","ドリーイン","ドリーアウト","ズームイン","ズームアウト","トラック（横移動）","クレーン","手持ち","ステディカム","ドローン"];
+const MOVE_EN = ["static camera","pan right","pan left","tilt up","tilt down","dolly in","dolly out","zoom in","zoom out","tracking shot","crane shot","handheld camera","steadicam","drone shot"];
+const COMPS = ["三分割","日の丸（中央）","シンメトリー","対角線","前景ナメ","引き（余白大）"];
+const TRANS = ["カット","O.L.（ディゾルブ）","F.I.（フェードイン）","F.O.（フェードアウト）","W.O.（ホワイトアウト）","ワイプ","マッチカット","ジャンプカット","スマッシュカット","Jカット（音先行）","Lカット（音残し）"];
+const TIMES = ["朝","昼","夕","夜","深夜","早朝","回想"];
+const ROLES = ["主人公","相手役","敵対者","メンター","仲間","脇役","ナレーター"];
+const MED_ROLES = ["医師","看護師","患者","家族","薬剤師","技師","ナレーター"];
+
+const MED_CHECKS = [
+  ["supervise","医学監修者を決め、内容の確認を受けた"],
+  ["source","説明の根拠（診療ガイドライン・文献）を出典として記録した"],
+  ["consent","実在の患者の映像・情報は書面で同意を得たか、個人が特定できないよう加工した"],
+  ["ad","治療効果の保証・誇張、他院との比較、効果を示す体験談を使っていない（医療広告ガイドライン）"],
+  ["drug","医薬品・医療機器の名称や効能の表現を確認した（薬機法）"],
+  ["disclaimer","「症状や治療は個人差があるため医師に相談を」などの注意書きを入れた"],
+  ["clean","手技の映像で清潔操作・感染対策・器具の扱いが正しく描かれている"],
+];
+
+const PATTERN_STORY = [
+  {shot:"LS",angle:0,move:0,comp:0,action:"状況を見せる（場所と人物の位置関係）"},
+  {shot:"MS",angle:0,move:0,comp:0,action:"人物の芝居"},
+  {shot:"CU",angle:0,move:0,comp:1,action:"表情"},
+  {shot:"MS",angle:6,move:0,comp:4,action:"相手との会話（肩越し）"},
+  {shot:"CU",angle:0,move:0,comp:0,action:"リアクション"},
+  {shot:"INS",angle:1,move:0,comp:1,action:"重要な小道具・手元"},
+  {shot:"MCU",angle:0,move:5,comp:0,action:"感情の変化（ゆっくり寄る）"},
+  {shot:"FS",angle:0,move:9,comp:0,action:"移動・動き"},
+];
+const PATTERN_EXPLAIN = [
+  {shot:"MS",angle:0,move:0,comp:1,action:"話し手が視聴者に語りかける"},
+  {shot:"INS",angle:0,move:0,comp:1,action:"図解・テロップ"},
+  {shot:"MCU",angle:0,move:0,comp:0,action:"要点を強調する"},
+  {shot:"INS",angle:1,move:0,comp:1,action:"実物・イラスト・手元"},
+  {shot:"LS",angle:0,move:0,comp:0,action:"場所・状況の説明"},
+  {shot:"CU",angle:0,move:0,comp:0,action:"聞き手の表情（不安→納得）"},
+];
+
+/* ============ ユーティリティ ============ */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const r2 = v => Math.round(v * 2) / 2;
+const G = id => GENRES.find(g => g.id === id) || GENRES[0];
+const mmss = s => { s = Math.round(s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+const secKoma = s => { const f = P.fps; let sec = Math.floor(s + 1e-9), k = Math.round((s - sec) * f); if (k >= f) { sec++; k = 0; } return sec + "+" + String(k).padStart(2, "0"); };
+const tc = s => { const f = P.fps; const tot = Math.round(s * f); const fr = tot % f, ts = Math.floor(tot / f); return mmss(ts) + ":" + String(fr).padStart(2, "0"); };
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const beatColor = i => `var(--b${i % 9})`;
+const opts = (list, val) => list.map((o, i) => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}"${String(v) === String(val) ? " selected" : ""}>${esc(l)}</option>`; }).join("");
+
+function makeCut(p, sec) {
+  return { id: uid(), shot: p.shot, angle: ANGLES[p.angle], move: MOVES[p.move], comp: COMPS[p.comp], action: p.action || "", dialogue: p.dialogue || "", sound: p.sound || "", sec, sketch: "" };
+}
+
+/* ============ 状態 ============ */
+let P;
+const ui = { tab: "setup", sceneId: null, vertical: false, exportText: "", exportName: "" };
+
+function blankProject() {
+  return { v:1, title:"無題の作品", logline:"", theme:"", durationMin:5, genre:"drama", world:WORLDS[0], tone:TONES[0],
+    audience:"", aspect:"16:9", fps:24, structure:"kishotenketsu", asl:5, checks:{}, characters:[], beats:[], scenes:[] };
+}
+function migrate(p) {
+  const b = blankProject();
+  const o = Object.assign(b, p);
+  o.characters = (o.characters || []).map(c => Object.assign({ id: uid(), name:"", role:"", age:"", desc:"", goal:"", speech:"", color: 0 }, c));
+  o.beats = (o.beats || []).map(x => Object.assign({ id: uid(), name:"", purpose:"", pct: 0 }, x));
+  o.scenes = (o.scenes || []).map(s => Object.assign({ id: uid(), beatId: o.beats[0]?.id, place:"", time:"昼", transitionIn:"カット", summary:"", chars:[], cuts:[] }, s,
+    { cuts: (s.cuts || []).map(c => Object.assign(makeCut(PATTERN_STORY[1], 3), c)) }));
+  o.checks = o.checks || {};
+  return o;
+}
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return migrate(JSON.parse(raw)); } catch (e) {}
+  return sampleSF();
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(P)); setSave("自動保存しました", false); }
+  catch (e) { setSave("ブラウザに保存できません。「書き出し」からJSONで保存してください", true); }
+}
+const saveSoon = debounce(save, 500);
+function setSave(t, err) { const el = $("#save"); el.textContent = t; el.classList.toggle("err", !!err); }
+
+const sceneSec = s => s.cuts.reduce((a, c) => a + (+c.sec || 0), 0);
+const totalSec = () => P.scenes.reduce((a, s) => a + sceneSec(s), 0);
+const targetSec = () => P.durationMin * 60;
+const findScene = id => P.scenes.find(s => s.id === id);
+function findCut(id) { for (const s of P.scenes) { const c = s.cuts.find(c => c.id === id); if (c) return [c, s]; } return [null, null]; }
+const beatIndex = id => Math.max(0, P.beats.findIndex(b => b.id === id));
+function sceneNo(s) { return P.scenes.indexOf(s) + 1; }
+function cutNumbers() { const m = {}; let n = 0; for (const s of P.scenes) for (const c of s.cuts) m[c.id] = ++n; return m; }
+function cutStarts() { const m = {}; let t = 0; for (const s of P.scenes) for (const c of s.cuts) { m[c.id] = t; t += +c.sec || 0; } return m; }
+function orderedScenes() { // ビート順に並べ替え（ビート内の順序は保持）
+  const order = P.beats.map(b => b.id);
+  return P.scenes.slice().sort((a, b) => (order.indexOf(a.beatId) - order.indexOf(b.beatId)) || (P.scenes.indexOf(a) - P.scenes.indexOf(b)));
+}
+function normalizeOrder() { P.scenes = orderedScenes(); }
+
+/* ============ 自動下書き ============ */
+function generate() {
+  const st = STRUCTS[P.structure], dur = targetSec(), asl = clamp(+P.asl || 5, 1, 30);
+  const pat = G(P.genre).explainer ? PATTERN_EXPLAIN : PATTERN_STORY;
+  P.beats = st.beats.map(([name, purpose, pct]) => ({ id: uid(), name, purpose, pct }));
+  const sceneLen = clamp(dur / 10, 30, 120);
+  P.scenes = [];
+  P.beats.forEach((b, bi) => {
+    const bSec = dur * b.pct / 100, n = Math.max(1, Math.round(bSec / sceneLen));
+    for (let i = 0; i < n; i++) {
+      const sSec = bSec / n, nc = Math.max(1, Math.round(sSec / asl));
+      const cuts = []; let acc = 0;
+      for (let c = 0; c < nc; c++) {
+        const end = r2((c + 1) * sSec / nc); const sec = Math.max(0.5, end - acc); acc += sec;
+        cuts.push(makeCut(pat[c % pat.length], sec));
+      }
+      P.scenes.push({ id: uid(), beatId: b.id, place:"", time:"昼", transitionIn: (bi === 0 && i === 0) ? "F.I.（フェードイン）" : "カット",
+        summary: `【${b.name}】${b.purpose}` + (n > 1 ? `（${i + 1}/${n}）` : ""), chars: P.characters.map(c => c.id).slice(0, 2), cuts });
+    }
+  });
+  const last = P.scenes.at(-1)?.cuts.at(-1);
+  if (last) { const diff = r2(dur - totalSec()); last.sec = Math.max(0.5, last.sec + diff); }
+  ui.sceneId = P.scenes[0]?.id || null;
+}
+
+/* ============ サンプル ============ */
+function sampleSF() {
+  const p = blankProject();
+  Object.assign(p, { title:"最後の観測者", logline:"十年間ひとりで宇宙観測を続けた少女が、亡き父の信号への「返信」を受け取り、待つことの意味を知る。",
+    theme:"届かないと思っていた想いは、時間を越えて届く", durationMin:3, genre:"sf", world:"SF（宇宙・未来）", tone:"叙情的",
+    audience:"一般（中高生以上）", structure:"kishotenketsu", asl:4.5 });
+  const mina = { id: uid(), name:"ミナ", role:"主人公", age:"17", desc:"観測ステーションに一人残った観測員。几帳面で、感情を表に出さない。", goal:"父との約束どおり観測を続ける", speech:"短く、淡々と話す", color:0 };
+  const noa  = { id: uid(), name:"ノア", role:"仲間", age:"—", desc:"ステーション管理AI。声と光の球体で表現する。", goal:"ミナを守る", speech:"丁寧語。少しだけユーモア", color:1 };
+  const papa = { id: uid(), name:"父", role:"メンター", age:"45", desc:"ミナの父。十年前に帰還便で消息を絶った天文学者。記録映像で登場。", goal:"娘に観測を託す", speech:"穏やかで、ゆっくり", color:4 };
+  p.characters = [mina, noa, papa];
+  p.beats = STRUCTS.kishotenketsu.beats.map(([name, purpose, pct]) => ({ id: uid(), name, purpose, pct }));
+  const C = (shot, a, m, cp, sec, action, dialogue = "", sound = "") => ({ id: uid(), shot, angle: ANGLES[a], move: MOVES[m], comp: COMPS[cp], sec, action, dialogue, sound, sketch:"" });
+  p.scenes = [
+    { id: uid(), beatId: p.beats[0].id, place:"観測ステーション・ドーム", time:"夜", transitionIn:"F.I.（フェードイン）", chars:[mina.id, noa.id],
+      summary:"ミナの孤独な日常。十年間、返事のない観測を続けている。", cuts:[
+      C("EWS",0,6,5,6,"漆黒の宇宙に、小さな観測ステーションが浮かんでいる。","","BGM：静かなピアノ"),
+      C("LS",0,0,0,5,"ドームの中。巨大な望遠鏡の前に、ミナが一人座っている。"),
+      C("MS",0,0,0,6,"ミナ、端末に向かってログを読み上げる。","ミナ「観測ログ、三千六百五十日目。異常なし」"),
+      C("INS",1,0,1,4,"端末の画面。「受信：0件」の表示。"),
+      C("MCU",0,0,1,5,"天井から、柔らかな光の球体（ノア）が降りてくる。","ノア「ミナ、今日も返事はありません」"),
+      C("CU",0,0,0,5,"ミナ、画面から目を離さない。","ミナ「知ってる。でも、記録はつける」"),
+      C("LS",0,0,5,5,"窓辺に立つミナ。外には無数の星。")]},
+    { id: uid(), beatId: p.beats[1].id, place:"同・居住区", time:"夜", transitionIn:"O.L.（ディゾルブ）", chars:[mina.id, papa.id],
+      summary:"父が残したメモリーカード。記録映像の父が「観測を続けてくれ」と語る。", cuts:[
+      C("MS",0,0,0,5,"ミナ、棚の奥から古いメモリーカードを取り出す。"),
+      C("INS",1,0,1,4,"カードに手書きの文字「ミナへ　父」。"),
+      C("CU",0,0,1,3,"カードを端末に差し込む。","","SE：起動音"),
+      C("MS",0,5,1,7,"ホログラムの父が浮かび上がる。","父（声）「ミナ、これを見ているなら、私は戻れなかったということだ」"),
+      C("CU",0,0,0,5,"ミナの瞳がわずかに揺れる。"),
+      C("MCU",0,0,1,8,"父、穏やかに微笑む。","父（声）「星の光は、何年も前の光だ。だから観測を続けてくれ。いつか、届くから」"),
+      C("MS",6,0,4,6,"ミナ越しの父。ホログラムにノイズが走り、消える。","","SE：ノイズ"),
+      C("CU",0,0,0,5,"暗くなった部屋で、ミナがつぶやく。","ミナ「……届くって、何が」"),
+      C("LS",0,8,5,6,"居住区にミナが一人。カメラが引いていく。"),
+      C("INS",0,0,0,5,"窓の外の星が、ひとつ瞬く。")]},
+    { id: uid(), beatId: p.beats[2].id, place:"同・ドーム", time:"深夜", transitionIn:"スマッシュカット", chars:[mina.id, noa.id],
+      summary:"警報。地球から、十年前の父の信号への返信が届く。", cuts:[
+      C("FS",4,11,3,4,"警報。ドーム全体が赤く染まる。","","SE：警報音"),
+      C("MCU",0,0,1,5,"ノアの光が激しく明滅する。","ノア「未知の信号を受信。発信元は、地球です」"),
+      C("CU",2,0,0,3,"ミナ、はっと顔を上げる。"),
+      C("MS",0,11,3,4,"ミナ、端末へ走る。"),
+      C("INS",1,0,1,5,"モニターの波形。規則正しいパルス。"),
+      C("CU",0,0,0,4,"ミナ、息をのむ。","ミナ「これ……父さんの観測コード」"),
+      C("MCU",0,0,1,6,"ノア、静かに告げる。","ノア「十年前に父上が送った信号への、返信です」"),
+      C("ECU",0,0,1,5,"ミナの瞳に、星が映り込む。"),
+      C("MS",2,5,0,6,"ミナ、震える手で応答キーに触れる。"),
+      C("INS",0,0,1,4,"指先がキーを押し込む。","","SE：決定音"),
+      C("LS",2,10,3,8,"望遠鏡がゆっくりと回転を始める。","","BGM：盛り上がる")]},
+    { id: uid(), beatId: p.beats[3].id, place:"同・ドーム", time:"早朝", transitionIn:"O.L.（ディゾルブ）", chars:[mina.id, noa.id],
+      summary:"ミナが地球へ返信を送る。待つことを受け入れ、物語が閉じる。", cuts:[
+      C("EWS",0,0,0,7,"ステーションの向こうに、恒星が昇る。"),
+      C("MS",0,0,0,6,"ミナ、マイクに向かう。","ミナ「こちら観測ステーション。観測は、続いています」"),
+      C("MCU",0,0,1,5,"ノアの光が穏やかに揺れる。","ノア「送信完了。到着まで、十年です」"),
+      C("CU",0,5,0,5,"ミナ、初めて微笑む。","ミナ「待てるよ。慣れてるから」"),
+      C("LS",0,0,0,6,"ミナ、ログに新しい一行を書き込む。"),
+      C("EWS",0,6,5,7,"遠ざかるステーション。F.O.","","BGM：エンディング")]},
+  ];
+  return migrate(p);
+}
+
+function sampleMedical() {
+  const p = blankProject();
+  Object.assign(p, { title:"はじめての大腸内視鏡検査", logline:"便潜血検査で陽性と言われた人が、大腸内視鏡検査の準備から検査後までの流れを知り、安心して受診できるようにする。",
+    theme:"不安を、分かることで安心に変える", durationMin:10, genre:"patient", world:"医療現場", tone:"落ち着いて信頼できる",
+    audience:"検査を予定している患者とその家族", structure:"patient", asl:7 });
+  p.characters = [
+    { id: uid(), name:"N", role:"ナレーター", age:"—", desc:"落ち着いた声のナレーション。", goal:"", speech:"です・ます調。専門用語は言い換える", color:6 },
+    { id: uid(), name:"佐藤", role:"医師", age:"45", desc:"消化器内科医。図を使って丁寧に説明する。", goal:"患者の不安を減らす", speech:"やさしい言葉、結論から話す", color:0 },
+    { id: uid(), name:"田中", role:"看護師", age:"32", desc:"内視鏡室の看護師。準備と検査後の注意を担当。", goal:"", speech:"明るく具体的", color:1 },
+    { id: uid(), name:"山本", role:"患者", age:"58", desc:"会社員。検診で便潜血陽性と言われ、初めて内視鏡検査を受ける。", goal:"検査への不安を解消したい", speech:"控えめ", color:3 },
+  ];
+  P = migrate(p); generate();
+  const D = [
+    ["自宅・リビング","夜","山本が検診結果の封筒を開け、「要精密検査」の文字に不安になる。ナレーションで動画の目的を伝える。","N「便潜血検査で陽性と言われ、不安を感じていませんか。この動画では、大腸内視鏡検査の流れをご説明します」"],
+    ["病院・診察室","昼","医師が、便潜血陽性の意味と、大腸内視鏡検査で分かることを図解で説明する。","佐藤「便潜血が陽性でも、がんと決まったわけではありません。原因を確かめるために、大腸の中を直接見る検査をします」"],
+    ["病院・診察室","昼","血便、便通の変化、腹痛、体重減少など、早めに相談したい症状をテロップで示す。","佐藤「こうした症状があるときは、検査の予定を待たずにご相談ください」"],
+    ["病院・内視鏡室","昼","前日の食事、当日の腸管洗浄剤（下剤）の服用、検査中の様子と所要時間の目安を順に見せる。","田中「前日は消化のよい食事にして、当日は病院の指示どおりに下剤を飲んでいただきます」"],
+    ["病院・内視鏡室","昼","ポリープが見つかった場合の対応（その場での切除、後日の治療、組織検査）を図解で説明する。","佐藤「ポリープが見つかった場合は、大きさや形によって、その場で切除することもあります」"],
+    ["病院・回復室","昼","鎮静剤を使った場合の当日の注意（車の運転を控える等）と、検査後の過ごし方を説明する。","田中「鎮静剤を使った日は、車やバイク、自転車の運転はお控えください」"],
+    ["自宅・リビング","夕","安心した表情の山本。要点をまとめ、分からないことは主治医に相談するよう促す。","N「検査の方法は病院によって異なります。分からないことは、主治医や看護師にご相談ください」"],
+  ];
+  P.scenes.forEach(s => { const d = D[beatIndex(s.beatId)]; if (!d) return;
+    s.place = d[0]; s.time = d[1]; s.summary = d[2] + (s.summary.match(/（\d+\/\d+）$/)?.[0] || "");
+    if (s.cuts[0] && !/（[2-9]\/\d+）$/.test(s.summary)) s.cuts[0].dialogue = d[3]; });
+  const out = P; return out;
+}
+
+/* ============ 描画：自動ラフ ============ */
+const PAPER = "#FFFFFF", INK = "#1B2430", NPB = "rgba(42,117,168,", RED = "#C2402F";
+function drawAuto(ctx, w, h, c) {
+  const lw = Math.max(1, w / 240);
+  ctx.save();
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, w, h);
+  ctx.lineWidth = lw * .8; ctx.strokeStyle = NPB + ".28)"; ctx.setLineDash([lw * 4, lw * 4]);
+  for (let i = 1; i < 3; i++) { line(ctx, w * i / 3, 0, w * i / 3, h); line(ctx, 0, h * i / 3, w, h * i / 3); }
+  ctx.setLineDash([]);
+  const ang = c.angle || "";
+  if (ang.startsWith("ダッチ")) { ctx.translate(w / 2, h / 2); ctx.rotate(-0.2); ctx.translate(-w / 2, -h / 2); }
+  // 地平線とパース
+  let horizon = h * 0.62;
+  if (ang.startsWith("ハイ")) horizon = h * 0.22;
+  if (ang.startsWith("ロー")) horizon = h * 0.9;
+  ctx.strokeStyle = NPB + ".55)"; ctx.lineWidth = lw;
+  if (!ang.startsWith("真俯瞰")) {
+    line(ctx, -w, horizon, w * 2, horizon);
+    const vx = w / 2, vy = horizon;
+    ctx.strokeStyle = NPB + ".22)";
+    for (let i = -3; i <= 3; i++) { const ex = vx + i * w * .45; const ey = ang.startsWith("ロー") ? -h * .2 : h * 1.2; line(ctx, vx, vy, ex, ey); }
+  } else {
+    ctx.strokeStyle = NPB + ".3)";
+    for (let i = 1; i < 6; i++) line(ctx, w * i / 6, 0, w * i / 6, h);
+  }
+  const base = Math.min(h, w * 1.2);
+  const comp = c.comp || "";
+  let x = w * 0.5;
+  if (comp.startsWith("三分割")) x = w / 3;
+  else if (comp.startsWith("対角")) x = w * 0.3;
+  else if (comp.startsWith("前景")) x = w * 0.62;
+  if (ang.startsWith("肩越し")) x = w * 0.64;
+  const far = comp.startsWith("引き") ? 0.6 : 1;
+  const S = { EWS:[.14, null], LS:[.42, null], FS:[.84, .08], KS:[1.26, .08], MS:[1.84, .08], MCU:[3, .08], CU:[5.2, .04] }[c.shot];
+  if (c.shot === "INS") drawObject(ctx, x, h * .52, w, h, lw);
+  else if (c.shot === "ECU") drawEyes(ctx, w, h, lw);
+  else if (ang.startsWith("真俯瞰")) { const r = base * ({EWS:.02,LS:.05,FS:.08,KS:.1,MS:.12,MCU:.16,CU:.25}[c.shot] || .1);
+    ctx.fillStyle = "rgba(27,36,48,.15)"; ctx.strokeStyle = INK; ctx.lineWidth = lw * 1.4;
+    ctx.beginPath(); ctx.ellipse(x, h / 2, r * 2.2, r * 1.1, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, h / 2, r, 0, Math.PI * 2); ctx.fillStyle = PAPER; ctx.fill(); ctx.stroke(); }
+  else if (S) {
+    const H = S[0] * base * (["EWS","LS","FS"].includes(c.shot) ? far : 1);
+    const top = S[1] == null ? Math.min(h * .92, horizon + H * .25) - H : S[1] * h;
+    drawFigure(ctx, x, top, H, lw);
+    if (c.shot === "EWS" || c.shot === "LS") drawScenery(ctx, w, h, horizon, lw);
+  }
+  if (ang.startsWith("肩越し") || comp.startsWith("前景")) drawForeground(ctx, w, h, lw);
+  if (comp.startsWith("シンメトリー")) { ctx.strokeStyle = NPB + ".5)"; ctx.setLineDash([lw * 2, lw * 3]); line(ctx, w / 2, 0, w / 2, h); ctx.setLineDash([]); }
+  if (comp.startsWith("対角")) { ctx.strokeStyle = NPB + ".45)"; line(ctx, 0, h, w, 0); }
+  ctx.restore();
+  if (ang.startsWith("主観")) { const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .35, w / 2, h / 2, Math.max(w, h) * .7); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.35)"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); }
+  drawMove(ctx, w, h, c.move, lw);
+  ctx.font = `600 ${Math.max(9, w / 22)}px "JetBrains Mono",monospace`; ctx.fillStyle = NPB + ".9)"; ctx.textBaseline = "top";
+  ctx.fillText(c.shot, lw * 4, lw * 4);
+}
+function line(ctx, a, b, c, d) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
+function drawFigure(ctx, cx, top, H, lw) {
+  const r = H * .065, neck = top + r * 2 + H * .01, shW = H * .24, hip = top + H * .5, hipW = H * .14, foot = top + H;
+  ctx.lineWidth = Math.max(lw * 1.4, H * .006); ctx.strokeStyle = INK; ctx.fillStyle = "rgba(27,36,48,.12)";
+  ctx.beginPath(); ctx.moveTo(cx - shW / 2, neck + H * .03);
+  ctx.quadraticCurveTo(cx, neck - H * .015, cx + shW / 2, neck + H * .03);
+  ctx.lineTo(cx + hipW / 2 + H * .01, hip); ctx.lineTo(cx - hipW / 2 - H * .01, hip); ctx.closePath(); ctx.fill(); ctx.stroke();
+  line(ctx, cx - shW / 2, neck + H * .03, cx - shW / 2 - H * .03, hip + H * .02);
+  line(ctx, cx + shW / 2, neck + H * .03, cx + shW / 2 + H * .03, hip + H * .02);
+  line(ctx, cx - hipW / 4, hip, cx - hipW / 3, foot); line(ctx, cx + hipW / 4, hip, cx + hipW / 3, foot);
+  line(ctx, cx, top + r * 2, cx, neck);
+  ctx.beginPath(); ctx.arc(cx, top + r, r, 0, Math.PI * 2); ctx.fillStyle = PAPER; ctx.fill(); ctx.stroke();
+  if (r > 18) { ctx.lineWidth = Math.max(lw, r * .04); line(ctx, cx - r * .38, top + r * .9, cx - r * .16, top + r * .9); line(ctx, cx + r * .16, top + r * .9, cx + r * .38, top + r * .9); line(ctx, cx - r * .2, top + r * 1.45, cx + r * .2, top + r * 1.45); }
+}
+function drawEyes(ctx, w, h, lw) {
+  ctx.strokeStyle = INK; ctx.lineWidth = lw * 2;
+  [w * .32, w * .68].forEach(ex => {
+    const ew = w * .13, eh = h * .13;
+    ctx.beginPath(); ctx.moveTo(ex - ew, h * .5); ctx.quadraticCurveTo(ex, h * .5 - eh * 1.4, ex + ew, h * .5); ctx.quadraticCurveTo(ex, h * .5 + eh * 1.2, ex - ew, h * .5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ex, h * .5, eh * .55, 0, Math.PI * 2); ctx.fillStyle = INK; ctx.fill();
+    line(ctx, ex - ew, h * .28, ex + ew * .8, h * .24);
+  });
+}
+function drawObject(ctx, cx, cy, w, h, lw) {
+  const ow = w * .36, oh = h * .38;
+  ctx.strokeStyle = INK; ctx.lineWidth = lw * 1.6; ctx.fillStyle = "rgba(27,36,48,.08)";
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - ow / 2, cy - oh / 2, ow, oh, lw * 6) : ctx.rect(cx - ow / 2, cy - oh / 2, ow, oh); ctx.fill(); ctx.stroke();
+  ctx.lineWidth = lw; ctx.strokeStyle = NPB + ".6)";
+  for (let i = 1; i < 4; i++) line(ctx, cx - ow * .35, cy - oh / 2 + oh * i / 4, cx + ow * (i === 3 ? .1 : .35), cy - oh / 2 + oh * i / 4);
+  ctx.strokeStyle = INK; ctx.lineWidth = lw * 1.6;
+  ctx.beginPath(); ctx.moveTo(w, h * .95); ctx.quadraticCurveTo(cx + ow * .7, cy + oh * .7, cx + ow * .35, cy + oh * .3); ctx.stroke();
+}
+function drawScenery(ctx, w, h, hz, lw) {
+  ctx.strokeStyle = NPB + ".55)"; ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(0, hz); ctx.lineTo(w * .15, hz - h * .12); ctx.lineTo(w * .28, hz - h * .05); ctx.lineTo(w * .4, hz - h * .16); ctx.lineTo(w * .55, hz); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w * .7, hz); ctx.lineTo(w * .82, hz - h * .08); ctx.lineTo(w, hz - h * .03); ctx.stroke();
+}
+function drawForeground(ctx, w, h, lw) {
+  ctx.fillStyle = "rgba(27,36,48,.55)";
+  ctx.beginPath(); ctx.arc(w * .14, h * .42, h * .2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-w * .1, h); ctx.quadraticCurveTo(w * .1, h * .55, w * .38, h); ctx.fill();
+}
+function arrow(ctx, x1, y1, x2, y2, lw) {
+  const a = Math.atan2(y2 - y1, x2 - x1), s = lw * 7;
+  line(ctx, x1, y1, x2, y2);
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - s * Math.cos(a - .45), y2 - s * Math.sin(a - .45)); ctx.lineTo(x2 - s * Math.cos(a + .45), y2 - s * Math.sin(a + .45)); ctx.closePath(); ctx.fill();
+}
+function drawMove(ctx, w, h, m, lw) {
+  if (!m || m === "FIX") return;
+  ctx.save(); ctx.strokeStyle = RED; ctx.fillStyle = RED; ctx.lineWidth = lw * 2;
+  const inn = (k, dir) => { const x0 = w * k, y0 = h * k; ctx.setLineDash([lw * 3, lw * 3]); ctx.strokeRect(x0, y0, w - 2 * x0, h - 2 * y0); ctx.setLineDash([]);
+    [[0, 0, x0, y0], [w, 0, w - x0, y0], [0, h, x0, h - y0], [w, h, w - x0, h - y0]].forEach(([a, b, c, d]) => {
+      const ax = a + (c - a) * .2, ay = b + (d - b) * .2, bx = a + (c - a) * .9, by = b + (d - b) * .9;
+      dir > 0 ? arrow(ctx, ax, ay, bx, by, lw) : arrow(ctx, bx, by, ax, ay, lw); }); };
+  if (m === "パン →") arrow(ctx, w * .3, h * .88, w * .7, h * .88, lw);
+  else if (m === "パン ←") arrow(ctx, w * .7, h * .88, w * .3, h * .88, lw);
+  else if (m === "ティルト ↑") arrow(ctx, w * .92, h * .72, w * .92, h * .28, lw);
+  else if (m === "ティルト ↓") arrow(ctx, w * .92, h * .28, w * .92, h * .72, lw);
+  else if (m === "ドリーイン" || m === "ズームイン") inn(.2, 1);
+  else if (m === "ドリーアウト" || m === "ズームアウト") inn(.2, -1);
+  else if (m.startsWith("トラック")) { arrow(ctx, w * .35, h * .1, w * .75, h * .1, lw); line(ctx, w * .35, h * .1 + lw * 4, w * .7, h * .1 + lw * 4); }
+  else if (m === "クレーン") { ctx.beginPath(); ctx.arc(w * .85, h * .7, h * .35, Math.PI * 1.05, Math.PI * 1.45); ctx.stroke(); arrow(ctx, w * .72, h * .4, w * .76, h * .37, lw); }
+  else if (m === "手持ち") { ctx.beginPath(); for (let i = 0; i <= 20; i++) { const xx = w * .62 + i * w * .015, yy = h * .9 + Math.sin(i * 1.4) * h * .025; i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } ctx.stroke(); }
+  ctx.font = `700 ${Math.max(9, w / 24)}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = "right"; ctx.textBaseline = "top";
+  ctx.fillText(m, w - lw * 4, lw * 4);
+  ctx.restore();
+}
+const imgCache = {};
+function paintFrame(cv, c) {
+  const ctx = cv.getContext("2d"); const w = cv.width, h = cv.height;
+  if (c.sketch) {
+    let img = imgCache[c.sketch];
+    const go = () => { ctx.fillStyle = PAPER; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h); };
+    if (!img) { img = imgCache[c.sketch] = new Image(); img.onload = go; img.src = c.sketch; } else if (img.complete) go(); else img.addEventListener("load", go);
+  } else drawAuto(ctx, w, h, c);
+}
+function sizeCanvas(cv, width) { const ar = ASPECTS[P.aspect] || 16 / 9; cv.width = Math.round(width); cv.height = Math.round(width / ar); }
+function paintThumbs() { document.querySelectorAll("canvas[data-thumb]").forEach(cv => { const [c] = findCut(cv.dataset.thumb); if (c) { sizeCanvas(cv, P.aspect === "9:16" ? 240 : 480); paintFrame(cv, c); } }); }
+
+/* ============ 共通UI ============ */
+const TABS = [["setup","企画"],["cast","人物"],["structure","構成"],["board","絵コンテ"],["timeline","タイムライン"],["script","脚本・書き出し"]];
+function renderTabs() {
+  $("#tabs").innerHTML = TABS.map(([id, n], i) => `<button class="tab" role="tab" aria-selected="${ui.tab === id}" data-act="tab" data-v="${id}"><small>${String(i + 1).padStart(2, "0")}</small>${n}</button>`).join("");
+}
+function updateMeter() {
+  const t = totalSec(), g = targetSec(), ratio = g ? t / g : 0;
+  const f = $("#mfill"); f.style.width = Math.min(100, ratio * 100) + "%";
+  f.classList.toggle("over", ratio > 1.03); f.classList.toggle("under", ratio < 0.95);
+  $("#mnum").textContent = `${mmss(t)} / ${mmss(g)}`;
+  $("#ptitle").textContent = "『" + (P.title || "無題") + "』";
+}
+function render() {
+  renderTabs(); updateMeter();
+  const m = $("#main");
+  ({ setup: renderSetup, cast: renderCast, structure: renderStructure, board: renderBoard, timeline: renderTimeline, script: renderScript }[ui.tab])(m);
+  paintThumbs();
+}
+function armed(btn, label) {
+  if (btn.dataset.armed === "1") return true;
+  const old = btn.textContent; btn.dataset.armed = "1"; btn.textContent = label; btn.classList.add("danger");
+  setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ""; btn.textContent = old; btn.classList.remove("danger"); } }, 3500);
+  return false;
+}
+
+/* ============ 01 企画 ============ */
+function renderSetup(m) {
+  const g = G(P.genre), st = STRUCTS[P.structure];
+  m.innerHTML = `
+  <h2>企画</h2><p class="lead">ジャンル・世界観・尺・構成の型を決めると、構成とカット割りの下書きを自動で作れます。下書きは後から自由に書き換えられます。</p>
+  <div class="grid2">
+    <div class="panel stack">
+      <label class="f">作品タイトル<input type="text" id="f-title" data-bind="title" value="${esc(P.title)}"></label>
+      <label class="f">ログライン（一文のあらすじ）<textarea id="f-logline" rows="2" data-bind="logline" placeholder="〜な主人公が、〜によって、〜する物語">${esc(P.logline)}</textarea></label>
+      <label class="f">テーマ（伝えたいこと）<input type="text" id="f-theme" data-bind="theme" value="${esc(P.theme)}"></label>
+      <label class="f">対象視聴者<input type="text" id="f-aud" data-bind="audience" value="${esc(P.audience)}" placeholder="例：検査を予定している患者とその家族"></label>
+      <div><h3>尺</h3>
+        <div class="dur"><span class="big mono" id="durv">${P.durationMin}</span><span class="unit">分 ＝ <span id="durs">${P.durationMin * 60}</span>秒</span></div>
+        <input type="range" id="f-dur" min="3" max="30" step="1" value="${P.durationMin}" data-bind="durationMin" aria-label="尺（分）">
+        <div class="chips">${[3,5,10,15,20,30].map(n => `<button class="chip" aria-pressed="${P.durationMin === n}" data-act="set" data-k="durationMin" data-v="${n}">${n}分</button>`).join("")}</div>
+      </div>
+      <div class="grid2" style="gap:10px">
+        <label class="f">画面比率<select id="f-aspect" data-bind="aspect">${opts(Object.keys(ASPECTS).map(k => [k, k + ({"9:16":"（縦型SNS）","2.39:1":"（シネスコ）"}[k] || "")]), P.aspect)}</select></label>
+        <label class="f">フレームレート<select id="f-fps" data-bind="fps">${opts(FPS_OPTIONS.map(f => [f, f + " fps"]), P.fps)}</select></label>
+      </div>
+    </div>
+    <div class="panel stack">
+      <div><h3>ジャンル</h3><div class="chips">${GENRES.map(x => `<button class="chip${x.med ? " med" : ""}" aria-pressed="${x.id === P.genre}" data-act="genre" data-v="${x.id}">${esc(x.name)}<small>平均カット ${x.asl}秒</small></button>`).join("")}</div></div>
+      <div><h3>世界観・タイプ</h3><div class="chips">${WORLDS.map(x => `<button class="chip" aria-pressed="${x === P.world}" data-act="set" data-k="world" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>
+      <div><h3>トーン</h3><div class="chips">${TONES.map(x => `<button class="chip" aria-pressed="${x === P.tone}" data-act="set" data-k="tone" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>
+    </div>
+  </div>
+  <div class="panel stack" style="margin-top:16px">
+    <div class="grid2" style="gap:12px;align-items:end">
+      <label class="f">話の構成（型）<select id="f-struct" data-bind="structure">${opts(Object.entries(STRUCTS).map(([k, v]) => [k, v.name]), P.structure)}</select></label>
+      <label class="f">平均カット長（秒）<input type="number" id="f-asl" min="1" max="30" step="0.5" data-bind="asl" value="${P.asl}"></label>
+    </div>
+    <div class="sbar" id="sprev">${st.beats.map(([n, , pct], i) => `<div style="flex:${pct};background:${beatColor(i)}" title="${esc(n)} ${pct}%">${esc(n)}</div>`).join("")}</div>
+    <p class="note" id="estim">${estimateText()}</p>
+    <div class="row"><button class="btn primary" data-act="generate">構成と絵コンテの下書きを作る</button>
+      <span class="note">今のシーンとカットは置き換わります（人物は残ります）。</span></div>
+  </div>
+  ${g.med ? `<div class="panel checks" style="margin-top:16px"><h3>医療コンテンツの確認リスト</h3>
+    <p class="note" style="margin-top:0">公開前に確認してください。医療機関の広告に当たる場合は、厚生労働省の「医療広告ガイドライン」も確認が必要です。</p>
+    ${MED_CHECKS.map(([k, t]) => `<label><input type="checkbox" id="chk-${k}" data-check="${k}"${P.checks[k] ? " checked" : ""}><span>${esc(t)}</span></label>`).join("")}</div>` : ""}`;
+}
+function estimateText() {
+  const d = targetSec(), asl = +P.asl || 5, st = STRUCTS[P.structure];
+  const sceneLen = clamp(d / 10, 30, 120);
+  const scenes = st.beats.reduce((a, [, , pct]) => a + Math.max(1, Math.round(d * pct / 100 / sceneLen)), 0);
+  return `目安：${st.beats.length}ブロック・約${scenes}シーン・約${Math.round(d / asl)}カット（${mmss(d)}、平均${asl}秒/カット）`;
+}
+
+/* ============ 02 人物 ============ */
+function renderCast(m) {
+  const roles = G(P.genre).med ? MED_ROLES.concat(ROLES.filter(r => !MED_ROLES.includes(r))) : ROLES;
+  m.innerHTML = `<h2>登場人物</h2><p class="lead">役割、目的、口調を決めておくと、台詞の書き分けがしやすくなります。役割を押すとその役割の人物を追加します。</p>
+  <div class="row" style="margin-bottom:16px">${roles.map(r => `<button class="btn sm" data-act="addchar" data-v="${esc(r)}">＋ ${esc(r)}</button>`).join("")}</div>
+  ${P.characters.length ? "" : `<div class="warn">まだ人物がいません。上のボタンから追加してください。</div>`}
+  <div class="cast">${P.characters.map(c => `
+    <div class="cc" style="--c:${beatColor(c.color)}">
+      <div class="h"><label class="f">名前<input type="text" id="cn-${c.id}" data-char="${c.id}" data-k="name" value="${esc(c.name)}"></label>
+        <label class="f">年齢<input type="text" id="ca-${c.id}" data-char="${c.id}" data-k="age" value="${esc(c.age)}"></label></div>
+      <label class="f">役割<select id="cr-${c.id}" data-char="${c.id}" data-k="role">${opts([...new Set([c.role, ...roles])].filter(Boolean), c.role)}</select></label>
+      <label class="f">人物像<textarea id="cd-${c.id}" rows="2" data-char="${c.id}" data-k="desc">${esc(c.desc)}</textarea></label>
+      <label class="f">目的・欲しいもの<input type="text" id="cg-${c.id}" data-char="${c.id}" data-k="goal" value="${esc(c.goal)}"></label>
+      <label class="f">口調・話し方<input type="text" id="cs-${c.id}" data-char="${c.id}" data-k="speech" value="${esc(c.speech)}"></label>
+      <div class="row" style="justify-content:space-between">
+        <div class="row">${[0,1,2,3,4,5,6,7,8].map(i => `<button class="swatch" style="background:${beatColor(i)}" aria-label="色${i + 1}" aria-pressed="${c.color === i}" data-act="charcolor" data-id="${c.id}" data-v="${i}"></button>`).join("")}</div>
+        <button class="btn sm ghost" data-act="delchar" data-id="${c.id}">削除</button></div>
+    </div>`).join("")}</div>`;
+}
+
+/* ============ 03 構成 ============ */
+function renderStructure(m) {
+  normalizeOrder();
+  const d = targetSec(), sumPct = P.beats.reduce((a, b) => a + (+b.pct || 0), 0);
+  m.innerHTML = `<h2>構成</h2><p class="lead">ブロック（起承転結など）ごとの尺の配分と、各ブロックに入るシーンを管理します。色付きの線が実際の尺、薄い線が目標です。</p>
+  ${P.beats.length ? "" : `<div class="warn">構成がありません。「企画」で下書きを作るか、下のボタンでブロックを追加してください。</div>`}
+  <div class="panel">
+    <div class="sbar" style="margin-bottom:6px">${P.beats.map((b, i) => `<div style="flex:${b.pct || .01};background:${beatColor(i)}">${esc(b.name)}</div>`).join("")}</div>
+    <p class="note">配分の合計 <b class="mono">${sumPct}%</b>${Math.abs(sumPct - 100) > .5 ? `　<button class="btn sm" data-act="normpct">100%にそろえる</button>` : ""}</p>
+    ${P.beats.map((b, i) => { const ss = P.scenes.filter(s => s.beatId === b.id); const act = ss.reduce((a, s) => a + sceneSec(s), 0), tg = d * (+b.pct || 0) / 100;
+      const diff = act - tg;
+      return `<div class="beat">
+        <span class="dot" style="background:${beatColor(i)}"></span>
+        <div class="stack" style="gap:6px;min-width:0">
+          <div class="row" style="flex-wrap:nowrap"><input type="text" id="bn-${b.id}" data-beat="${b.id}" data-k="name" value="${esc(b.name)}" style="font-weight:700;max-width:180px">
+            <input type="number" id="bp-${b.id}" data-beat="${b.id}" data-k="pct" value="${b.pct}" min="0" max="100" step="1" style="width:76px" aria-label="割合%"><span class="note">%</span></div>
+          <input type="text" id="bu-${b.id}" data-beat="${b.id}" data-k="purpose" value="${esc(b.purpose)}" aria-label="役割">
+          <div class="cmp"><i style="width:${Math.min(100, tg ? act / tg * 100 : 0)}%;background:${beatColor(i)}"></i></div>
+          <div class="scn-list">${ss.map(s => `<div class="scn-row"><span class="mono">S${sceneNo(s)}</span><span class="t">○${esc(s.place || "（場所未定）")}（${esc(s.time)}）— ${esc(s.summary)}</span>
+            <span class="row" style="gap:2px;flex-wrap:nowrap"><span class="mono note">${mmss(sceneSec(s))}</span>
+            <button class="btn sm ghost" data-act="moveScene" data-id="${s.id}" data-v="-1" aria-label="上へ">↑</button><button class="btn sm ghost" data-act="moveScene" data-id="${s.id}" data-v="1" aria-label="下へ">↓</button>
+            <button class="btn sm ghost" data-act="openScene" data-id="${s.id}">開く</button><button class="btn sm ghost" data-act="delScene" data-id="${s.id}">削除</button></span></div>`).join("")}
+            <div><button class="btn sm" data-act="addScene" data-id="${b.id}">＋ シーン追加</button></div></div>
+        </div>
+        <div class="meta"><div class="mono">目標 ${mmss(tg)}</div><div class="mono" style="color:${Math.abs(diff) > Math.max(5, tg * .1) ? (diff > 0 ? "var(--red)" : "var(--ochre)") : "var(--ok)"}">実際 ${mmss(act)}</div>
+          <button class="btn sm ghost" data-act="delBeat" data-id="${b.id}">ブロック削除</button></div>
+      </div>`; }).join("")}
+    <div class="row" style="margin-top:12px"><button class="btn sm" data-act="addBeat">＋ ブロック追加</button></div>
+  </div>`;
+}
+
+/* ============ 04 絵コンテ ============ */
+function renderBoard(m) {
+  normalizeOrder();
+  if (!P.scenes.length) { m.innerHTML = `<h2>絵コンテ</h2><div class="warn">シーンがありません。「企画」で下書きを作るか、「構成」でシーンを追加してください。</div>`; return; }
+  if (!findScene(ui.sceneId)) ui.sceneId = P.scenes[0].id;
+  const s = findScene(ui.sceneId), nums = cutNumbers(), starts = cutStarts();
+  let lastBeat = null;
+  const list = P.scenes.map(x => { const bi = beatIndex(x.beatId); const head = x.beatId !== lastBeat ? `<div class="grp"><span class="dot" style="margin:0;width:8px;height:8px;background:${beatColor(bi)}"></span>${esc(P.beats[bi]?.name || "")}</div>` : ""; lastBeat = x.beatId;
+    return head + `<button class="s" data-act="openScene" data-id="${x.id}" aria-current="${x.id === s.id}"><span class="mono">S${sceneNo(x)}</span><span class="t">${esc(x.place || x.summary || "（未定）")}</span><span class="mono note" id="ls-${x.id}">${mmss(sceneSec(x))}</span></button>`; }).join("");
+  const chars = P.characters;
+  m.innerHTML = `<div class="board">
+    <aside class="scenes" aria-label="シーン一覧">${list}</aside>
+    <section class="sheet">
+      <div class="sh-head">
+        <div class="row" style="justify-content:space-between"><span class="hashira">S${sceneNo(s)}　○${esc(s.place || "場所")}（${esc(s.time)}）</span>
+          <span class="sum-line"><span>カット <b id="sc-n">${s.cuts.length}</b></span><span>シーン尺 <b id="sc-t">${mmss(sceneSec(s))}</b></span><span>開始 <b>${tc(starts[s.cuts[0]?.id] ?? 0)}</b></span></span></div>
+        <div class="hrow">
+          <label class="f">場所（柱）<input type="text" id="sp-${s.id}" data-scene="${s.id}" data-k="place" value="${esc(s.place)}" placeholder="例：病院・診察室"></label>
+          <label class="f">時間帯<select id="st-${s.id}" data-scene="${s.id}" data-k="time">${opts(TIMES, s.time)}</select></label>
+          <label class="f">前のシーンからのつなぎ<select id="sx-${s.id}" data-scene="${s.id}" data-k="transitionIn">${opts(TRANS, s.transitionIn)}</select></label>
+        </div>
+        <div class="hrow" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)">
+          <label class="f">シーンの内容（何が起き、何が変わるか）<textarea id="ss-${s.id}" rows="2" data-scene="${s.id}" data-k="summary">${esc(s.summary)}</textarea></label>
+          <label class="f">ブロック<select id="sb-${s.id}" data-scene="${s.id}" data-k="beatId">${opts(P.beats.map(b => [b.id, b.name]), s.beatId)}</select></label>
+        </div>
+        ${chars.length ? `<div class="row"><span class="note">登場：</span>${chars.map(c => `<button class="chip" aria-pressed="${s.chars.includes(c.id)}" data-act="toggleChar" data-id="${s.id}" data-v="${c.id}">${esc(c.name || "（名前なし）")}</button>`).join("")}</div>` : ""}
+      </div>
+      <div class="cols" aria-hidden="true"><div>CUT</div><div>画面</div><div>内容（カメラ・ト書き）</div><div>セリフ・音</div><div>秒</div></div>
+      ${s.cuts.map((c, i) => cutRow(c, i, s, nums, starts)).join("")}
+      <div class="addcut"><button class="btn primary" data-act="addCut" data-id="${s.id}">＋ カットを追加</button>
+        <span class="note">画面をクリックすると手描きできます。何も描かなければ、サイズ・アングル・構図から自動でラフを描きます。</span></div>
+    </section></div>`;
+}
+function cutRow(c, i, s, nums, starts) {
+  const sceneChars = P.characters.filter(ch => s.chars.includes(ch.id));
+  return `<div class="cut" id="cut-${c.id}">
+    <div><span class="cno">C${nums[c.id]}<small>S${sceneNo(s)}-${i + 1}</small></span><span class="tc" id="in-${c.id}">${tc(starts[c.id])}</span></div>
+    <div><div class="frame" data-act="draw" data-id="${c.id}" role="button" tabindex="0" aria-label="C${nums[c.id]}の画面を描く"><canvas data-thumb="${c.id}"></canvas><span class="pen">${c.sketch ? "手描き" : "自動ラフ"} ✎</span></div>
+      <div class="sel4">
+        <select id="cs-${c.id}" data-cut="${c.id}" data-k="shot" aria-label="画面サイズ">${opts(SHOTS, c.shot)}</select>
+        <select id="ca-${c.id}" data-cut="${c.id}" data-k="angle" aria-label="アングル">${opts(ANGLES, c.angle)}</select>
+        <select id="cm-${c.id}" data-cut="${c.id}" data-k="move" aria-label="カメラワーク">${opts(MOVES, c.move)}</select>
+        <select id="cp-${c.id}" data-cut="${c.id}" data-k="comp" aria-label="構図">${opts(COMPS, c.comp)}</select>
+      </div></div>
+    <div><label class="f">ト書き（画に映る動き・芝居）<textarea id="ct-${c.id}" rows="4" data-cut="${c.id}" data-k="action">${esc(c.action)}</textarea></label></div>
+    <div><label class="f">セリフ（名前「台詞」）<textarea id="cd-${c.id}" rows="3" data-cut="${c.id}" data-k="dialogue">${esc(c.dialogue)}</textarea></label>
+      ${sceneChars.length ? `<div class="row" style="gap:4px">${sceneChars.map(ch => `<button class="btn sm" data-act="insName" data-id="${c.id}" data-v="${esc(ch.name)}">${esc(ch.name)}</button>`).join("")}</div>` : ""}
+      <label class="f">音（BGM・SE）<input type="text" id="cn-${c.id}" data-cut="${c.id}" data-k="sound" value="${esc(c.sound)}"></label></div>
+    <div><input type="number" class="secin" id="cx-${c.id}" data-cut="${c.id}" data-k="sec" value="${c.sec}" min="0.5" max="600" step="0.5" aria-label="秒数">
+      <span class="tc" id="sk-${c.id}">${secKoma(c.sec)}</span>
+      <div class="ctools">
+        <button class="btn sm ghost" data-act="moveCut" data-id="${c.id}" data-v="-1" aria-label="上へ">↑</button>
+        <button class="btn sm ghost" data-act="moveCut" data-id="${c.id}" data-v="1" aria-label="下へ">↓</button>
+        <button class="btn sm ghost" data-act="dupCut" data-id="${c.id}">複製</button>
+        <button class="btn sm ghost" data-act="delCut" data-id="${c.id}">削除</button></div></div>
+  </div>`;
+}
+function refreshBoardTimes() {
+  const s = findScene(ui.sceneId); if (!s) return;
+  const starts = cutStarts();
+  P.scenes.forEach(x => { const el = document.getElementById("ls-" + x.id); if (el) el.textContent = mmss(sceneSec(x)); });
+  s.cuts.forEach(c => { const a = document.getElementById("in-" + c.id), b = document.getElementById("sk-" + c.id); if (a) a.textContent = tc(starts[c.id]); if (b) b.textContent = secKoma(c.sec); });
+  const t = $("#sc-t"); if (t) t.textContent = mmss(sceneSec(s));
+}
+
+/* ============ 05 タイムライン ============ */
+function renderTimeline(m) {
+  normalizeOrder();
+  const t = totalSec(), g = targetSec(), diff = t - g, n = P.scenes.reduce((a, s) => a + s.cuts.length, 0);
+  const span = Math.max(t, g) || 1, nums = cutNumbers(), starts = cutStarts();
+  const step = span > 900 ? 120 : span > 400 ? 60 : span > 120 ? 30 : 15;
+  const ticks = []; for (let x = 0; x <= span; x += step) ticks.push(x);
+  const cls = Math.abs(diff) <= g * .03 ? "ok" : diff > 0 ? "over" : "under";
+  const warns = [];
+  if (cls === "over") warns.push(`目標より ${mmss(diff)} 長くなっています。カットを削るか、秒数を詰めてください。`);
+  if (cls === "under") warns.push(`目標まで ${mmss(-diff)} 足りません。カットを追加するか、秒数を延ばしてください。`);
+  const longCuts = []; P.scenes.forEach(s => s.cuts.forEach(c => { if (c.sec >= Math.max(15, (+P.asl || 5) * 3)) longCuts.push("C" + nums[c.id]); }));
+  if (longCuts.length) warns.push(`長いカット（平均の3倍以上）：${longCuts.slice(0, 12).join("・")}${longCuts.length > 12 ? " ほか" : ""}。間延びしないか確認してください。`);
+  const emptyDlg = P.scenes.filter(s => !s.place).length; if (emptyDlg) warns.push(`場所（柱）が未定のシーンが ${emptyDlg} 個あります。`);
+  m.innerHTML = `<h2>タイムライン</h2><p class="lead">全カットを尺の比率で並べます。バーを押すとそのカットの絵コンテを開きます。</p>
+  <div class="stats">
+    <div><div class="k">合計尺</div><div class="v ${cls}">${mmss(t)}</div></div>
+    <div><div class="k">目標尺</div><div class="v">${mmss(g)}</div></div>
+    <div><div class="k">差</div><div class="v ${cls}">${diff >= 0 ? "+" : "−"}${mmss(Math.abs(diff))}</div></div>
+    <div><div class="k">シーン / カット</div><div class="v">${P.scenes.length} / ${n}</div></div>
+    <div><div class="k">平均カット長</div><div class="v">${n ? (t / n).toFixed(1) : "0"}秒</div></div>
+  </div>
+  ${warns.length ? `<div class="warn" style="margin-top:14px">${warns.map(esc).join("<br>")}</div>` : ""}
+  <div class="panel" style="margin-top:16px"><div class="tl-scroll"><div class="tl">
+    <div class="ruler">${ticks.map(x => `<span${x / span > .97 ? ' class="end"' : ""} style="left:${x / span * 100}%">${mmss(x)}</span>`).join("")}</div>
+    <div class="lane-l">目標の配分</div>
+    <div class="lane target">${P.beats.map((b, i) => `<div style="width:${g * (+b.pct || 0) / 100 / span * 100}%;background:${beatColor(i)}" title="${esc(b.name)}"></div>`).join("")}</div>
+    <div class="lane-l">シーン</div>
+    <div class="lane sc">${P.scenes.map(s => `<button style="width:${sceneSec(s) / span * 100}%;background:${beatColor(beatIndex(s.beatId))}" data-act="openScene" data-id="${s.id}" title="S${sceneNo(s)} ${esc(s.place)} ${mmss(sceneSec(s))}">S${sceneNo(s)}</button>`).join("")}</div>
+    <div class="lane-l">カット</div>
+    <div class="lane">${P.scenes.map(s => s.cuts.map(c => `<button style="width:${c.sec / span * 100}%;background:${beatColor(beatIndex(s.beatId))}" data-act="jumpCut" data-id="${c.id}" title="C${nums[c.id]} ${esc(c.shot)} ${c.sec}秒 ${esc(c.action)}"></button>`).join("")).join("")}</div>
+  </div></div></div>
+  <div class="panel" style="margin-top:16px"><h3>時間割（香盤）</h3><div class="tbl-scroll"><table class="tt">
+    <thead><tr><th>シーン</th><th>ブロック</th><th>場所</th><th>内容</th><th>カット</th><th>IN</th><th>OUT</th><th>尺</th></tr></thead>
+    <tbody>${P.scenes.map(s => { const st = starts[s.cuts[0]?.id] ?? 0; return `<tr><td class="n">S${sceneNo(s)}</td><td>${esc(P.beats[beatIndex(s.beatId)]?.name || "")}</td><td>${esc(s.place)}（${esc(s.time)}）</td><td>${esc(s.summary)}</td><td class="n">${s.cuts.length}</td><td class="n">${tc(st)}</td><td class="n">${tc(st + sceneSec(s))}</td><td class="n">${mmss(sceneSec(s))}</td></tr>`; }).join("")}</tbody>
+  </table></div></div>`;
+}
+
+/* ============ 06 脚本・書き出し ============ */
+function normDialogue(line) {
+  const l = line.trim(); if (!l) return null;
+  if (/^[^「」：:]{1,20}「.*」?$/.test(l)) return { t: "dl", s: l };
+  const m = l.match(/^([^：:「]{1,20})[：:]\s*(.+)$/); if (m) return { t: "dl", s: `${m[1]}「${m[2]}」` };
+  return { t: "tg", s: l };
+}
+function scriptLines() {
+  normalizeOrder();
+  const out = [];
+  const g = G(P.genre);
+  out.push({ t: "ttl", s: `『${P.title}』` });
+  out.push({ t: "sec", s: `${g.name}／${P.world}／${P.tone}／${P.durationMin}分（${P.aspect}・${P.fps}fps）` });
+  if (P.logline) out.push({ t: "sec", s: `ログライン：${P.logline}` });
+  if (P.theme) out.push({ t: "sec", s: `テーマ：${P.theme}` });
+  if (P.characters.length) { out.push({ t: "hs", s: "登場人物" }); P.characters.forEach(c => out.push({ t: "tg", s: `${c.name}${c.age && c.age !== "—" ? `（${c.age}）` : ""}　${c.desc}` })); }
+  P.scenes.forEach(s => {
+    if (s.transitionIn && s.transitionIn !== "カット") out.push({ t: "tr", s: `（${s.transitionIn}）` });
+    out.push({ t: "hs", s: `○${s.place || "（場所未定）"}（${s.time}）` });
+    s.cuts.forEach(c => {
+      if (c.action) out.push({ t: "tg", s: c.action });
+      if (c.sound) out.push({ t: "tg", s: `〔${c.sound}〕` });
+      (c.dialogue || "").split("\n").map(normDialogue).filter(Boolean).forEach(x => out.push(x));
+    });
+  });
+  return out;
+}
+function scriptText() {
+  return scriptLines().map(x => x.t === "tg" ? "　　　" + x.s : x.t === "hs" ? "\n" + x.s : x.t === "tr" ? "\n　　　　　　　　　　" + x.s : x.s).join("\n") + "\n";
+}
+function csvText() {
+  const nums = cutNumbers(), starts = cutStarts();
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = [["カット","シーン","ブロック","場所","時間帯","画面サイズ","アングル","カメラワーク","構図","ト書き","セリフ","音","秒","秒+コマ","IN","OUT"]];
+  P.scenes.forEach(s => s.cuts.forEach(c => rows.push([ "C" + nums[c.id], "S" + sceneNo(s), P.beats[beatIndex(s.beatId)]?.name, s.place, s.time,
+    SHOTS.find(x => x[0] === c.shot)?.[1], c.angle, c.move, c.comp, c.action, c.dialogue, c.sound, c.sec, secKoma(c.sec), tc(starts[c.id]), tc(starts[c.id] + +c.sec) ])));
+  return "﻿" + rows.map(r => r.map(q).join(",")).join("\r\n");
+}
+function promptText() {
+  const g = G(P.genre), nums = cutNumbers();
+  const lines = [`# ${P.title} — AI動画プロンプト（カット単位）`, `# style: ${g.en}, ${P.world}, tone ${P.tone}, aspect ${P.aspect}`, ""];
+  P.scenes.forEach(s => s.cuts.forEach(c => {
+    const a = ANGLE_EN[ANGLES.indexOf(c.angle)] || "", mv = MOVE_EN[MOVES.indexOf(c.move)] || "";
+    lines.push(`C${nums[c.id]} (${c.sec}s) | ${SHOT_EN[c.shot]}, ${a}, ${mv}. ${s.place}（${s.time}）. ${c.action}${c.sound ? ` / sound: ${c.sound}` : ""} | ${g.en}, aspect ratio ${P.aspect}, ${c.sec} seconds`);
+  }));
+  return lines.join("\n");
+}
+function renderScript(m) {
+  const lines = scriptLines();
+  m.innerHTML = `<h2>脚本・書き出し</h2><p class="lead">絵コンテのト書きとセリフから、シナリオ形式（柱・ト書き・セリフ）の脚本を組み立てます。</p>
+  <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:start">
+    <div class="stack" style="min-width:0">
+      <div class="row"><button class="chip" aria-pressed="${!ui.vertical}" data-act="vert" data-v="0">横書き</button><button class="chip" aria-pressed="${ui.vertical}" data-act="vert" data-v="1">縦書き</button>
+        <button class="btn sm" data-act="exp" data-v="script">脚本をテキストで書き出す</button></div>
+      <article class="script${ui.vertical ? " v" : ""}">${lines.map(x => `<div class="${x.t}">${esc(x.s)}</div>`).join("")}</article>
+    </div>
+    <div class="panel export">
+      <h3>書き出し・読み込み</h3>
+      <div class="row">
+        <button class="btn sm" data-act="exp" data-v="script">脚本（.txt）</button>
+        <button class="btn sm" data-act="exp" data-v="csv">絵コンテ表（.csv）</button>
+        <button class="btn sm" data-act="exp" data-v="prompt">AI動画プロンプト</button>
+        <button class="btn sm" data-act="exp" data-v="json">プロジェクト（.json）</button></div>
+      <textarea id="exp-out" readonly aria-label="書き出し結果" placeholder="上のボタンを押すと、ここに内容が出ます">${esc(ui.exportText)}</textarea>
+      <div class="row"><button class="btn primary sm" data-act="copy">コピー</button><button class="btn sm" data-act="download">ファイルに保存</button>
+        <span class="note" id="exp-msg">${ui.exportName ? esc(ui.exportName) : ""}</span></div>
+      <p class="note" style="margin:0">「AI動画プロンプト」は、このリポジトリの動画生成AIハブなどに1カットずつ貼り付けて使えます。CSVはExcelやGoogleスプレッドシートで開けます。</p>
+      <h3 style="margin-top:10px">プロジェクト</h3>
+      <div class="row">
+        <label class="btn sm" for="imp">JSONを読み込む</label><input type="file" id="imp" accept=".json,application/json" hidden>
+        <button class="btn sm" data-act="sample" data-v="sf">サンプル：SF 3分</button>
+        <button class="btn sm" data-act="sample" data-v="med">サンプル：患者説明 10分</button>
+        <button class="btn sm" data-act="newp">新規作成</button></div>
+      <p class="note" style="margin:0">作業内容はこのブラウザに自動保存されます。別の端末で使うときや控えを残すときは、JSONで書き出してください。</p>
+    </div>
+  </div>`;
+}
+
+/* ============ モーダル：手描き ============ */
+let drawState = null;
+function openDraw(cutId) {
+  const [c] = findCut(cutId); if (!c) return;
+  const md = $("#modal"); md.hidden = false;
+  const nums = cutNumbers();
+  md.innerHTML = `<div class="mbox" role="dialog" aria-label="画面を描く">
+    <div class="row" style="justify-content:space-between"><b>C${nums[c.id]} の画面　<span class="note">${esc(c.shot)}・${esc(c.angle)}・${esc(c.move)}</span></b><button class="btn sm" data-act="closeModal">閉じる</button></div>
+    <div class="row">
+      ${[["#1B2430","鉛筆"],["#2A75A8","水色（下描き）"],["#C2402F","赤（カメラ指示）"]].map(([col, n], i) => `<button class="swatch" style="background:${col}" aria-label="${n}" aria-pressed="${i === 0}" data-act="pen" data-v="${col}"></button>`).join("")}
+      <label class="note row" style="gap:6px">太さ<input type="range" id="pw" min="1" max="16" value="3" style="width:110px"></label>
+      <button class="chip" data-act="eraser" aria-pressed="false">消しゴム</button>
+      <button class="btn sm" data-act="undo">元に戻す</button>
+      <button class="btn sm" data-act="autoBase">自動ラフを下絵にする</button>
+      <button class="btn sm" data-act="clearDraw">白紙</button>
+    </div>
+    <canvas id="dcv"></canvas>
+    <div class="row" style="justify-content:space-between"><span class="note">マウス・指・ペンで描けます。</span>
+      <span class="row"><button class="btn sm" data-act="resetSketch">手描きを消して自動ラフに戻す</button><button class="btn primary" data-act="saveDraw">保存</button></span></div>
+  </div>`;
+  const cv = $("#dcv"); sizeCanvas(cv, P.aspect === "9:16" ? 540 : 960);
+  const ctx = cv.getContext("2d");
+  drawState = { c, cv, ctx, color: "#1B2430", eraser: false, undo: [], down: false };
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, cv.width, cv.height);
+  if (c.sketch) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, cv.width, cv.height); img.src = c.sketch; }
+  else drawAuto(ctx, cv.width, cv.height, c);
+  const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+  cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); drawState.undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (drawState.undo.length > 25) drawState.undo.shift();
+    drawState.down = true; const [x, y] = pos(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + .01, y); stroke(e); });
+  cv.addEventListener("pointermove", e => { if (!drawState.down) return; const [x, y] = pos(e); ctx.lineTo(x, y); stroke(e); });
+  const up = () => { drawState && (drawState.down = false); };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  function stroke(e) { const w = +$("#pw").value * (cv.width / 480); ctx.lineCap = ctx.lineJoin = "round";
+    ctx.lineWidth = drawState.eraser ? w * 4 : w * (e.pressure && e.pointerType === "pen" ? .5 + e.pressure : 1);
+    ctx.strokeStyle = drawState.eraser ? PAPER : drawState.color; ctx.stroke(); const [x, y] = pos(e); ctx.beginPath(); ctx.moveTo(x, y); }
+}
+function closeModal() { const md = $("#modal"); md.hidden = true; md.innerHTML = ""; drawState = null; stopAnim(); }
+
+/* ============ モーダル：アニマティック ============ */
+let anim = null;
+function flatCuts() { const a = []; P.scenes.forEach(s => s.cuts.forEach(c => a.push([c, s]))); return a; }
+function openAnim() {
+  normalizeOrder();
+  const all = flatCuts(); if (!all.length) return;
+  const startScene = ui.tab === "board" ? findScene(ui.sceneId) : null;
+  let idx = startScene ? Math.max(0, all.findIndex(([, s]) => s === startScene)) : 0;
+  const md = $("#modal"); md.hidden = false;
+  md.innerHTML = `<div class="mbox" role="dialog" aria-label="プレビュー">
+    <div class="row" style="justify-content:space-between"><b>プレビュー（アニマティック）</b><span class="mono note" id="an-tc"></span><button class="btn sm" data-act="closeModal">閉じる</button></div>
+    <canvas id="acv"></canvas><div class="prog"><i id="an-p"></i></div>
+    <div class="anim-cap" id="an-cap"></div>
+    <div class="row"><button class="btn sm" data-act="anPrev">◀ 前</button><button class="btn primary sm" data-act="anPlay" id="an-play">一時停止</button><button class="btn sm" data-act="anNext">次 ▶</button>
+      <label class="note row" style="gap:6px">速度<select id="an-speed">${opts([["0.5","0.5倍"],["1","1倍"],["1.5","1.5倍"],["2","2倍"]], "1")}</select></label></div>
+  </div>`;
+  const cv = $("#acv"); sizeCanvas(cv, P.aspect === "9:16" ? 405 : 960);
+  const starts = cutStarts(), total = totalSec(), nums = cutNumbers();
+  anim = { all, idx, t: 0, playing: true, last: performance.now(), raf: 0 };
+  const show = () => { const [c, s] = anim.all[anim.idx]; paintFrame(cv, c);
+    $("#an-cap").innerHTML = `<div class="note mono">C${nums[c.id]}　S${sceneNo(s)} ○${esc(s.place)}（${esc(s.time)}）　${esc(c.shot)}・${esc(c.move)}　${c.sec}秒</div><div>${esc(c.action)}</div><div class="dlg">${esc(c.dialogue).replace(/\n/g, "<br>")}</div>${c.sound ? `<div class="note">〔${esc(c.sound)}〕</div>` : ""}`; };
+  const tick = now => { if (!anim) return; const sp = +($("#an-speed")?.value || 1);
+    if (anim.playing) { anim.t += (now - anim.last) / 1000 * sp; const [c] = anim.all[anim.idx];
+      if (anim.t >= c.sec) { anim.t = 0; if (anim.idx < anim.all.length - 1) { anim.idx++; show(); } else { anim.playing = false; $("#an-play").textContent = "最初から再生"; } } }
+    anim.last = now; const [c] = anim.all[anim.idx]; const at = starts[c.id] + Math.min(anim.t, c.sec);
+    $("#an-p").style.width = (total ? at / total * 100 : 0) + "%"; $("#an-tc").textContent = `${tc(at)} / ${tc(total)}`;
+    anim.raf = requestAnimationFrame(tick); };
+  anim.show = show; show(); anim.raf = requestAnimationFrame(tick);
+}
+function stopAnim() { if (anim) cancelAnimationFrame(anim.raf); anim = null; }
+
+/* ============ 操作 ============ */
+const ACT = {
+  tab: t => { ui.tab = t.dataset.v; render(); window.scrollTo(0, 0); },
+  set: t => { const k = t.dataset.k; P[k] = k === "durationMin" ? +t.dataset.v : t.dataset.v; saveSoon(); render(); },
+  genre: t => { const g = G(t.dataset.v); P.genre = g.id; P.asl = g.asl; P.structure = g.st; if (g.med && P.world === WORLDS[0]) P.world = "医療現場"; saveSoon(); render(); },
+  generate: t => { if (P.scenes.length && !armed(t, "上書きします。もう一度押してください")) return; generate(); save(); ui.tab = "structure"; render(); },
+  addchar: t => { const used = P.characters.map(c => c.color); const color = [0,1,2,3,4,5,6,7,8].find(i => !used.includes(i)) ?? P.characters.length % 9;
+    P.characters.push({ id: uid(), name: t.dataset.v === "ナレーター" ? "N" : "", role: t.dataset.v, age: "", desc: "", goal: "", speech: "", color }); saveSoon(); render();
+    const last = P.characters.at(-1); document.getElementById("cn-" + last.id)?.focus(); },
+  delchar: (t, id) => { if (!armed(t, "もう一度押すと削除")) return; P.characters = P.characters.filter(c => c.id !== id); P.scenes.forEach(s => s.chars = s.chars.filter(x => x !== id)); saveSoon(); render(); },
+  charcolor: (t, id) => { const c = P.characters.find(c => c.id === id); c.color = +t.dataset.v; saveSoon(); render(); },
+  normpct: () => { const s = P.beats.reduce((a, b) => a + (+b.pct || 0), 0) || 1; P.beats.forEach(b => b.pct = Math.round((+b.pct || 0) / s * 100)); const d = 100 - P.beats.reduce((a, b) => a + b.pct, 0); if (P.beats.length) P.beats.at(-1).pct += d; saveSoon(); render(); },
+  addBeat: () => { P.beats.push({ id: uid(), name: "新しいブロック", purpose: "", pct: 10 }); saveSoon(); render(); },
+  delBeat: (t, id) => { if (P.beats.length <= 1) return; if (!armed(t, "シーンも消えます。もう一度")) return; P.beats = P.beats.filter(b => b.id !== id); P.scenes = P.scenes.filter(s => s.beatId !== id); saveSoon(); render(); },
+  addScene: (t, id) => { const s = { id: uid(), beatId: id, place: "", time: "昼", transitionIn: "カット", summary: "", chars: [], cuts: [makeCut(PATTERN_STORY[0], 5)] };
+    const lastIdx = P.scenes.map(x => x.beatId).lastIndexOf(id); P.scenes.splice(lastIdx >= 0 ? lastIdx + 1 : P.scenes.length, 0, s); saveSoon(); render(); },
+  delScene: (t, id) => { if (!armed(t, "もう一度押すと削除")) return; P.scenes = P.scenes.filter(s => s.id !== id); saveSoon(); render(); },
+  moveScene: (t, id) => { const i = P.scenes.findIndex(s => s.id === id), j = i + +t.dataset.v; if (j < 0 || j >= P.scenes.length) return;
+    const a = P.scenes[i], b = P.scenes[j]; if (a.beatId !== b.beatId) a.beatId = b.beatId; else [P.scenes[i], P.scenes[j]] = [b, a]; saveSoon(); render(); },
+  openScene: (t, id) => { ui.sceneId = id; ui.tab = "board"; render(); window.scrollTo(0, 0); },
+  jumpCut: (t, id) => { const [, s] = findCut(id); ui.sceneId = s.id; ui.tab = "board"; render(); document.getElementById("cut-" + id)?.scrollIntoView({ block: "center" }); },
+  toggleChar: (t, id) => { const s = findScene(id), v = t.dataset.v; s.chars = s.chars.includes(v) ? s.chars.filter(x => x !== v) : [...s.chars, v]; saveSoon(); render(); },
+  addCut: (t, id) => { const s = findScene(id); const prev = s.cuts.at(-1); const pat = (G(P.genre).explainer ? PATTERN_EXPLAIN : PATTERN_STORY)[s.cuts.length % 6];
+    const c = makeCut(pat, r2(+P.asl || 4)); c.action = ""; s.cuts.push(c); saveSoon(); render(); document.getElementById("ct-" + c.id)?.focus(); },
+  dupCut: (t, id) => { const [c, s] = findCut(id); const i = s.cuts.indexOf(c); s.cuts.splice(i + 1, 0, Object.assign({}, c, { id: uid() })); saveSoon(); render(); },
+  delCut: (t, id) => { if (!armed(t, "もう一度")) return; const [c, s] = findCut(id); s.cuts = s.cuts.filter(x => x !== c); saveSoon(); render(); },
+  moveCut: (t, id) => { const [c, s] = findCut(id); const i = s.cuts.indexOf(c), j = i + +t.dataset.v; if (j < 0 || j >= s.cuts.length) return; [s.cuts[i], s.cuts[j]] = [s.cuts[j], s.cuts[i]]; saveSoon(); render(); document.getElementById("cut-" + id)?.scrollIntoView({ block: "nearest" }); },
+  insName: (t, id) => { const ta = document.getElementById("cd-" + id); const [c] = findCut(id); const ins = (ta.value && !ta.value.endsWith("\n") ? "\n" : "") + t.dataset.v + "「」";
+    ta.value += ins; c.dialogue = ta.value; ta.focus(); ta.setSelectionRange(ta.value.length - 1, ta.value.length - 1); saveSoon(); },
+  draw: (t, id) => openDraw(id),
+  closeModal: () => closeModal(),
+  pen: t => { drawState.color = t.dataset.v; drawState.eraser = false; document.querySelectorAll("[data-act=pen]").forEach(b => b.setAttribute("aria-pressed", b === t)); document.querySelector("[data-act=eraser]").setAttribute("aria-pressed", "false"); },
+  eraser: t => { drawState.eraser = !drawState.eraser; t.setAttribute("aria-pressed", drawState.eraser); },
+  undo: () => { const u = drawState.undo.pop(); if (u) drawState.ctx.putImageData(u, 0, 0); },
+  autoBase: () => { const { ctx, cv, c } = drawState; drawState.undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); drawAuto(ctx, cv.width, cv.height, c); },
+  clearDraw: () => { const { ctx, cv } = drawState; drawState.undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); ctx.fillStyle = PAPER; ctx.fillRect(0, 0, cv.width, cv.height); },
+  saveDraw: () => { const { cv, c } = drawState; const o = document.createElement("canvas"); const w = P.aspect === "9:16" ? 360 : 640; o.width = w; o.height = Math.round(w * cv.height / cv.width);
+    o.getContext("2d").drawImage(cv, 0, 0, o.width, o.height); c.sketch = o.toDataURL("image/jpeg", .82); closeModal(); save(); render(); },
+  resetSketch: () => { drawState.c.sketch = ""; closeModal(); save(); render(); },
+  anim: () => openAnim(),
+  anPlay: t => { if (!anim) return; if (!anim.playing && anim.idx === anim.all.length - 1 && anim.t === 0) { anim.idx = 0; anim.show(); } anim.playing = !anim.playing; t.textContent = anim.playing ? "一時停止" : "再生"; },
+  anPrev: () => { if (!anim) return; anim.idx = Math.max(0, anim.idx - 1); anim.t = 0; anim.show(); },
+  anNext: () => { if (!anim) return; anim.idx = Math.min(anim.all.length - 1, anim.idx + 1); anim.t = 0; anim.show(); },
+  vert: t => { ui.vertical = t.dataset.v === "1"; render(); },
+  exp: t => { const v = t.dataset.v; const safe = (P.title || "project").replace(/[\\/:*?"<>|]/g, "_");
+    const map = { script: [scriptText, `${safe}_脚本.txt`], csv: [csvText, `${safe}_絵コンテ.csv`], prompt: [promptText, `${safe}_AIプロンプト.txt`], json: [() => JSON.stringify(P, null, 1), `${safe}.json`] };
+    ui.exportText = map[v][0](); ui.exportName = map[v][1]; if (ui.tab !== "script") ui.tab = "script"; render(); document.getElementById("exp-out")?.scrollIntoView({ block: "nearest" }); },
+  copy: () => { const ta = $("#exp-out"); if (!ta.value) return; const done = ok => { $("#exp-msg").textContent = ok ? "コピーしました" : "テキストを選択しました。Ctrl+C（⌘C）でコピーしてください"; };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), () => { ta.select(); done(false); }); else { ta.select(); done(false); } },
+  download: () => { if (!ui.exportText) { $("#exp-msg").textContent = "先に書き出す内容を選んでください"; return; }
+    const type = ui.exportName.endsWith(".csv") ? "text/csv" : ui.exportName.endsWith(".json") ? "application/json" : "text/plain";
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ui.exportText], { type: type + ";charset=utf-8" })); a.download = ui.exportName; document.body.appendChild(a); a.click(); a.remove();
+    $("#exp-msg").textContent = `${ui.exportName} を保存しました（保存できない環境では「コピー」を使ってください）`; },
+  sample: t => { if (!armed(t, "今の作品を置き換えます。もう一度")) return; P = t.dataset.v === "med" ? sampleMedical() : sampleSF(); ui.sceneId = P.scenes[0]?.id; ui.exportText = ""; save(); ui.tab = "setup"; render(); },
+  newp: t => { if (!armed(t, "今の作品を消します。もう一度")) return; P = blankProject(); ui.sceneId = null; ui.exportText = ""; save(); ui.tab = "setup"; render(); },
+};
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const f = ACT[t.dataset.act]; if (f) { e.preventDefault(); f(t, t.dataset.id, e); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#modal").hidden) closeModal();
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches(".frame")) { e.preventDefault(); openDraw(e.target.dataset.id); }
+});
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+
+function readVal(el) { return el.type === "number" || el.type === "range" ? parseFloat(el.value) : el.value; }
+function onEdit(e) {
+  const el = e.target, d = el.dataset;
+  if (el.id === "imp") return;
+  if (d.check) { P.checks[d.check] = el.checked; saveSoon(); return; }
+  let v = readVal(el);
+  if ((el.type === "number" || el.type === "range") && !isFinite(v)) return;
+  if (d.bind) {
+    if (d.bind === "fps") v = +v;
+    if (d.bind === "asl") v = clamp(v, 1, 30);
+    P[d.bind] = v;
+    if (d.bind === "durationMin") { $("#durv").textContent = v; $("#durs").textContent = v * 60; document.querySelectorAll('[data-k="durationMin"]').forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === v)); }
+    if (d.bind === "structure" && e.type === "change") { render(); }
+    if (d.bind === "aspect" && e.type === "change") paintThumbs();
+    const est = $("#estim"); if (est) est.textContent = estimateText();
+  } else if (d.char) { const c = P.characters.find(x => x.id === d.char); if (c) c[d.k] = v; }
+  else if (d.beat) { const b = P.beats.find(x => x.id === d.beat); if (b) b[d.k] = d.k === "pct" ? clamp(v, 0, 100) : v; if (d.k === "pct" && e.type === "change") render(); }
+  else if (d.scene) { const s = findScene(d.scene); if (!s) return; s[d.k] = v;
+    if (e.type === "change" && ["time", "beatId"].includes(d.k)) render();
+    if (d.k === "place") { const h = document.querySelector(".hashira"); if (h) h.textContent = `S${sceneNo(s)}　○${s.place || "場所"}（${s.time}）`; } }
+  else if (d.cut) { const [c] = findCut(d.cut); if (!c) return;
+    if (d.k === "sec") { c.sec = clamp(r2(v) || .5, .5, 600); if (e.type === "change") el.value = c.sec; refreshBoardTimes(); }
+    else c[d.k] = v;
+    if (["shot", "angle", "move", "comp"].includes(d.k) && !c.sketch) { const cv = document.querySelector(`canvas[data-thumb="${c.id}"]`); if (cv) paintFrame(cv, c); } }
+  else return;
+  updateMeter(); saveSoon();
+}
+document.addEventListener("input", onEdit);
+document.addEventListener("change", e => {
+  if (e.target.id === "imp") {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { try { const o = JSON.parse(rd.result); if (!o || !Array.isArray(o.scenes)) throw new Error();
+        P = migrate(o); ui.sceneId = P.scenes[0]?.id; save(); ui.tab = "setup"; render(); setSave(`「${f.name}」を読み込みました`, false); }
+      catch (err) { setSave("読み込めませんでした。このアプリで書き出したJSONか確認してください", true); } };
+    rd.readAsText(f); return;
+  }
+  onEdit(e);
+});
+
+/* ============ 起動 ============ */
+P = load();
+ui.sceneId = P.scenes[0]?.id || null;
+render();
+setSave("このブラウザに自動保存", false);
+</script>
+</body>
+</html>
