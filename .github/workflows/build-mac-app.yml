@@ -19,6 +19,8 @@ jobs:
             /tmp/iconenv/bin/pip install --quiet pillow
             /tmp/iconenv/bin/python desktop/scripts/make-icon.py desktop/build/mascot-source.png desktop/build/icon.png
           fi
+      - name: Diagnose (Electron version compatibility matrix)
+        run: bash desktop/scripts/electron-matrix.sh
       - name: Build
         working-directory: desktop
         run: |

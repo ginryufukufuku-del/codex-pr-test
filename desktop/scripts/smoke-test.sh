@@ -35,12 +35,4 @@ except Exception as e:
     print('(parse failed)', e); print(raw[:5000])
 PY
 done
-echo "=== minimal bare Electron test ==="
-ELBIN=$(ls -d node_modules/electron/dist/Electron.app/Contents/MacOS/Electron 2>/dev/null)
-if [ -n "$ELBIN" ]; then
-  rm -rf /tmp/mini; mkdir -p /tmp/mini
-  echo '{"name":"mini","version":"1.0.0","main":"main.js"}' > /tmp/mini/package.json
-  echo "const {app}=require('electron');app.whenReady().then(()=>{console.log('MINI_READY');setTimeout(()=>app.quit(),1500)});" > /tmp/mini/main.js
-  ELECTRON_ENABLE_LOGGING=1 timeout 30 "$ELBIN" /tmp/mini > /tmp/mini.log 2>&1; echo "mini electron exit code: $?"; head -20 /tmp/mini.log
-else echo "(electron binary not found)"; fi
 exit 0
