@@ -152,13 +152,14 @@
   }
   .result-item:active,.result-item.pressed{transform:scale(0.98);background:#eaf5ee;}
   .result-item .name{font-weight:700;font-size:1.05rem;}
-  .memo-item{margin-top:10px;}
+  .memo-item{margin-top:6px;}
   .memo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .memo-name{font-weight:700;font-size:1.05rem;color:var(--accent-dark);}
   .memo-item textarea{width:100%;min-height:0;margin-top:4px;overflow:hidden;white-space:pre-wrap;border:2px solid var(--border);border-radius:14px;padding:8px 12px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;resize:none;}
   .memo-item textarea.collapsed{padding-top:0;padding-bottom:0;line-height:34px;height:38px;}
   button.memo-copy{background:#fff;border:1px solid rgba(88,143,115,.55);color:var(--accent-dark);border-radius:999px;padding:4px 16px;font-size:0.7rem;font-weight:700;min-height:30px;cursor:pointer;}
-  a.memo-link{display:block;text-align:center;margin-top:12px;border:2px solid var(--border);border-radius:999px;padding:8px;color:var(--accent-dark);font-weight:700;font-size:0.8rem;text-decoration:none;}
+  .memo-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;}
+  a.memo-link{margin-left:auto;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:3px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
   .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
@@ -210,10 +211,12 @@
   </div>
 
   <div class="card" id="memo-card" style="display:none;">
-    <h2 style="color:var(--accent-dark);">回答メモ<span style="font-size:0.5em;font-weight:400;">（NotebookLM用）</span></h2>
-    <div class="note" style="margin-top:0;">各AIの回答を貼り付けて「コピー」を押し、NotebookLMでAIごとに別々のソースとして追加します。</div>
+    <div class="memo-title-row">
+      <h2 style="color:var(--accent-dark);margin:0;">回答メモ<span style="font-size:0.5em;font-weight:400;">（NotebookLM用）</span></h2>
+      <span class="note" style="margin:0;">回答を貼って「コピー」→NotebookLMへAIごとに別ソースで追加</span>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
+    </div>
     <div id="memo-list"></div>
-    <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
   </div>
 
 </main>
