@@ -152,6 +152,12 @@
   }
   .result-item:active,.result-item.pressed{transform:scale(0.98);background:#eaf5ee;}
   .result-item .name{font-weight:700;font-size:1.05rem;}
+  .memo-item{margin-top:10px;}
+  .memo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .memo-name{font-weight:700;font-size:1.05rem;color:var(--accent-dark);}
+  .memo-item textarea{width:100%;min-height:64px;margin-top:4px;border:2px solid var(--border);border-radius:14px;padding:8px 12px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;resize:vertical;}
+  button.memo-copy{background:#fff;border:1px solid rgba(88,143,115,.55);color:var(--accent-dark);border-radius:999px;padding:4px 16px;font-size:0.7rem;font-weight:700;min-height:30px;cursor:pointer;}
+  a.memo-link{display:block;text-align:center;margin-top:12px;border:2px solid var(--border);border-radius:999px;padding:8px;color:var(--accent-dark);font-weight:700;font-size:0.8rem;text-decoration:none;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
   .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
@@ -200,6 +206,13 @@
     </div>
     <div class="note" style="margin-top:6px;">サファリ版で開くと、インプットボタンを押したときに自動で音声入力が開始されます。</div>
     <div class="result-list" id="result-list"></div>
+  </div>
+
+  <div class="card" id="memo-card" style="display:none;">
+    <h2 style="color:var(--accent-dark);">回答メモ<span style="font-size:0.5em;font-weight:400;">（NotebookLM用）</span></h2>
+    <div class="note" style="margin-top:0;">各AIの回答を貼り付けて「コピー」を押し、NotebookLMでAIごとに別々のソースとして追加します。</div>
+    <div id="memo-list"></div>
+    <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
   </div>
 
 </main>
@@ -338,6 +351,8 @@ const SERVICES = [
 
 const chipsContainers = { medical: document.getElementById("service-chips-medical"), general: document.getElementById("service-chips-general") };
 const resultList = document.getElementById("result-list");
+const memoList = document.getElementById("memo-list");
+const memoCard = document.getElementById("memo-card");
 
 async function copyText(text) {
   try {
@@ -369,6 +384,37 @@ function showResult(s, status, url, blocked) {
       ${showStatus ? `<div class="status">${status}</div>` : ""}
     </div>
   `;
+  ensureMemo(s);
+  saveState();
+}
+
+function ensureMemo(s) {
+  memoCard.style.display = "";
+  if (memoList.querySelector(`[data-memo-id="${s.id}"]`)) return;
+  const item = document.createElement("div");
+  item.className = "memo-item";
+  item.dataset.memoId = s.id;
+  item.innerHTML = `
+    <div class="memo-head"><span class="memo-name"></span><button type="button" class="memo-copy">コピー</button></div>
+    <textarea placeholder="ここに${s.name}の回答を貼り付け"></textarea>`;
+  item.querySelector(".memo-name").textContent = s.name;
+  const ta = item.querySelector("textarea");
+  const btn = item.querySelector(".memo-copy");
+  ta.addEventListener("input", saveState);
+  btn.addEventListener("click", async () => {
+    const text = ta.value.trim();
+    if (!text) { alert("先に回答を貼り付けてください。"); return; }
+    const ok = await copyText(`【${s.name}の回答】\n質問：${buildQuery()}\n\n${text}`);
+    btn.textContent = ok ? "コピーしました" : "コピー失敗";
+    setTimeout(() => { btn.textContent = "コピー"; }, 1500);
+  });
+  memoList.appendChild(item);
+}
+
+function clearResults() {
+  resultList.innerHTML = "";
+  memoList.innerHTML = "";
+  memoCard.style.display = "none";
   saveState();
 }
 
@@ -378,7 +424,8 @@ function saveState() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
       voice: document.getElementById("voice").value,
-      bars: [...resultList.children].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href }))
+      bars: [...resultList.children].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href })),
+      memos: Object.fromEntries([...memoList.children].map(m => [m.dataset.memoId, m.querySelector("textarea").value]))
     }));
   } catch (e) {}
 }
@@ -392,6 +439,11 @@ function restoreState() {
       const s = SERVICES.find(x => x.id === b.id);
       if (s) showResult(s, b.status, b.url, false);
     });
+    Object.entries(saved.memos || {}).forEach(([id, text]) => {
+      const ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
+      if (ta) ta.value = text;
+    });
+    saveState();
   } catch (e) {}
 }
 
@@ -445,8 +497,7 @@ document.getElementById("clear-btn").addEventListener("click", () => {
   const voiceEl = document.getElementById("voice");
   voiceEl.value = "";
   refreshPreview();
-  resultList.innerHTML = "";
-  saveState();
+  clearResults();
   voiceEl.focus();
 });
 
@@ -513,8 +564,7 @@ if (isIOS && (!SpeechRecognitionCtor || isStandalone)) {
     recording = true;
     micBtn.innerHTML = '⏹ <span style="font-size:1.35em;">停止</span>';
     micBtn.classList.add("recording");
-    resultList.innerHTML = "";
-    saveState();
+    clearResults();
     recognizer.start();
   }
   function stopRecording() {
