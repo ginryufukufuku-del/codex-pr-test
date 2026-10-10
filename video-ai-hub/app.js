@@ -127,4 +127,81 @@ $('genBtn').onclick = async () => {
   } catch (e) { j.status = '失敗'; j.memo = String(e.message).slice(0, 200); st.textContent = '失敗: ' + j.memo; }
   finally { save(); renderJobs(); }
 };
-initApi();
+
+// ---- ⑤ AI制作チーム(4人のエージェント) ----
+const AGC = { '①脚本家': 'ag1', '②撮影・生成担当': 'ag2', '③監督': 'ag3', '④最終チェック': 'ag4' };
+const KIND = { draft: '案', comment: '意見', reply: '回答', ok: 'OK', paid: '有料', error: 'エラー', info: '', phase: '' };
+let stReady = false, stId = null, stTimer = null, stSrc = {}, stProvs = [];
+async function initStudio() {
+  let st;
+  try { const r = await api('/api/studio/status'); if (!r.ok) return; st = await r.json(); } catch { return; }
+  $('studioSec').hidden = false;
+  stProvs = apiProvs;
+  $('stStatus').textContent = [st.configured ? `監督AI: ${st.model}` : 'Claude の APIキー(ANTHROPIC_API_KEY)が未設定です',
+    st.ffmpeg ? '' : 'ffmpeg が見つかりません', stProvs.length ? '' : '動画生成AIのキーが未設定です',
+    st.voices ? `声: VOICEVOX(${st.voiceNames.join('・')})` : '声: VOICEVOX が起動していません(声なしで制作します)'].filter(Boolean).join(' / ');
+  stReady = st.configured && st.ffmpeg && stProvs.length > 0;
+  $('stProv').innerHTML = stProvs.map(p => `<option value="${esc(p.id)}">${esc(p.name)}【有料】</option>`).join('');
+  const setP = () => {
+    const p = stProvs.find(x => x.id === $('stProv').value); if (!p) return;
+    $('stAspect').innerHTML = p.aspects.filter(a => a !== '1:1').map(a => `<option>${esc(a)}</option>`).join('');
+    $('stModelL').hidden = !p.models;
+    $('stModel').innerHTML = (p.models || []).map(m => `<option value="${esc(m.id)}">${esc(m.label)}</option>`).join('');
+  };
+  $('stProv').onchange = setP; setP();
+}
+$('stGen').oninput = () => { $('stGenShow').textContent = $('stGen').value; };
+$('stPaid').onchange = () => { $('stStart').disabled = !$('stPaid').checked || !stReady; };
+$('stSource').oninput = () => { if (!$('stSource').value.trim()) { stSrc = {}; $('stSrcInfo').textContent = ''; } };
+$('stAozoraBtn').onclick = async () => {
+  $('stSrcInfo').textContent = '読み込み中…';
+  try {
+    const r = await api('/api/studio/aozora', { method: 'POST', body: JSON.stringify({ url: $('stAozora').value.trim() }) }), j = await r.json();
+    if (!r.ok) { $('stSrcInfo').textContent = j.error; return; }
+    stSrc = j; $('stSource').value = j.text;
+    $('stSrcInfo').textContent = `${j.author}『${j.title}』を読み込みました(${j.totalChars}文字${j.truncated ? `。長いため先頭${j.text.length}文字を使います` : ''})。`;
+  } catch { $('stSrcInfo').textContent = '読み込めませんでした'; }
+};
+$('stStart').onclick = async () => {
+  if (!$('stPaid').checked) return;                    // 有料確認なしでは呼ばない
+  $('stPaid').checked = false; $('stStart').disabled = true;
+  try {
+    let bgmId;
+    const f = $('stBgm').files[0];
+    if (f) {
+      const r = await fetch('/api/studio/bgm', { method: 'POST', headers: { 'content-type': f.type || 'audio/mpeg', ...hdr() }, body: f }), j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      bgmId = j.bgmId;
+    }
+    const num = id => parseInt($(id).value, 10);
+    const r = await api('/api/studio/start', { method: 'POST', body: JSON.stringify({
+      brief: $('stBrief').value.trim(), sourceText: $('stSource').value.trim(), sourceTitle: stSrc.title, sourceAuthor: stSrc.author, sourceCredit: stSrc.credit, sourceTruncated: stSrc.truncated,
+      provider: $('stProv').value, model: $('stModelL').hidden ? undefined : $('stModel').value, aspect: $('stAspect').value,
+      targetSec: num('stSec'), maxShots: num('stShots'), maxGenerations: num('stGen'), rounds: num('stRounds'), useVoice: $('stVoice').checked, bgmId, confirmPaid: true }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+    stId = j.id; $('stProgress').hidden = false; $('stStop').hidden = false; $('stVid').hidden = true; $('stDl').hidden = true;
+    clearInterval(stTimer); stTimer = setInterval(pollStudio, 3000); pollStudio();
+  } catch (e) { alert(e.message || '開始できませんでした'); }
+};
+$('stStop').onclick = async () => { if (stId && confirm('制作を停止しますか?(それまでの料金はかかります)')) await api(`/api/studio/${stId}/stop`, { method: 'POST' }); };
+async function pollStudio() {
+  let v;
+  try { const r = await api(`/api/studio/${stId}`); if (!r.ok) return; v = await r.json(); } catch { return; }
+  $('stPhase').textContent = v.status === 'running' ? `進行中: ${v.phase}` : v.status === 'done' ? '完成しました' : v.status === 'stopped' ? '停止しました' : `止まりました: ${v.error || ''}`;
+  $('stMeta').textContent = `動画生成 ${v.generations.used}/${v.generations.max}回 ・ Claude ${v.claudeCalls}回 ・ Claude の料金目安 約$${v.cost.usd}(動画生成の料金は各社の明細で確認)`;
+  const box = $('stLog'), atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 10;
+  box.innerHTML = v.log.map(l => l.kind === 'phase' ? `<div class="msg ph">${esc(l.text)}</div>`
+    : `<div class="msg ${AGC[l.agent] || 'sys'} k-${esc(l.kind)}"><b>${esc(l.agent)}</b>${KIND[l.kind] ? ` <span class="kind">${KIND[l.kind]}</span>` : ''}<div>${esc(l.text)}</div></div>`).join('');
+  if (atEnd) box.scrollTop = box.scrollHeight;
+  $('stNote').textContent = JSON.stringify(v.notebook, null, 1);
+  $('stCredits').innerHTML = v.credits.length ? '<b>クレジット(公開時に表記してください)</b><br>' + v.credits.map(esc).join('<br>') : '';
+  if (v.status !== 'running') {
+    clearInterval(stTimer); $('stStop').hidden = true;
+    if (v.finalReady && $('stVid').hidden) {
+      const r = await fetch(`/api/studio/${stId}/final`, { headers: hdr() });
+      if (r.ok) { const u = URL.createObjectURL(await r.blob()); $('stVid').src = u; $('stVid').hidden = false; $('stDl').href = u; $('stDl').hidden = false; }
+    }
+  }
+}
+initApi().then(initStudio);
