@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "com.example.video-ai-hub",
-    "productName": "動画生成AIハブ",
+    "productName": "VideoAIHub",
     "files": [
       "main.js",
       "preload.js",
@@ -27,6 +27,9 @@
       "category": "public.app-category.productivity",
       "identity": null,
       "icon": "build/icon.png",
+      "extendInfo": {
+        "CFBundleDisplayName": "動画生成AIハブ"
+      },
       "target": [
         "dmg",
         "zip"
