@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>医療AI 横断検索アシスタント</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192-v2.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-v2.png">
+<meta name="theme-color" content="#6fae8e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="医療AI検索">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  :root{
+    --bg:#f2f7f4; --card:#ffffff; --border:#dbe6e0; --text:#26332c; --muted:#6b7d73;
+    --accent:#6fae8e; --accent-dark:#588f73; --chip:#e9f4ee; --chip-active:#6fae8e; --chip-active-text:#fff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{font-size:20px;touch-action:manipulation;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Segoe UI",sans-serif;background:var(--bg);color:var(--text);}
+  .hero{
+    max-width:960px;margin:12px auto 0;padding:6px 20px;border-radius:32px;
+    background-color:#f0f6fb;
+    background-image:
+      radial-gradient(120% 140% at 88% -10%, rgba(200,224,246,.55), rgba(200,224,246,0) 60%),
+      radial-gradient(100% 120% at 5% 115%, rgba(214,232,248,.5), rgba(214,232,248,0) 55%),
+      linear-gradient(150deg, rgba(255,255,255,.6), rgba(255,255,255,0) 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='220'%3E%3Cpath d='M20 190 C 70 150, 55 100, 100 80 C 150 58, 130 130, 175 150 C 215 168, 245 140, 250 90 C 253 60, 235 30, 260 10' stroke='%23bcd7ef' stroke-width='5' fill='none' opacity='0.45' stroke-linecap='round'/%3E%3Cpath d='M60 210 C 100 180, 90 140, 130 120 C 165 103, 150 160, 190 178' stroke='%23d3e6f5' stroke-width='4' fill='none' opacity='0.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat,no-repeat,no-repeat,repeat;background-size:cover,cover,cover,360px 220px;
+    border:1px solid #dceaf6;
+  }
+  header{max-width:100%;}
+  h1{font-size:1.4rem;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:0.62rem;line-height:1.25;}
+  main{max-width:960px;margin:0 auto;padding:12px 16px 6px;display:flex;flex-direction:column;gap:11.6px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6.6px 8px;}
+  .card h2{font-size:1.05rem;margin:0 0 8px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  label{display:block;font-size:0.9rem;color:var(--muted);margin-bottom:5px;font-weight:600;}
+  input[type=text], input[type=number], textarea, select{
+    width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:18px;font-size:1.05rem;background:#fff;color:var(--text);
+  }
+  textarea{resize:vertical;min-height:60px;font-family:inherit;}
+  #voice::placeholder{font-size:0.525rem;color:#b8c6bd;opacity:1;}
+  .field{margin-bottom:8.7px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8.7px;}
+  .chip{
+    border:2px solid var(--border);background:var(--chip);padding:9.6px 19.8px;border-radius:999px;
+    cursor:pointer;font-size:1.14rem;font-weight:600;user-select:none;transition:transform .06s,background .1s;
+    touch-action:manipulation;min-height:35px;
+  }
+  .chip.active, button.primary, #mic-btn.recording, button.clear-btn{
+    text-shadow:
+      -1px -1px 0 rgba(0,0,0,.16),
+      1px -1px 0 rgba(0,0,0,.22),
+      -1px 1px 0 rgba(0,0,0,.3),
+      1px 1px 0 rgba(0,0,0,.42),
+      2px 2px 2px rgba(0,0,0,.4),
+      3px 3px 4px rgba(0,0,0,.3);
+  }
+  .chip.active{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(140,196,168,.72), rgba(88,143,115,.68));
+    color:var(--chip-active-text);border:1px solid rgba(88,143,115,.55);
+    -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(60,110,85,.32), 0 1px 2px rgba(60,110,85,.2);
+  }
+  .chip.active.chip-general{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(128,190,196,.72), rgba(78,140,158,.68));
+    border-color:rgba(78,140,158,.55);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(55,100,120,.32), 0 1px 2px rgba(55,100,120,.2);
+  }
+  .chip.active.chip-lightblue{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.38), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(140,195,215,.72), rgba(95,155,182,.68));
+    border-color:rgba(95,155,182,.55);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(65,120,145,.32), 0 1px 2px rgba(65,120,145,.2);
+  }
+  .chip.active.chip-yellowgreen{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(176,208,120,.74), rgba(122,160,72,.70));
+    border-color:rgba(122,160,72,.55);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(100,130,50,.32), 0 1px 2px rgba(100,130,50,.2);
+  }
+  .chip.active.chip-gray{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(182,196,206,.72), rgba(132,148,160,.68));
+    color:var(--chip-active-text);border:1px solid rgba(132,148,160,.6);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 14px rgba(0,0,0,.1),
+               0 6px 14px rgba(85,100,112,.32), 0 1px 2px rgba(85,100,112,.2);
+  }
+  .chip:active,.chip.pressed{transform:scale(0.96);}
+  .chip .badge{font-size:0.55rem;font-weight:400;opacity:.85;margin-left:6px;display:block;margin-top:4px;}
+  .note{font-size:0.55rem;color:var(--muted);margin-top:8.7px;line-height:1.4;}
+  .btnbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:12.2px;}
+  button{touch-action:manipulation;min-height:44px;}
+  #mic-btn, #clear-btn{min-height:28px;}
+  button.primary{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(206,205,140,.72), rgba(150,145,85,.68));
+    color:#fff;border:1px solid rgba(150,145,85,.6);padding:7.2px 16.5px;border-radius:999px;font-size:0.55rem;cursor:pointer;font-weight:700;
+    -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 16px rgba(0,0,0,.1),
+               0 8px 18px rgba(120,113,55,.32), 0 2px 4px rgba(120,113,55,.22);
+    transition:transform .06s,background .1s;
+  }
+  button.primary:hover{background:linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%), linear-gradient(160deg, rgba(190,188,120,.78), rgba(132,127,68,.74));}
+  button.primary:active,button.primary.pressed{transform:scale(0.97);}
+  button.secondary{
+    background:#fff;border:2px solid var(--border);padding:14px 22px;border-radius:999px;cursor:pointer;font-size:1rem;font-weight:600;
+    transition:transform .06s,background .1s;
+  }
+  button.secondary:hover{background:#eef6f1;}
+  button.secondary:active,button.secondary.pressed{transform:scale(0.97);background:#e2f0e8;}
+  #mic-btn.recording{
+    background:linear-gradient(160deg, rgba(224,138,138,.75), rgba(196,105,105,.7));
+    color:#fff;border-color:rgba(196,105,105,.7);
+  }
+  button.clear-btn{
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, rgba(235,150,150,.68), rgba(205,110,110,.62));
+    color:#fff;border:1px solid rgba(205,110,110,.6);padding:7.2px 16.5px;
+    -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -10px 16px rgba(0,0,0,.1),
+               0 8px 18px rgba(150,80,80,.32), 0 2px 4px rgba(150,80,80,.22);
+  }
+  button.clear-btn:hover{background:linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%), linear-gradient(160deg, rgba(220,125,125,.74), rgba(185,90,90,.68));}
+  #query-preview{
+    white-space:pre-wrap;background:#f4faf6;border:2px dashed var(--border);border-radius:18px;padding:8.6px 16px;font-size:1rem;line-height:1.4;min-height:42px;
+    color:var(--accent-dark);display:flex;align-items:center;justify-content:center;text-align:center;
+  }
+  .result-list{display:flex;flex-direction:column;gap:8.7px;margin-top:10.4px;}
+  .result-item{
+    display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);border-radius:18px;
+    padding:9.8px 16px;background:#f4faf6;color:inherit;text-decoration:none;cursor:pointer;
+    touch-action:manipulation;transition:transform .06s,background .1s;
+  }
+  .result-item:active,.result-item.pressed{transform:scale(0.98);background:#eaf5ee;}
+  .result-item .name{font-weight:700;font-size:1.05rem;}
+  .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
+  .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
+  footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <header>
+    <h1>🩺 医療AI 横断検索アシスタント<span style="font-size:0.5em;font-weight:600;">（試作版）</span></h1>
+  </header>
+</div>
+<main>
+
+
+  <div class="card" style="padding-bottom:6px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;">
+      <h2 style="font-size:clamp(0.72rem, 5.6vw, 1.512rem);margin:0;white-space:nowrap;">患者情報</h2>
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        <button class="primary" id="mic-btn" style="padding:4.3px 8px;font-size:0.48rem;min-height:29.5px;white-space:nowrap;">🎤 <span style="font-size:1.35em;">インプット</span></button>
+        <button class="secondary clear-btn" id="clear-btn" style="padding:4.3px 16px;font-size:0.48rem;min-height:29.5px;white-space:nowrap;letter-spacing:0;font-weight:700;">🗑 <span style="font-size:1.35em;">リセット</span></button>
+      </div>
+    </div>
+    <div class="note" style="margin:0 0 10px;font-size:0.66rem;">年齢・性別・主訴・現病歴・身体所見・検査所見・鑑別疾患など。</div>
+    <div class="field" style="margin-bottom:0;">
+      <textarea id="voice" rows="1" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:42px;"></textarea>
+      <span class="note" id="mic-status" style="display:none;"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>タップ<span style="font-size:0.8em;">した</span>AI<span style="font-size:0.8em;">へ</span>コピー＆送信</h2>
+
+    <div class="note" style="font-weight:700;margin-top:0;">医療系AI</div>
+    <div class="chips" id="service-chips-medical"></div>
+
+    <div class="note" style="font-weight:700;">汎用AI・チャット / 検索</div>
+    <div class="chips" id="service-chips-general"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent-dark);">患者情報</h2>
+    <div id="query-preview">入力内容</div>
+    <div class="btnbar">
+      <button class="secondary" id="copy-btn" style="width:100%;padding-top:9px;padding-bottom:9px;color:var(--accent-dark);">クエリ<span style="font-size:0.65em;">だけ</span>コピー<span style="font-size:0.6em;font-weight:400;">（上記にない他のAI用）</span></button>
+    </div>
+    <div class="note" style="margin-top:6px;">サファリ版で開くと、インプットボタンを押したときに自動で音声入力が開始されます。</div>
+    <div class="result-list" id="result-list"></div>
+  </div>
+
+</main>
+<footer>
+  試作版（フロントエンドのみ・データはブラウザ内でのみ処理し外部送信しません）。実際の連携仕様は各サービスの利用規約・API提供状況により変更される可能性があります。
+</footer>
+
+<script>
+const SERVICES = [
+  {
+    id: "openevidence",
+    category: "medical",
+    name: "OpenEvidence",
+    urlType: "manual",
+    url: "https://www.openevidence.com/",
+    note: "米国医師資格認証が必要。トップを開きます。"
+  },
+  {
+    id: "verahealth",
+    category: "medical",
+    name: "Vera Health",
+    urlType: "manual",
+    url: "https://www.verahealth.ai/",
+    note: "医療エビデンス検索AI（推定）。料金体系・アクセス条件は要確認です。"
+  },
+  {
+    id: "medscapeai",
+    category: "medical",
+    name: "Medscape AI",
+    urlType: "manual",
+    url: "https://www.medscape.com/sites/public/medscape-ai",
+    note: "薬剤・疾患・治療を短く確認でき、回答に参照元が付きます。無料会員登録が必要。Medscape AIの紹介ページを開きます。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。個人が特定できる情報は入力しないでください。"
+  },
+  {
+    id: "glasshealth",
+    category: "medical",
+    name: "Glass Health",
+    urlType: "manual",
+    url: "https://glass.health/",
+    note: "臨床意思決定支援AI。トップ/ログイン画面を開きます。"
+  },
+  {
+    id: "dxgpt",
+    category: "medical",
+    name: "DxGPT",
+    urlType: "manual",
+    url: "https://dxgpt.app/",
+    note: "非営利団体Foundation 29の鑑別診断支援AI（無料・多言語）。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "hokuto",
+    category: "medical",
+    chipTone: "yellowgreen",
+    name: "ホクト (Hokuto)",
+    urlType: "manual",
+    url: "https://hokuto.app/ai-search",
+    note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "medii",
+    category: "medical",
+    chipTone: "yellowgreen",
+    name: "MEDII",
+    urlType: "manual",
+    url: "https://medii.jp/",
+    note: "希少疾患専門医相談プラットフォーム。トップを開きます。"
+  },
+  {
+    id: "jme",
+    category: "medical",
+    chipTone: "yellowgreen",
+    name: "JME",
+    urlType: "manual",
+    url: "https://jme.m-review.co.jp/",
+    note: "日本の医師向け無料AIアシスタント。国内ガイドラインとPubMedを参照。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "chatgpt",
+    category: "general",
+    name: "ChatGPT",
+    urlType: "query",
+    url: "https://chatgpt.com/?q=",
+    note: "ログインが必要。仕様変更により動作しなくなる可能性があります。"
+  },
+  {
+    id: "gemini",
+    category: "general",
+    name: "Gemini",
+    urlType: "query",
+    url: "https://gemini.google.com/app?q=",
+    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "claude",
+    category: "general",
+    name: "Claude",
+    urlType: "query",
+    url: "https://claude.ai/new?q=",
+    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "copilot",
+    category: "general",
+    name: "Copilot",
+    urlType: "query",
+    url: "https://copilot.microsoft.com/?q=",
+    note: "Microsoft Copilot。検索語を付けて開きます（入力欄に入らない場合があります）。うまく反映されない場合はコピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "grok",
+    category: "general",
+    name: "Grok",
+    urlType: "query",
+    url: "https://grok.com/?q=",
+    note: "xAIのGrok。検索語を付けて開きます（入力欄に入るかは未確認）。入らない場合はコピー済みの内容を貼り付けてください。"
+  },
+  {
+    id: "google",
+    category: "general",
+    chipTone: "gray",
+    name: "Google",
+    urlType: "query",
+    url: "https://www.google.com/search?q=",
+    note: "一般的な補助検索として。"
+  },
+  {
+    id: "bing",
+    category: "general",
+    chipTone: "gray",
+    name: "Bing",
+    urlType: "query",
+    url: "https://www.bing.com/search?q=",
+    note: "検索語を付けて開けます。Copilotの回答が表示される場合があります。"
+  }
+];
+
+const chipsContainers = { medical: document.getElementById("service-chips-medical"), general: document.getElementById("service-chips-general") };
+const resultList = document.getElementById("result-list");
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+const NO_STATUS_IDS = ["google", "bing", "chatgpt"];
+
+function showResult(s, status, url, blocked) {
+  let item = resultList.querySelector(`[data-result-id="${s.id}"]`);
+  if (!item) {
+    item = document.createElement("a");
+    item.className = "result-item";
+    item.target = "_blank";
+    item.rel = "noopener";
+    item.dataset.resultId = s.id;
+    resultList.appendChild(item);
+  }
+  item.href = url;
+  item.dataset.status = status;
+  const showStatus = !NO_STATUS_IDS.includes(s.id);
+  item.innerHTML = `
+    <div>
+      <div class="name">${s.name}</div>
+      ${showStatus ? `<div class="status">${status}</div>` : ""}
+    </div>
+  `;
+  saveState();
+}
+
+const STORE_KEY = "medai-search-state-v1";
+
+function saveState() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      voice: document.getElementById("voice").value,
+      bars: [...resultList.children].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href }))
+    }));
+  } catch (e) {}
+}
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (!saved) return;
+    document.getElementById("voice").value = saved.voice || "";
+    (saved.bars || []).forEach(b => {
+      const s = SERVICES.find(x => x.id === b.id);
+      if (s) showResult(s, b.status, b.url, false);
+    });
+  } catch (e) {}
+}
+
+SERVICES.forEach(s => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip active" + (s.chipTone ? " chip-" + s.chipTone : (s.category === "general" ? " chip-general" : ""));
+  chip.dataset.id = s.id;
+  chip.innerHTML = s.name;
+  chip.title = s.note;
+  chip.addEventListener("click", () => {
+    const q = buildQuery();
+    if (!q) { alert("先に患者情報を話すか入力してください。"); return; }
+    let targetUrl = s.url;
+    if (s.urlType === "query") {
+      targetUrl = s.url + encodeURIComponent(q.replace(/\n/g, " "));
+    }
+    copyText(q);
+    showResult(
+      s,
+      s.urlType === "query" ? "コピー済み・タップで検索結果を開く" : "コピー済み・タップで開いて貼り付け",
+      targetUrl,
+      false
+    );
+  });
+  chipsContainers[s.category].appendChild(chip);
+});
+
+const preview = document.getElementById("query-preview");
+
+function buildQuery() {
+  return document.getElementById("voice").value.trim();
+}
+
+function autoGrowVoice() {
+  const el = document.getElementById("voice");
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
+function refreshPreview() {
+  const q = buildQuery();
+  preview.textContent = q || "入力内容";
+  autoGrowVoice();
+}
+document.getElementById("voice").addEventListener("input", () => { refreshPreview(); saveState(); });
+restoreState();
+refreshPreview();
+
+document.getElementById("clear-btn").addEventListener("click", () => {
+  const voiceEl = document.getElementById("voice");
+  voiceEl.value = "";
+  refreshPreview();
+  resultList.innerHTML = "";
+  saveState();
+  voiceEl.focus();
+});
+
+let recognizer = null;
+let recording = false;
+const micBtn = document.getElementById("mic-btn");
+const micStatus = document.getElementById("mic-status");
+const voiceEl = document.getElementById("voice");
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+const isStandalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+
+if (isIOS && (!SpeechRecognitionCtor || isStandalone)) {
+  micBtn.addEventListener("click", () => {
+    voiceEl.focus();
+    micStatus.textContent = "キーボードのマイクアイコン🎤をタップすると、OS標準の音声入力が始まります。";
+  });
+} else if (!SpeechRecognitionCtor) {
+  micStatus.textContent = "このブラウザは音声入力に対応していません。手入力してください。";
+  micBtn.disabled = true;
+} else {
+  recognizer = new SpeechRecognitionCtor();
+  recognizer.lang = "ja-JP";
+  recognizer.continuous = true;
+  recognizer.interimResults = true;
+
+  let baseText = "";
+
+  recognizer.addEventListener("start", () => {
+    baseText = voiceEl.value ? voiceEl.value.trim() + " " : "";
+    micStatus.textContent = "聞き取り中です…話し終えたら「停止」を押してください。";
+  });
+
+  recognizer.addEventListener("result", (event) => {
+    let finalText = "";
+    let interimText = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalText += t;
+      else interimText += t;
+    }
+    if (finalText) baseText += finalText;
+    voiceEl.value = (baseText + interimText).trim();
+    refreshPreview();
+    saveState();
+  });
+
+  recognizer.addEventListener("error", (event) => {
+    stopRecording();
+    const denied = event.error === "not-allowed" || event.error === "service-not-allowed";
+    micStatus.textContent = denied
+      ? "音声入力が許可されていません。キーボードのマイクアイコン🎤から音声入力してください。"
+      : `音声認識エラー: ${event.error}`;
+    if (denied) voiceEl.focus();
+  });
+
+  recognizer.addEventListener("end", () => {
+    if (recording) recognizer.start();
+  });
+
+  function startRecording() {
+    recording = true;
+    micBtn.innerHTML = '⏹ <span style="font-size:1.35em;">停止</span>';
+    micBtn.classList.add("recording");
+    resultList.innerHTML = "";
+    saveState();
+    recognizer.start();
+  }
+  function stopRecording() {
+    recording = false;
+    micBtn.innerHTML = '🎤 <span style="font-size:1.35em;">インプット</span>';
+    micBtn.classList.remove("recording");
+    micStatus.textContent = "文字起こしが完了しました。内容を確認・修正できます。";
+    try { recognizer.stop(); } catch (e) {}
+  }
+  micBtn.addEventListener("click", () => {
+    if (recording) stopRecording(); else startRecording();
+  });
+}
+
+document.getElementById("copy-btn").addEventListener("click", async () => {
+  const q = buildQuery();
+  if (!q) { alert("先に患者情報を入力してください。"); return; }
+  const ok = await copyText(q);
+  alert(ok ? "クエリをコピーしました。" : "コピーに失敗しました。手動で選択してコピーしてください。");
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
