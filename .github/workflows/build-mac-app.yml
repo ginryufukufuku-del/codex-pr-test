@@ -27,31 +27,13 @@ jobs:
           # Apple のチップ(arm64)用
           file node_modules/ffmpeg-static/ffmpeg
           npx electron-builder --mac --arm64 --publish never
+          # 診断: 組み立て直後(署名が正常な状態)のアプリを起動して結果を表示
+          bash scripts/smoke-test.sh "dist/mac-arm64/動画生成AIハブ.app"
           # Intel(x64)用: 同梱する ffmpeg を x64 版に入れ替えてから組み立てる
           rm -f node_modules/ffmpeg-static/ffmpeg
           npm_config_arch=x64 npm rebuild ffmpeg-static
           file node_modules/ffmpeg-static/ffmpeg
           npx electron-builder --mac --x64 --publish never
-      - name: Smoke test (launch the built app and report what happens)
-        if: always()
-        run: |
-          sw_vers
-          APP="desktop/dist/mac-arm64/動画生成AIハブ.app"
-          ls -la "$APP/Contents/MacOS" || true
-          echo "--- codesign ---"
-          codesign -dv --verbose=4 "$APP" 2>&1 | head -30 || true
-          codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 | head -30 || true
-          echo "--- launch ---"
-          export ELECTRON_ENABLE_LOGGING=1
-          "$APP/Contents/MacOS/動画生成AIハブ" > /tmp/app.log 2>&1 &
-          PID=$!
-          sleep 20
-          if kill -0 $PID 2>/dev/null; then echo "RESULT: still running after 20s (OK)"; kill $PID; else wait $PID; echo "RESULT: exited with code $?"; fi
-          echo "--- app output ---"
-          head -80 /tmp/app.log
-          echo "--- crash reports ---"
-          ls -la ~/Library/Logs/DiagnosticReports 2>/dev/null | tail -5 || true
-          for f in $(ls -t ~/Library/Logs/DiagnosticReports/*.ips 2>/dev/null | head -1); do echo "== $f"; head -c 6000 "$f"; done
       - uses: actions/upload-artifact@v4
         with:
           name: video-ai-hub-mac
