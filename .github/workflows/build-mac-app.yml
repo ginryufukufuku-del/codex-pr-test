@@ -19,8 +19,19 @@ jobs:
             /tmp/iconenv/bin/pip install --quiet pillow
             /tmp/iconenv/bin/python desktop/scripts/make-icon.py desktop/build/mascot-source.png desktop/build/icon.png
           fi
-      - name: Diagnose (Electron version compatibility matrix)
-        run: bash desktop/scripts/electron-matrix.sh
+      - name: Diagnose (variant builds with ASCII names)
+        working-directory: desktop
+        run: |
+          npm install >/dev/null 2>&1
+          npm run prep
+          echo "##### Variant A: ASCII product name (VideoAIHub)"
+          npx electron-builder --mac --arm64 --dir --publish never -c.productName=VideoAIHub -c.directories.output=dist-a 2>&1 | tail -4
+          bash scripts/smoke-test.sh "dist-a/mac-arm64/VideoAIHub.app" "VideoAIHub"
+          echo "##### Variant B: Japanese product name + ASCII executable name"
+          npx electron-builder --mac --arm64 --dir --publish never -c.mac.executableName=VideoAIHub -c.directories.output=dist-b 2>&1 | tail -4
+          ls dist-b/mac-arm64/ 2>/dev/null
+          bash scripts/smoke-test.sh "dist-b/mac-arm64/動画生成AIハブ.app" "VideoAIHub"
+          rm -rf dist-a dist-b dist
       - name: Build
         working-directory: desktop
         run: |
@@ -29,8 +40,6 @@ jobs:
           # Apple のチップ(arm64)用
           file node_modules/ffmpeg-static/ffmpeg
           npx electron-builder --mac --arm64 --publish never
-          # 診断: 組み立て直後(署名が正常な状態)のアプリを起動して結果を表示
-          bash scripts/smoke-test.sh "dist/mac-arm64/動画生成AIハブ.app"
           # Intel(x64)用: 同梱する ffmpeg を x64 版に入れ替えてから組み立てる
           rm -f node_modules/ffmpeg-static/ffmpeg
           npm_config_arch=x64 npm rebuild ffmpeg-static

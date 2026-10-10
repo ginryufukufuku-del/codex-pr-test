@@ -1,7 +1,7 @@
 #!/bin/bash
 # 診断用(GitHub の Mac で実行): 組み立てたアプリを起動し、結果・出力・クラッシュレポートを表示する。常に成功(終了コード0)で終わる。
 set +e
-APP="$1"; NAME="動画生成AIハブ"
+APP="$1"; NAME="${2:-動画生成AIハブ}"
 echo "=== sw_vers ==="; sw_vers
 echo "=== codesign verify (fresh build) ==="
 codesign --verify --deep --strict --verbose=1 "$APP" 2>&1 | tail -5
