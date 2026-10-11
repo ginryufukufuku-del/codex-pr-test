@@ -461,7 +461,7 @@ function ensureMemo(s) {
 const importBar = document.getElementById("import-bar");
 const importTargets = document.getElementById("import-targets");
 const importLabel = document.getElementById("import-label");
-const IMPORT_LABEL = "回答をコピーしたら「自動で取り込む」をタップ（空いている欄に、上から順に入ります）";
+const IMPORT_LABEL = "「自動で取り込む」：サイト名付きのコピーを、AIごとに自動で振り分け／ほかは、AI名を選択";
 let labelTimer = null;
 
 function serviceName(id) {
@@ -544,11 +544,21 @@ function matchService(host) {
   return best;
 }
 
-function parseSource(text) {
-  const m = text.match(/^@@SRC@@\s*(\S+)[ \t]*\n?/);
-  if (!m) return { service: null, text };
-  const host = m[1].replace(/^https?:\/\//, "").split("/")[0];
-  return { service: matchService(host), text: text.slice(m[0].length).trim() };
+function splitSources(raw) {
+  const re = /^@@SRC@@[ \t]*(\S+)[^\n]*\n?/gm;
+  const marks = [];
+  let m;
+  while ((m = re.exec(raw)) !== null) marks.push({ host: m[1].replace(/^https?:\/\//, "").split("/")[0], start: m.index, end: re.lastIndex });
+  return marks.map((k, n) => ({ host: k.host, text: raw.slice(k.end, n + 1 < marks.length ? marks[n + 1].start : raw.length).replace(/\n?-{3,}\s*$/, "").trim() }));
+}
+
+function placeAnswer(service, text) {
+  ensureMemo(service);
+  const ta = memoList.querySelector(`[data-memo-id="${service.id}"] textarea`);
+  ta.value = wrapAnswer(service, text);
+  ta.classList.add("collapsed");
+  ta.style.height = "";
+  return ta;
 }
 
 async function importInto(id) {
@@ -566,35 +576,33 @@ async function importInto(id) {
     setImportLabel(`${serviceName(id)}の広がった入力欄を、1回タップ →「ペースト」を選んでください`, true);
     return;
   }
-  const parsed = parseSource(raw);
-  if (parsed.service) {
-    id = parsed.service.id;
-    ensureMemo(parsed.service);
-    ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
+  const sections = splitSources(raw);
+  if (sections.length) {
+    const done = [], unknown = [];
+    sections.forEach(sec => {
+      const sv = matchService(sec.host);
+      if (!sv) { unknown.push(sec.host); return; }
+      if (!sec.text) return;
+      placeAnswer(sv, sec.text);
+      if (!done.includes(sv.name)) done.push(sv.name);
+    });
+    saveState();
+    renderImportBar();
+    if (done.length) memoCard.scrollIntoView({ block: "start", behavior: "smooth" });
+    setImportLabel(done.length
+      ? `✓ ${done.length}件を、AIごとに取り込みました：${done.join("・")}` + (unknown.length ? `（判定できず：${unknown.join("・")}）` : "")
+      : `取り込めませんでした（判定できず：${unknown.join("・") || "なし"}）`);
+    return;
   }
-  let viaOrder = false;
-  if (!ta) {
-    const empty = [...memoList.children].find(m => !rawOf(m.querySelector("textarea").value));
-    if (!empty) {
-      setImportLabel(memoList.children.length ? "空いている欄がありません。「リセット」で空けるか、AI名を選んでください。" : "先にAIのボタンを押して、欄を作ってください。");
-      return;
-    }
-    id = empty.dataset.memoId;
-    ta = empty.querySelector("textarea");
-    viaOrder = true;
-  }
-  const text = parsed.text;
-  if (!text || isOwnOrStale(text)) {
+  if (!ta) { setImportLabel("どのAIの回答か分かりません。下のAI名を、タップしてください。"); return; }
+  if (!raw || isOwnOrStale(raw)) {
     setImportLabel("新しい回答がコピーされていません。AIサイトで回答をコピーしてから、もう一度タップしてください。");
     return;
   }
-  ta.value = wrapAnswer(SERVICES.find(x => x.id === id), text);
-  ta.classList.add("collapsed");
-  ta.style.height = "";
+  placeAnswer(SERVICES.find(x => x.id === id), raw);
   saveState();
   ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
   markDone(id);
-  if (viaOrder) setImportLabel(`✓ ${serviceName(id)}の欄に、順番で入れました（違うときは「リセット」）`);
 }
 
 document.getElementById("import-close").addEventListener("click", hideImportBar);
