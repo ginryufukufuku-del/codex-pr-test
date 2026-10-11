@@ -394,7 +394,7 @@ function showResult(s, status, url, blocked) {
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
-    item.addEventListener("click", () => setPending(s.id));
+    item.addEventListener("click", () => { setPending(s.id); copyText(buildQuery()); });
     resultList.appendChild(item);
   }
   item.href = url;
@@ -471,6 +471,12 @@ function serviceName(id) {
   return s ? s.name : id;
 }
 
+function isOwnOrStale(text) {
+  if (text === buildQuery()) return true;
+  if (text.startsWith("【") && text.includes("質問：")) return true;
+  return [...memoList.querySelectorAll("textarea")].some(t => t.value.trim() === text);
+}
+
 function fillAnswer(id, text) {
   const ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
   if (!ta) return false;
@@ -499,8 +505,8 @@ async function tryImport(fromGesture) {
     } else showImportBanner(`📥 ${name}の回答を取り込む`);
     return;
   }
-  if (!text || text === buildQuery()) {
-    if (fromGesture) alert("回答がコピーされていません。AIサイトで回答のコピーボタンを押してから、もう一度押してください。");
+  if (!text || isOwnOrStale(text)) {
+    if (fromGesture) alert("新しい回答がコピーされていません。AIサイトで、回答の下のコピーボタンを押してから、もう一度押してください。");
     else showImportBanner(`📥 ${name}の回答を取り込む`);
     return;
   }
