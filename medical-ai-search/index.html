@@ -169,9 +169,13 @@
     transition:transform .06s;
   }
   button.memo-copy:active{transform:scale(0.96);}
-  #import-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:none;align-items:center;gap:8px;}
-  #import-banner button.memo-copy{font-size:1.05rem;min-height:48px;padding:6px 26px;}
-  #import-banner .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;font-size:1rem;}
+  #import-bar{position:fixed;left:8px;right:8px;bottom:8px;z-index:50;display:none;align-items:center;gap:6px 12px;flex-wrap:wrap;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(88,143,115,.55);border-radius:20px;padding:8px 12px;box-shadow:0 8px 24px rgba(40,80,60,.25);max-width:960px;margin:0 auto;}
+  #import-label{font-size:0.8rem;font-weight:700;color:var(--accent-dark);width:100%;}
+  #import-targets{display:flex;flex-wrap:wrap;gap:8px;flex:1;}
+  #import-bar button.memo-copy{font-size:0.95rem;min-height:42px;padding:4px 18px;}
+  #import-bar .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;}
+  body.has-import-bar{padding-bottom:130px;}
+  .memo-item textarea.pasteready{border-color:rgba(75,135,100,.8);box-shadow:0 0 0 3px rgba(120,185,150,.35);}
   .memo-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
   a.memo-link{margin-left:auto;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:1px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
@@ -239,7 +243,7 @@
   試作版（フロントエンドのみ・データはブラウザ内でのみ処理し外部送信しません）。実際の連携仕様は各サービスの利用規約・API提供状況により変更される可能性があります。
 </footer>
 
-<div id="import-banner"><button type="button" class="memo-copy" id="import-btn"></button><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
+<div id="import-bar"><div id="import-label"></div><div id="import-targets"></div><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
 
 <script>
 const SERVICES = [
@@ -394,7 +398,7 @@ function showResult(s, status, url, blocked) {
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
-    item.addEventListener("click", () => { setPending(s.id); copyText(buildQuery()); });
+    item.addEventListener("click", () => { copyText(buildQuery()); });
     resultList.appendChild(item);
   }
   item.href = url;
@@ -423,12 +427,12 @@ function ensureMemo(s) {
   const ta = item.querySelector("textarea");
   const btn = item.querySelector(".memo-do-copy");
   const pasteBtn = item.querySelector(".memo-paste");
-  const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; };
-  const collapse = () => { ta.classList.add("collapsed"); ta.style.height = ""; ta.scrollTop = 0; };
+  const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight + 4, ta.classList.contains("pasteready") ? 120 : 0) + "px"; };
+  const collapse = () => { ta.classList.add("collapsed"); ta.classList.remove("pasteready"); ta.style.height = ""; ta.scrollTop = 0; };
   ta.addEventListener("focus", expand);
   ta.addEventListener("input", () => {
     expand(); saveState();
-    if (pendingId === s.id && ta.value.trim() && ta.value.trim() !== buildQuery()) setPending(null);
+    if (importBar.style.display === "flex" && ta.value.trim()) markDone(s.id);
   });
   ta.addEventListener("blur", collapse);
   btn.addEventListener("click", async () => {
@@ -438,33 +442,16 @@ function ensureMemo(s) {
     btn.textContent = ok ? "コピーしました" : "コピー失敗";
     setTimeout(() => { btn.textContent = "コピー"; }, 1500);
   });
-  pasteBtn.addEventListener("click", async () => {
-    try {
-      const t = (await navigator.clipboard.readText()).trim();
-      if (!t) { alert("クリップボードが空です。先にAIサイトで回答をコピーしてください。"); return; }
-      ta.value = t;
-      saveState();
-      pasteBtn.textContent = "貼り付けました";
-    } catch (e) {
-      pasteBtn.textContent = "失敗";
-      alert("自動で貼り付けできませんでした。入力欄を長押しして「ペースト」を選んでください。");
-    }
-    setTimeout(() => { pasteBtn.textContent = "貼り付け"; }, 1500);
-  });
+  pasteBtn.addEventListener("click", () => { showImportBar(); importInto(s.id); });
   memoList.appendChild(item);
+  if (importBar.style.display === "flex") renderImportBar();
 }
 
-const PENDING_KEY = "medai-search-pending-v1";
-const importBanner = document.getElementById("import-banner");
-const importBtn = document.getElementById("import-btn");
-let pendingId = null;
-try { pendingId = localStorage.getItem(PENDING_KEY); } catch (e) {}
-
-function setPending(id) {
-  pendingId = id;
-  try { id ? localStorage.setItem(PENDING_KEY, id) : localStorage.removeItem(PENDING_KEY); } catch (e) {}
-  importBanner.style.display = "none";
-}
+const importBar = document.getElementById("import-bar");
+const importTargets = document.getElementById("import-targets");
+const importLabel = document.getElementById("import-label");
+const IMPORT_LABEL = "📥 コピーした回答の取り込み先を、タップしてください";
+let labelTimer = null;
 
 function serviceName(id) {
   const s = SERVICES.find(x => x.id === id);
@@ -485,55 +472,79 @@ function isOwnOrStale(text) {
   return [...memoList.querySelectorAll("textarea")].some(t => t.value.trim() === text);
 }
 
-function fillAnswer(id, text) {
+function setImportLabel(text, keep) {
+  importLabel.textContent = text;
+  clearTimeout(labelTimer);
+  if (!keep) labelTimer = setTimeout(() => { importLabel.textContent = IMPORT_LABEL; }, 4500);
+}
+
+function renderImportBar() {
+  const ids = [...memoList.children].map(m => m.dataset.memoId);
+  importTargets.innerHTML = "";
+  ids.forEach(id => {
+    const ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "memo-copy";
+    b.dataset.id = id;
+    b.textContent = (ta && ta.value.trim() ? "✓ " : "") + serviceName(id);
+    b.addEventListener("click", () => importInto(id));
+    importTargets.appendChild(b);
+  });
+}
+
+function showImportBar() {
+  if (!memoList.children.length) return;
+  renderImportBar();
+  if (importBar.style.display !== "flex") importLabel.textContent = IMPORT_LABEL;
+  importBar.style.display = "flex";
+  document.body.classList.add("has-import-bar");
+}
+
+function hideImportBar() {
+  importBar.style.display = "none";
+  document.body.classList.remove("has-import-bar");
+}
+
+function markDone(id) {
+  renderImportBar();
+  setImportLabel(`✓ ${serviceName(id)}の回答を取り込みました`);
+}
+
+async function importInto(id) {
+  const name = serviceName(id);
   const ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
-  if (!ta) return false;
-  ta.value = text;
-  saveState();
-  ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
-  return true;
-}
-
-function showImportBanner(label) {
-  importBtn.textContent = label;
-  importBanner.style.display = "flex";
-}
-
-async function tryImport(fromGesture) {
-  if (!pendingId || !memoList.querySelector(`[data-memo-id="${pendingId}"]`)) return;
-  const name = serviceName(pendingId);
+  if (!ta) return;
   let text = "";
   try {
     text = (await navigator.clipboard.readText()).trim();
   } catch (e) {
-    if (fromGesture) {
-      const ta = memoList.querySelector(`[data-memo-id="${pendingId}"] textarea`);
-      if (ta) { ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" }); ta.focus(); }
-      showImportBanner(`${name}の欄をタップして「ペースト」を選んでください`);
-    } else showImportBanner(`📥 ${name}の回答を取り込む`);
+    ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
+    ta.classList.remove("collapsed");
+    ta.classList.add("pasteready");
+    ta.style.height = "120px";
+    ta.focus();
+    setImportLabel(`${name}の広がった入力欄を、1回タップ →「ペースト」を選んでください`, true);
     return;
   }
   if (!text || isOwnOrStale(text)) {
-    if (fromGesture) alert("新しい回答がコピーされていません。AIサイトで、回答の下のコピーボタンを押してから、もう一度押してください。");
-    else showImportBanner(`📥 ${name}の回答を取り込む`);
+    setImportLabel("新しい回答がコピーされていません。AIサイトのコピーを押してから、もう一度タップしてください。");
     return;
   }
-  if (fillAnswer(pendingId, text)) {
-    importBtn.textContent = `✓ ${name}の回答を取り込みました`;
-    importBanner.style.display = "flex";
-    setPending(null);
-    importBanner.style.display = "flex";
-    setTimeout(() => { importBanner.style.display = "none"; }, 2000);
-  }
+  ta.value = text;
+  ta.classList.add("collapsed");
+  ta.style.height = "";
+  saveState();
+  ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
+  markDone(id);
 }
 
-importBtn.addEventListener("click", () => tryImport(true));
-document.getElementById("import-close").addEventListener("click", () => setPending(null));
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tryImport(false); });
-window.addEventListener("pageshow", () => tryImport(false));
+document.getElementById("import-close").addEventListener("click", hideImportBar);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") showImportBar(); });
+window.addEventListener("pageshow", showImportBar);
 
 function clearResults() {
-  setPending(null);
+  hideImportBar();
   resultList.innerHTML = "";
   memoList.innerHTML = "";
   memoCard.style.display = "none";
