@@ -201,6 +201,7 @@
     <div class="field" style="margin-bottom:0;">
       <textarea id="voice" rows="1" placeholder="マイクボタンを押して話すと、ここに文字起こしされます（手入力での修正・追記も可）" style="min-height:42px;"></textarea>
       <span class="note" id="mic-status" style="display:none;"></span>
+      <div class="note" id="pii-note" style="display:none;color:#b05a5a;font-weight:700;margin-top:4px;"></div>
     </div>
   </div>
 
@@ -556,6 +557,7 @@ SERVICES.forEach(s => {
   chip.innerHTML = s.name;
   chip.title = s.note;
   chip.addEventListener("click", () => {
+    cleanVoice();
     const q = buildQuery();
     if (!q) { alert("先に患者情報を話すか入力してください。"); return; }
     let targetUrl = s.url;
@@ -575,8 +577,45 @@ SERVICES.forEach(s => {
 
 const preview = document.getElementById("query-preview");
 
+function scrubPII(text) {
+  const removed = [];
+  const hit = (label, re, fn) => {
+    text = text.replace(re, (...m) => {
+      const out = fn ? fn(...m) : "";
+      if (out !== m[0]) removed.push(label);
+      return out;
+    });
+  };
+  const KIN = ["患者", "本人", "家族", "息子", "娘", "孫", "兄", "弟", "姉", "妹", "旦那", "妻", "夫", "母", "父", "祖母", "祖父", "先生", "医師", "看護", "皆", "奥", "子供", "お子"];
+  hit("メールアドレス", /(?:メール(?:アドレス)?|E-?mail)?\s*[:：]?\s*[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g);
+  hit("電話番号", /(?:電話|TEL|Tel|tel|携帯|連絡先)?\s*[:：]?\s*(?:\+81[-\s]?)?0\d{1,4}[-ー−‐\s]\d{1,4}[-ー−‐\s]\d{3,4}/g);
+  hit("電話番号", /\b0\d{9,10}\b/g);
+  hit("郵便番号", /(?:郵便番号)?\s*[:：]?\s*〒?\s?\d{3}[-ー−‐]\d{4}/g);
+  hit("住所", /(?:住所|現住所|在住地)?\s*[:：]?\s*(?:北海道|東京都|京都府|大阪府|[\u4e00-\u9fa5]{2,3}県)[\u4e00-\u9fa5ァ-ヶぁ-ん]{1,10}?(?:市|区|町|村|郡)[\u4e00-\u9fa5ァ-ヶ0-9０-９\-－ー]{0,14}(?:在住|居住|出身)?/g);
+  hit("ID・番号", /(?:患者ID|患者番号|カルテ番号|診察券番号|被保険者番号|保険者番号|マイナンバー|ID)\s*[:：#]?\s*[A-Za-z0-9\-]{3,}/g);
+  hit("名前", /(?:氏名|患者名|お名前|名前|姓名|ふりがな|フリガナ)\s*[:：]?\s*[^\s、。，,\n]{1,12}/g);
+  hit("名前", /([\u4e00-\u9fa5ァ-ヶ]{2,6})(さん|様|殿)/g,
+    (m, base, suf) => KIN.some(k => base.includes(k)) ? m : "");
+  text = text.replace(/[ 　]{2,}/g, " ").replace(/、{2,}/g, "、").replace(/。{2,}/g, "。").replace(/^[、。\s]+/, "");
+  return { text, removed: [...new Set(removed)] };
+}
+
 function buildQuery() {
-  return document.getElementById("voice").value.trim();
+  return scrubPII(document.getElementById("voice").value).text.trim();
+}
+
+function cleanVoice() {
+  const el = document.getElementById("voice");
+  const r = scrubPII(el.value);
+  if (!r.removed.length) return;
+  el.value = r.text;
+  refreshPreview();
+  saveState();
+  const note = document.getElementById("pii-note");
+  note.textContent = "個人情報らしき部分（" + r.removed.join("・") + "）を削除しました。";
+  note.style.display = "";
+  clearTimeout(cleanVoice.t);
+  cleanVoice.t = setTimeout(() => { note.style.display = "none"; }, 8000);
 }
 
 function autoGrowVoice() {
@@ -591,8 +630,10 @@ function refreshPreview() {
   autoGrowVoice();
 }
 document.getElementById("voice").addEventListener("input", () => { refreshPreview(); saveState(); });
+document.getElementById("voice").addEventListener("blur", cleanVoice);
 restoreState();
 refreshPreview();
+cleanVoice();
 
 document.getElementById("clear-btn").addEventListener("click", () => {
   const voiceEl = document.getElementById("voice");
@@ -670,6 +711,7 @@ if (isIOS && (!SpeechRecognitionCtor || isStandalone)) {
   }
   function stopRecording() {
     recording = false;
+    cleanVoice();
     micBtn.innerHTML = '🎤 <span style="font-size:1.35em;">インプット</span>';
     micBtn.classList.remove("recording");
     micStatus.textContent = "文字起こしが完了しました。内容を確認・修正できます。";
@@ -681,6 +723,7 @@ if (isIOS && (!SpeechRecognitionCtor || isStandalone)) {
 }
 
 document.getElementById("copy-btn").addEventListener("click", async () => {
+  cleanVoice();
   const q = buildQuery();
   if (!q) { alert("先に患者情報を入力してください。"); return; }
   const ok = await copyText(q);
