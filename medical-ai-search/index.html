@@ -434,7 +434,7 @@ function ensureMemo(s) {
   btn.addEventListener("click", async () => {
     const text = ta.value.trim();
     if (!text) { alert("先に回答を貼り付けてください。"); return; }
-    const ok = await copyText(`【${s.name}の回答】\n質問：${buildQuery()}\n\n${text}`);
+    const ok = await copyText(sourceHeader(s) + text + `\n=== ${s.name}の回答 ここまで ===`);
     btn.textContent = ok ? "コピーしました" : "コピー失敗";
     setTimeout(() => { btn.textContent = "コピー"; }, 1500);
   });
@@ -471,9 +471,17 @@ function serviceName(id) {
   return s ? s.name : id;
 }
 
+function sourceHeader(s) {
+  const d = new Date();
+  const date = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  let site = s.url;
+  try { site = new URL(s.url).origin + "/"; } catch (e) {}
+  return `【出典：${s.name}】${s.name}の回答\nサイト：${site}\n取得日：${date}\n質問：${buildQuery()}\n\n=== ${s.name}の回答 ここから ===\n`;
+}
+
 function isOwnOrStale(text) {
   if (text === buildQuery()) return true;
-  if (text.startsWith("【") && text.includes("質問：")) return true;
+  if (text.startsWith("【出典：") || text.includes("の回答 ここから ===")) return true;
   return [...memoList.querySelectorAll("textarea")].some(t => t.value.trim() === text);
 }
 
