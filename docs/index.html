@@ -169,6 +169,9 @@
     transition:transform .06s;
   }
   button.memo-copy:active{transform:scale(0.96);}
+  #import-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:none;align-items:center;gap:8px;}
+  #import-banner button.memo-copy{font-size:1.05rem;min-height:48px;padding:6px 26px;}
+  #import-banner .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;font-size:1rem;}
   .memo-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
   a.memo-link{margin-left:auto;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:1px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
@@ -234,6 +237,8 @@
 <footer>
   試作版（フロントエンドのみ・データはブラウザ内でのみ処理し外部送信しません）。実際の連携仕様は各サービスの利用規約・API提供状況により変更される可能性があります。
 </footer>
+
+<div id="import-banner"><button type="button" class="memo-copy" id="import-btn"></button><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
 
 <script>
 const SERVICES = [
@@ -388,6 +393,7 @@ function showResult(s, status, url, blocked) {
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
+    item.addEventListener("click", () => setPending(s.id));
     resultList.appendChild(item);
   }
   item.href = url;
@@ -444,7 +450,69 @@ function ensureMemo(s) {
   memoList.appendChild(item);
 }
 
+const PENDING_KEY = "medai-search-pending-v1";
+const importBanner = document.getElementById("import-banner");
+const importBtn = document.getElementById("import-btn");
+let pendingId = null;
+try { pendingId = localStorage.getItem(PENDING_KEY); } catch (e) {}
+
+function setPending(id) {
+  pendingId = id;
+  try { id ? localStorage.setItem(PENDING_KEY, id) : localStorage.removeItem(PENDING_KEY); } catch (e) {}
+  importBanner.style.display = "none";
+}
+
+function serviceName(id) {
+  const s = SERVICES.find(x => x.id === id);
+  return s ? s.name : id;
+}
+
+function fillAnswer(id, text) {
+  const ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
+  if (!ta) return false;
+  ta.value = text;
+  saveState();
+  ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
+  return true;
+}
+
+function showImportBanner(label) {
+  importBtn.textContent = label;
+  importBanner.style.display = "flex";
+}
+
+async function tryImport(fromGesture) {
+  if (!pendingId || !memoList.querySelector(`[data-memo-id="${pendingId}"]`)) return;
+  const name = serviceName(pendingId);
+  let text = "";
+  try {
+    text = (await navigator.clipboard.readText()).trim();
+  } catch (e) {
+    if (fromGesture) { alert("自動で取り込めませんでした。回答欄を長押しして「ペースト」を選んでください。"); }
+    else showImportBanner(`📥 ${name}の回答を取り込む`);
+    return;
+  }
+  if (!text || text === buildQuery()) {
+    if (fromGesture) alert("回答がコピーされていません。AIサイトで回答のコピーボタンを押してから、もう一度押してください。");
+    else showImportBanner(`📥 ${name}の回答を取り込む`);
+    return;
+  }
+  if (fillAnswer(pendingId, text)) {
+    importBtn.textContent = `✓ ${name}の回答を取り込みました`;
+    importBanner.style.display = "flex";
+    setPending(null);
+    importBanner.style.display = "flex";
+    setTimeout(() => { importBanner.style.display = "none"; }, 2000);
+  }
+}
+
+importBtn.addEventListener("click", () => tryImport(true));
+document.getElementById("import-close").addEventListener("click", () => setPending(null));
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tryImport(false); });
+window.addEventListener("pageshow", () => tryImport(false));
+
 function clearResults() {
+  setPending(null);
   resultList.innerHTML = "";
   memoList.innerHTML = "";
   memoCard.style.display = "none";
