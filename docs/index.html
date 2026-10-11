@@ -426,7 +426,10 @@ function ensureMemo(s) {
   const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; };
   const collapse = () => { ta.classList.add("collapsed"); ta.style.height = ""; ta.scrollTop = 0; };
   ta.addEventListener("focus", expand);
-  ta.addEventListener("input", () => { expand(); saveState(); });
+  ta.addEventListener("input", () => {
+    expand(); saveState();
+    if (pendingId === s.id && ta.value.trim() && ta.value.trim() !== buildQuery()) setPending(null);
+  });
   ta.addEventListener("blur", collapse);
   btn.addEventListener("click", async () => {
     const text = ta.value.trim();
@@ -489,8 +492,11 @@ async function tryImport(fromGesture) {
   try {
     text = (await navigator.clipboard.readText()).trim();
   } catch (e) {
-    if (fromGesture) { alert("自動で取り込めませんでした。回答欄を長押しして「ペースト」を選んでください。"); }
-    else showImportBanner(`📥 ${name}の回答を取り込む`);
+    if (fromGesture) {
+      const ta = memoList.querySelector(`[data-memo-id="${pendingId}"] textarea`);
+      if (ta) { ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" }); ta.focus(); }
+      showImportBanner(`${name}の欄をタップして「ペースト」を選んでください`);
+    } else showImportBanner(`📥 ${name}の回答を取り込む`);
     return;
   }
   if (!text || text === buildQuery()) {
