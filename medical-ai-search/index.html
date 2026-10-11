@@ -461,7 +461,7 @@ function ensureMemo(s) {
 const importBar = document.getElementById("import-bar");
 const importTargets = document.getElementById("import-targets");
 const importLabel = document.getElementById("import-label");
-const IMPORT_LABEL = "回答をコピーしたら「自動で取り込む」をタップ（判定できないときは、AI名を選択）";
+const IMPORT_LABEL = "回答をコピーしたら「自動で取り込む」をタップ（空いている欄に、上から順に入ります）";
 let labelTimer = null;
 
 function serviceName(id) {
@@ -572,7 +572,17 @@ async function importInto(id) {
     ensureMemo(parsed.service);
     ta = memoList.querySelector(`[data-memo-id="${id}"] textarea`);
   }
-  if (!ta) { setImportLabel("どのAIの回答か分かりません。下のAI名を、タップしてください。"); return; }
+  let viaOrder = false;
+  if (!ta) {
+    const empty = [...memoList.children].find(m => !rawOf(m.querySelector("textarea").value));
+    if (!empty) {
+      setImportLabel(memoList.children.length ? "空いている欄がありません。「リセット」で空けるか、AI名を選んでください。" : "先にAIのボタンを押して、欄を作ってください。");
+      return;
+    }
+    id = empty.dataset.memoId;
+    ta = empty.querySelector("textarea");
+    viaOrder = true;
+  }
   const text = parsed.text;
   if (!text || isOwnOrStale(text)) {
     setImportLabel("新しい回答がコピーされていません。AIサイトで回答をコピーしてから、もう一度タップしてください。");
@@ -584,6 +594,7 @@ async function importInto(id) {
   saveState();
   ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
   markDone(id);
+  if (viaOrder) setImportLabel(`✓ ${serviceName(id)}の欄に、順番で入れました（違うときは「リセット」）`);
 }
 
 document.getElementById("import-close").addEventListener("click", hideImportBar);
