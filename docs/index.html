@@ -232,7 +232,7 @@
   <div class="card" id="memo-card" style="display:none;">
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
-      <span class="note" style="margin:0;">回答を貼ってコピー</span>
+      <span class="note" style="margin:0;">回答を貼り付け</span>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
     </div>
     <div id="memo-list"></div>
@@ -421,11 +421,10 @@ function ensureMemo(s) {
   item.className = "memo-item";
   item.dataset.memoId = s.id;
   item.innerHTML = `
-    <div class="memo-head"><span class="memo-name"></span><span class="memo-btns"><button type="button" class="memo-copy memo-paste">貼り付け</button><button type="button" class="memo-copy memo-do-copy">コピー</button></span></div>
+    <div class="memo-head"><span class="memo-name"></span><span class="memo-btns"><button type="button" class="memo-copy memo-paste">貼り付け</button></span></div>
     <textarea class="collapsed" rows="1" placeholder="ここに${s.name}の回答を貼り付け"></textarea>`;
   item.querySelector(".memo-name").textContent = s.name;
   const ta = item.querySelector("textarea");
-  const btn = item.querySelector(".memo-do-copy");
   const pasteBtn = item.querySelector(".memo-paste");
   const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight + 4, ta.classList.contains("pasteready") ? 120 : 0) + "px"; };
   const collapse = () => { ta.classList.add("collapsed"); ta.classList.remove("pasteready"); ta.style.height = ""; ta.scrollTop = 0; };
@@ -435,13 +434,6 @@ function ensureMemo(s) {
     if (importBar.style.display === "flex" && ta.value.trim()) markDone(s.id);
   });
   ta.addEventListener("blur", collapse);
-  btn.addEventListener("click", async () => {
-    const text = ta.value.trim();
-    if (!text) { alert("先に回答を貼り付けてください。"); return; }
-    const ok = await copyText(sourceHeader(s) + text + `\n=== ${s.name}の回答 ここまで ===`);
-    btn.textContent = ok ? "コピーしました" : "コピー失敗";
-    setTimeout(() => { btn.textContent = "コピー"; }, 1500);
-  });
   pasteBtn.addEventListener("click", () => { showImportBar(); importInto(s.id); });
   memoList.appendChild(item);
   if (importBar.style.display === "flex") renderImportBar();
@@ -456,14 +448,6 @@ let labelTimer = null;
 function serviceName(id) {
   const s = SERVICES.find(x => x.id === id);
   return s ? s.name : id;
-}
-
-function sourceHeader(s) {
-  const d = new Date();
-  const date = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-  let site = s.url;
-  try { site = new URL(s.url).origin + "/"; } catch (e) {}
-  return `【出典：${s.name}】${s.name}の回答\nサイト：${site}\n取得日：${date}\n質問：${buildQuery()}\n\n=== ${s.name}の回答 ここから ===\n`;
 }
 
 function isOwnOrStale(text) {
