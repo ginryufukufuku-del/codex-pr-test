@@ -154,6 +154,7 @@
   .result-item .name{font-weight:700;font-size:1.05rem;}
   .memo-item{margin-top:1.5px;}
   .memo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .memo-btns{display:flex;gap:6px;}
   .memo-name{font-weight:700;font-size:1.05rem;color:var(--accent-dark);}
   .memo-item textarea{width:100%;min-height:0;margin-top:3px;overflow:hidden;white-space:pre-wrap;border:2px solid var(--border);border-radius:14px;padding:8px 12px;font-size:0.85rem;font-family:inherit;box-sizing:border-box;resize:none;}
   .memo-item textarea.collapsed{padding-top:0;padding-bottom:0;line-height:34px;height:38px;}
@@ -399,11 +400,12 @@ function ensureMemo(s) {
   item.className = "memo-item";
   item.dataset.memoId = s.id;
   item.innerHTML = `
-    <div class="memo-head"><span class="memo-name"></span><button type="button" class="memo-copy">コピー</button></div>
+    <div class="memo-head"><span class="memo-name"></span><span class="memo-btns"><button type="button" class="memo-copy memo-paste">貼り付け</button><button type="button" class="memo-copy memo-do-copy">コピー</button></span></div>
     <textarea class="collapsed" rows="1" placeholder="ここに${s.name}の回答を貼り付け"></textarea>`;
   item.querySelector(".memo-name").textContent = s.name;
   const ta = item.querySelector("textarea");
-  const btn = item.querySelector(".memo-copy");
+  const btn = item.querySelector(".memo-do-copy");
+  const pasteBtn = item.querySelector(".memo-paste");
   const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; };
   const collapse = () => { ta.classList.add("collapsed"); ta.style.height = ""; ta.scrollTop = 0; };
   ta.addEventListener("focus", expand);
@@ -415,6 +417,19 @@ function ensureMemo(s) {
     const ok = await copyText(`【${s.name}の回答】\n質問：${buildQuery()}\n\n${text}`);
     btn.textContent = ok ? "コピーしました" : "コピー失敗";
     setTimeout(() => { btn.textContent = "コピー"; }, 1500);
+  });
+  pasteBtn.addEventListener("click", async () => {
+    try {
+      const t = (await navigator.clipboard.readText()).trim();
+      if (!t) { alert("クリップボードが空です。先にAIサイトで回答をコピーしてください。"); return; }
+      ta.value = t;
+      saveState();
+      pasteBtn.textContent = "貼り付けました";
+    } catch (e) {
+      pasteBtn.textContent = "失敗";
+      alert("自動で貼り付けできませんでした。入力欄を長押しして「ペースト」を選んでください。");
+    }
+    setTimeout(() => { pasteBtn.textContent = "貼り付け"; }, 1500);
   });
   memoList.appendChild(item);
 }
