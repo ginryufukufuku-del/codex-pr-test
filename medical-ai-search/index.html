@@ -182,7 +182,8 @@
   #import-targets{display:flex;flex-wrap:wrap;gap:8px;flex:1;}
   #import-bar button.memo-copy{font-size:0.95rem;min-height:42px;padding:4px 18px;}
   #import-bar .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;}
-  body.has-import-bar{padding-bottom:130px;}
+  body.has-import-bar{padding-bottom:190px;}
+  #import-box{width:100%;box-sizing:border-box;min-height:44px;max-height:90px;border:2px solid rgba(88,143,115,.6);border-radius:14px;padding:8px 12px;font-size:0.9rem;font-family:inherit;resize:none;background:#fff;}
   .memo-item textarea.pasteready{border-color:rgba(75,135,100,.8);box-shadow:0 0 0 3px rgba(120,185,150,.35);}
   .memo-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
   a.memo-link{margin-left:auto;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:1px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
@@ -251,7 +252,7 @@
   試作版（フロントエンドのみ・データはブラウザ内でのみ処理し外部送信しません）。実際の連携仕様は各サービスの利用規約・API提供状況により変更される可能性があります。
 </footer>
 
-<div id="import-bar"><div id="import-label"></div><div id="import-targets"></div><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
+<div id="import-bar"><div id="import-label"></div><textarea id="import-box" rows="1" placeholder="ここに貼り付け：この枠をタップ → キーボード左上の📋マークをタップ"></textarea><div id="import-targets"></div><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
 
 <script>
 const SERVICES = [
@@ -461,7 +462,8 @@ function ensureMemo(s) {
 const importBar = document.getElementById("import-bar");
 const importTargets = document.getElementById("import-targets");
 const importLabel = document.getElementById("import-label");
-const IMPORT_LABEL = "「自動で取り込む」：サイト名付きのコピーを、AIごとに自動で振り分け／ほかは、AI名を選択";
+const importBox = document.getElementById("import-box");
+const IMPORT_LABEL = "回答をコピー → 白い枠に貼り付け（📋）。サイト名付きは自動で振り分け、ほかはAI名をタップ";
 let labelTimer = null;
 
 function serviceName(id) {
@@ -561,21 +563,7 @@ function placeAnswer(service, text) {
   return ta;
 }
 
-async function importInto(id) {
-  let ta = id ? memoList.querySelector(`[data-memo-id="${id}"] textarea`) : null;
-  let raw = "";
-  try {
-    raw = (await navigator.clipboard.readText()).trim();
-  } catch (e) {
-    if (!ta) { setImportLabel("自動で読み取れませんでした。下のAI名をタップして、広がった入力欄に「ペースト」してください。", true); return; }
-    ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
-    ta.classList.remove("collapsed");
-    ta.classList.add("pasteready");
-    ta.style.height = "120px";
-    ta.focus();
-    setImportLabel(`${serviceName(id)}の広がった入力欄を、1回タップ →「ペースト」を選んでください`, true);
-    return;
-  }
+function processRaw(raw, id) {
   const sections = splitSources(raw);
   if (sections.length) {
     const done = [], unknown = [];
@@ -592,18 +580,42 @@ async function importInto(id) {
     setImportLabel(done.length
       ? `✓ ${done.length}件を、AIごとに取り込みました：${done.join("・")}` + (unknown.length ? `（判定できず：${unknown.join("・")}）` : "")
       : `取り込めませんでした（判定できず：${unknown.join("・") || "なし"}）`);
-    return;
+    return done.length > 0;
   }
-  if (!ta) { setImportLabel("どのAIの回答か分かりません。下のAI名を、タップしてください。"); return; }
+  const ta = id ? memoList.querySelector(`[data-memo-id="${id}"] textarea`) : null;
+  if (!ta) { setImportLabel("どのAIの回答か分かりません。下のAI名を、タップしてください。", true); return false; }
   if (!raw || isOwnOrStale(raw)) {
-    setImportLabel("新しい回答がコピーされていません。AIサイトで回答をコピーしてから、もう一度タップしてください。");
-    return;
+    setImportLabel("新しい回答がコピーされていません。AIサイトで回答をコピーしてから、もう一度試してください。");
+    return false;
   }
   placeAnswer(SERVICES.find(x => x.id === id), raw);
   saveState();
   ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
   markDone(id);
+  return true;
 }
+
+async function importInto(id) {
+  let raw = importBox.value.trim();
+  const fromBox = !!raw;
+  if (!raw) {
+    try {
+      raw = (await navigator.clipboard.readText()).trim();
+    } catch (e) {
+      importBox.focus();
+      setImportLabel("自動で読み取れませんでした。下の白い枠を1回タップ → キーボード左上の📋マークをタップしてください。", true);
+      return;
+    }
+  }
+  if (processRaw(raw, id) && fromBox) { importBox.value = ""; }
+}
+
+importBox.addEventListener("input", () => {
+  const raw = importBox.value.trim();
+  if (!raw) return;
+  if (splitSources(raw).length) { importInto(null); }
+  else setImportLabel("貼り付けました。どのAIの回答か、下のAI名をタップしてください。", true);
+});
 
 document.getElementById("import-close").addEventListener("click", hideImportBar);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") showImportBar(); });
