@@ -433,7 +433,11 @@ function ensureMemo(s) {
     expand(); saveState();
     if (importBar.style.display === "flex" && ta.value.trim()) markDone(s.id);
   });
-  ta.addEventListener("blur", collapse);
+  ta.addEventListener("blur", () => {
+    collapse();
+    const v = ta.value.trim();
+    if (v && !v.startsWith("【出典：")) { ta.value = wrapAnswer(s, v); saveState(); renderImportBar(); }
+  });
   pasteBtn.addEventListener("click", () => { showImportBar(); importInto(s.id); });
   memoList.appendChild(item);
   if (importBar.style.display === "flex") renderImportBar();
@@ -450,10 +454,23 @@ function serviceName(id) {
   return s ? s.name : id;
 }
 
+function wrapAnswer(s, text) {
+  const d = new Date();
+  const date = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  let site = s.url;
+  try { site = new URL(s.url).origin + "/"; } catch (e) {}
+  return `【出典：${s.name}】\nサイト：${site}\n取得日：${date}\n質問：${buildQuery()}\n\n=== ${s.name}の回答 ここから ===\n${text}\n=== ${s.name}の回答 ここまで ===`;
+}
+
+function rawOf(value) {
+  const m = value.match(/ここから ===\n([\s\S]*?)\n=== .*?ここまで ===\s*$/);
+  return (m ? m[1] : value).trim();
+}
+
 function isOwnOrStale(text) {
   if (text === buildQuery()) return true;
   if (text.startsWith("【出典：") || text.includes("の回答 ここから ===")) return true;
-  return [...memoList.querySelectorAll("textarea")].some(t => t.value.trim() === text);
+  return [...memoList.querySelectorAll("textarea")].some(t => rawOf(t.value) === text);
 }
 
 function setImportLabel(text, keep) {
@@ -515,7 +532,7 @@ async function importInto(id) {
     setImportLabel("新しい回答がコピーされていません。AIサイトのコピーを押してから、もう一度タップしてください。");
     return;
   }
-  ta.value = text;
+  ta.value = wrapAnswer(SERVICES.find(x => x.id === id), text);
   ta.classList.add("collapsed");
   ta.style.height = "";
   saveState();
