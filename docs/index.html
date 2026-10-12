@@ -214,7 +214,7 @@
   .memo-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;}
   #paste-all{font-size:1.05rem;min-height:36px;padding:3px 22px;}
   a.memo-link{
-    display:inline-flex;align-items:center;justify-content:center;margin-left:0;cursor:pointer;text-decoration:none;color:#fff;font-weight:700;font-size:1.3rem;min-height:42px;padding:3px 24px;box-sizing:border-box;border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;margin-left:0;cursor:pointer;text-decoration:none;color:#fff;font-weight:700;font-size:1.05rem;min-height:36px;padding:3px 22px;box-sizing:border-box;border-radius:999px;
     border:1px solid rgba(190,155,45,.6);
     background:
       linear-gradient(160deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%),
@@ -225,6 +225,7 @@
     transition:transform .06s;
   }
   a.memo-link:active{transform:scale(0.96);}
+  a.memo-link .nl-open{font-size:0.7rem;}
   a.memo-link .nl-logo{height:0.95em;width:auto;margin-right:6px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
   @media (max-width:600px){
     a.memo-link{
@@ -292,7 +293,7 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
       <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="入っている全AIの回答を、1つにまとめてコピーします">全ペースト</button>
-      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">NotebookLMを開く</a>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">NotebookLM<span class="nl-open">を開く</span></a>
     </div>
     <div id="memo-list"></div>
   </div>
