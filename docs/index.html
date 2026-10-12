@@ -183,10 +183,8 @@
   #import-bar button.memo-copy{font-size:0.95rem;min-height:42px;padding:4px 18px;}
   #import-bar .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;}
   body.has-import-bar{padding-bottom:190px;}
-  .title-row{display:flex;align-items:center;margin-bottom:8px;}
-  .title-row h2{margin:0 !important;}
   #kb-close{
-    margin-left:2.1rem;cursor:pointer;color:#fff;font-weight:700;font-size:0.48rem;min-height:29.5px;padding:4.3px 16px;white-space:nowrap;border-radius:999px;
+    margin-left:calc(1.4rem - 10px);cursor:pointer;color:#fff;font-weight:700;font-size:0.48rem;min-height:29.5px;padding:4.3px 16px;white-space:nowrap;border-radius:999px;
     border:1px solid rgba(141,146,122,.6);
     background:
       linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,0) 45%),
@@ -237,7 +235,7 @@
   </div>
 
   <div class="card">
-    <div class="title-row"><h2>タップ<span style="font-size:0.8em;">した</span>AI<span style="font-size:0.8em;">へ</span>コピー＆送信</h2><button type="button" id="kb-close">⌨ <span style="font-size:1.35em;">キーボード閉じる</span></button></div>
+    <h2>タップ<span style="font-size:0.8em;">した</span>AI<span style="font-size:0.8em;">へ</span>コピー＆送信</h2>
 
     <div class="note" style="font-weight:700;margin-top:0;">医療系AI</div>
     <div class="chips" id="service-chips-medical"></div>
@@ -259,6 +257,7 @@
   <div class="card" id="memo-card" style="display:none;">
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
+      <button type="button" id="kb-close">⌨ <span style="font-size:1.35em;">キーボード閉じる</span></button>
       <span class="note" style="margin:0;">回答を貼り付け</span>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
     </div>
