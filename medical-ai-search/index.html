@@ -145,6 +145,12 @@
     color:var(--accent-dark);display:flex;align-items:center;justify-content:center;text-align:center;
   }
   .result-list{display:flex;flex-direction:column;gap:8.7px;margin-top:10.4px;}
+  .result-row{display:flex;align-items:stretch;gap:8px;}
+  .result-row .result-item{flex:1;min-width:0;}
+  .result-row.has-answer .result-item{border-color:rgba(75,135,100,.85);background:#e6f4ec;}
+  .result-row.has-answer .name::after{content:" ✓";color:#3f8a64;}
+  .result-acts{display:flex;align-items:center;gap:6px;}
+  .result-acts button.memo-copy{font-size:0.95rem;min-height:44px;padding:4px 20px;}
   .result-item{
     display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);border-radius:18px;
     padding:9.8px 16px;background:#f4faf6;color:inherit;text-decoration:none;cursor:pointer;
@@ -253,7 +259,7 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
       <button type="button" class="memo-copy memo-mini" id="copy-all" style="margin-left:calc(1.4rem - 10px);">回答コピー</button><button type="button" id="kb-close" style="margin-left:0;">⌨ <span style="font-size:1.35em;">キーボード閉じる</span></button>
-      <span class="note" style="margin:0;">各AIの欄を長押し →「ペースト」</span>
+      <span class="note" style="margin:0;">バーの右の「貼り付け」</span>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
     </div>
     <div id="memo-list"></div>
@@ -265,11 +271,11 @@
       <li>患者情報を入れ、使うAIのチップをタップします（AIごとのバーと、回答メモの欄ができます）。</li>
       <li>AIのバーをタップして、AIサイトを開き、質問します（質問文は自動でコピーされます）。</li>
       <li>回答が出たら、そのAIの<b>コピーマーク</b>をタップします。</li>
-      <li>このアプリの、<b>そのAIの欄を長押し →「ペースト」</b>をタップします。出典の見出し付きで入ります。</li>
+      <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「貼り付け」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
       <li>終わったら、「回答コピー」で全部、または各AIの「コピー」で1つずつコピーして、NotebookLMに貼り付けます（AIごとに別のソース）。</li>
     </ol>
-    <p>違う回答が入ったときは、そのAIの欄にもう一度ペーストすると上書きされます。「リセット」で空にもできます。</p>
+    <p>違う回答が入ったときは、もう一度貼り付けると上書きされます。バーの右の「リセット」で空にもできます。</p>
   </details></div>
 
 </main>
@@ -425,13 +431,30 @@ const NO_STATUS_IDS = ["google", "bing", "chatgpt"];
 function showResult(s, status, url, blocked) {
   let item = resultList.querySelector(`[data-result-id="${s.id}"]`);
   if (!item) {
+    const row = document.createElement("div");
+    row.className = "result-row";
+    row.dataset.rowId = s.id;
     item = document.createElement("a");
     item.className = "result-item";
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
     item.addEventListener("click", () => { copyText(buildQuery()); });
-    resultList.appendChild(item);
+    const acts = document.createElement("div");
+    acts.className = "result-acts";
+    const pasteBtn = document.createElement("button");
+    pasteBtn.type = "button";
+    pasteBtn.className = "memo-copy";
+    pasteBtn.textContent = "貼り付け";
+    pasteBtn.addEventListener("click", () => memoApi(s.id).paste());
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "memo-copy memo-reset";
+    resetBtn.textContent = "リセット";
+    resetBtn.addEventListener("click", () => memoApi(s.id).reset());
+    acts.append(pasteBtn, resetBtn);
+    row.append(item, acts);
+    resultList.appendChild(row);
   }
   item.href = url;
   item.dataset.status = status;
@@ -444,6 +467,18 @@ function showResult(s, status, url, blocked) {
   `;
   ensureMemo(s);
   saveState();
+}
+
+function memoApi(id) {
+  const m = memoList.querySelector(`[data-memo-id="${id}"]`);
+  return (m && m._api) || { paste() {}, reset() {} };
+}
+
+function refreshMarks() {
+  resultList.querySelectorAll(".result-row").forEach(r => {
+    const ta = memoList.querySelector(`[data-memo-id="${r.dataset.rowId}"] textarea`);
+    r.classList.toggle("has-answer", !!(ta && ta.value.trim()));
+  });
 }
 
 function wrapAnswer(s, text) {
@@ -466,13 +501,12 @@ function ensureMemo(s) {
   item.className = "memo-item";
   item.dataset.memoId = s.id;
   item.innerHTML = `
-    <div class="memo-head"><span class="memo-name"></span><span class="memo-btns"><button type="button" class="memo-copy memo-paste">貼り付け</button><button type="button" class="memo-copy memo-copy1">コピー</button><button type="button" class="memo-copy memo-reset">リセット</button></span></div>
+    <div class="memo-head"><span class="memo-name"></span></div>
     <textarea class="collapsed" rows="1" placeholder="ここを長押し →「ペースト」"></textarea>
     <div class="memo-msg"></div>`;
   item.querySelector(".memo-name").textContent = s.name;
   const ta = item.querySelector("textarea");
   const msg = item.querySelector(".memo-msg");
-  const copy1 = item.querySelector(".memo-copy1");
   const expand = () => { ta.classList.remove("collapsed"); ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; };
   const collapse = () => { ta.classList.add("collapsed"); ta.style.height = ""; ta.scrollTop = 0; };
   let msgTimer = null;
@@ -488,7 +522,8 @@ function ensureMemo(s) {
     ta.value = wrapAnswer(s, raw);
     collapse();
     saveState();
-    say(`✓ ${s.name}の回答として入れました`);
+    copyText(ta.value);
+    say(`✓ ${s.name}の回答として入れました（出典付きでコピー済み）`);
     return true;
   };
   ta.addEventListener("paste", (e) => {
@@ -504,27 +539,23 @@ function ensureMemo(s) {
     const v = ta.value.trim();
     if (v && !v.startsWith("【出典：")) { ta.value = wrapAnswer(s, v); saveState(); }
   });
-  item.querySelector(".memo-paste").addEventListener("click", async () => {
-    try {
-      if (setAnswer(await navigator.clipboard.readText())) return;
-    } catch (e) {
-      ta.focus();
-      say("自動で読み取れませんでした。この欄を長押し →「ペースト」をタップしてください。", true);
+  item._api = {
+    async paste() {
+      try {
+        if (setAnswer(await navigator.clipboard.readText())) return;
+      } catch (e) {
+        item.scrollIntoView({ block: "center", behavior: "smooth" });
+        ta.focus();
+        say("自動で読み取れませんでした。この欄を長押し →「ペースト」をタップしてください。", true);
+      }
+    },
+    reset() {
+      ta.value = "";
+      collapse();
+      saveState();
+      say("");
     }
-  });
-  copy1.addEventListener("click", async () => {
-    const v = ta.value.trim();
-    if (!v) { say("まだ回答が入っていません。"); return; }
-    const ok = await copyText(v);
-    copy1.textContent = ok ? "コピー済" : "失敗";
-    setTimeout(() => { copy1.textContent = "コピー"; }, 1500);
-  });
-  item.querySelector(".memo-reset").addEventListener("click", () => {
-    ta.value = "";
-    collapse();
-    saveState();
-    say("");
-  });
+  };
   memoList.appendChild(item);
 }
 
@@ -538,10 +569,11 @@ function clearResults() {
 const STORE_KEY = "medai-search-state-v1";
 
 function saveState() {
+  refreshMarks();
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
       voice: document.getElementById("voice").value,
-      bars: [...resultList.children].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href })),
+      bars: [...resultList.querySelectorAll(".result-item")].map(a => ({ id: a.dataset.resultId, status: a.dataset.status, url: a.href })),
       memos: Object.fromEntries([...memoList.children].map(m => [m.dataset.memoId, m.querySelector("textarea").value]))
     }));
   } catch (e) {}
