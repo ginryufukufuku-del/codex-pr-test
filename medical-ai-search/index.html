@@ -225,6 +225,7 @@
     transition:transform .06s;
   }
   a.memo-link:active{transform:scale(0.96);}
+  a.memo-link .nl-open{font-size:0.7rem;white-space:pre;}
   a.memo-link .nl-logo{height:0.95em;width:auto;margin-right:6px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
   @media (max-width:600px){
     a.memo-link{
@@ -292,7 +293,7 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（ジェミニノートブック用）</span></h2>
       <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="入っている全AIの回答を、1つにまとめてコピーします">全ペースト</button>
-      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">ジェミニノートブック</a>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">ジェミニノートブック<span class="nl-open">&emsp;開く</span></a>
     </div>
     <div id="memo-list"></div>
   </div>
