@@ -183,6 +183,10 @@
   #import-bar button.memo-copy{font-size:0.95rem;min-height:42px;padding:4px 18px;}
   #import-bar .import-close{min-height:36px;width:36px;padding:0;border-radius:50%;}
   body.has-import-bar{padding-bottom:190px;}
+  .howto{margin:0 4px;}
+  .howto summary{cursor:pointer;font-weight:700;font-size:0.8rem;color:var(--accent-dark);padding:2px 0;}
+  .howto ol{margin:6px 0 4px;padding-left:1.4em;font-size:0.72rem;line-height:1.55;color:var(--text,#2b3a33);}
+  .howto p{margin:4px 0;font-size:0.68rem;line-height:1.5;color:var(--muted);}
   #import-box{width:100%;box-sizing:border-box;min-height:44px;max-height:90px;border:2px solid rgba(88,143,115,.6);border-radius:14px;padding:8px 12px;font-size:0.9rem;font-family:inherit;resize:none;background:#fff;}
   .memo-item textarea.pasteready{border-color:rgba(75,135,100,.8);box-shadow:0 0 0 3px rgba(120,185,150,.35);}
   .memo-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
@@ -246,6 +250,20 @@
     </div>
     <div id="memo-list"></div>
   </div>
+
+  <div class="card howto-card"><details class="howto"><summary>使い方（タップで開く）</summary>
+    <ol>
+      <li>上の緑・青のボタンで、使うAIをタップします（下に、そのAIのバーと、回答メモの欄ができます）。</li>
+      <li>AIのバーをタップして、AIサイトを開き、質問します。</li>
+      <li>回答が出たら、回答の下の<b>コピーマーク</b>をタップします。</li>
+      <li>このアプリのタブに戻り、画面の下の<b>白い枠</b>をタップ →キーボード左上の<b>📋</b>をタップします（貼り付け）。</li>
+      <li>下のバーの、<b>そのAIの名前</b>をタップします。回答メモの欄に、出典の見出し付きで入ります。</li>
+      <li>ほかのAIも、2〜5を繰り返します。</li>
+      <li>終わったら、回答メモの欄の文章をコピーして、NotebookLMに貼り付けます（AIごとに別のソース）。</li>
+    </ol>
+    <p>別のAIの回答が入ってしまったときは、そのAIの「リセット」を押して、やり直します。</p>
+    <p>ショートカット「AI回答コピー」（Safari）を使うと、サイト名が付くので、白い枠に貼り付けるだけで、AIごとに自動で振り分けられます。</p>
+  </details></div>
 
 </main>
 <footer>
