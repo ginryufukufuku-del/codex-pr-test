@@ -301,7 +301,7 @@
   <div class="card" id="memo-card" style="display:none;">
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（ジェミニノートブック用）</span></h2>
-      <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="選択した回答（選択していなければ、入っている全ての回答）を、1つにまとめてコピーします">全ての回答を入力</button>
+      <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="選択したAIの回答（選択していなければ、入っている全ての回答）を、1つにまとめてコピーします">全選択</button>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png"><span class="nl-text">ジェミニノートブック<span class="nl-open">&emsp;開く</span></span></a>
     </div>
     <div id="memo-list"></div>
@@ -316,7 +316,7 @@
       <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「ペースト」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
       <li>下の回答メモで、欄を<b>1回タップ</b>すると、中身が広がって見えます。<b>ダブルタップ</b>すると、1行に縮みます。</li>
-      <li>一部のAIだけ送りたいときは、そのAIの<b>名前をタップ</b>します。名前が<b>青</b>になり、選択したことになります（もう一度タップで解除）。選択したAIがあるときは、ボタンが<b>「選択した回答を入力（3件）」</b>のように、選択した件数を表示します。押すと、<b>青いAIの分だけ</b>がコピーされます。何も選択していないときは、<b>「全ての回答を入力（5件）」</b>と表示され、入っている全AIの回答が1つにまとまってコピーされます。</li>
+      <li>一部のAIだけ送りたいときは、そのAIの<b>名前をタップ</b>します。名前が<b>青</b>になり、選択したことになります（もう一度タップで解除）。選択したAIがあるときは、ボタンが<b>「3件選択」</b>のように、選択した件数を表示します。押すと、<b>青いAIの分だけ</b>がコピーされます。何も選択していないときは、ボタンが<b>「全選択」</b>と表示され、押すと、入っている全AIの回答が1つにまとまってコピーされます。</li>
       <li>「ペースト」を押した直後は、出典付きの回答がコピーされた状態です。「ジェミニノートブック」で開き、AIごとに別のソースとしてペーストします（あとから取り出すときは、下の回答メモの欄を長押し →「すべてを選択」→「コピー」）。</li>
     </ol>
     <p>違う回答が入ったときは、もう一度ペーストすると上書きされます。バーの右の「リセット」で空にもできます。</p>
@@ -924,9 +924,7 @@ document.addEventListener("click", (e) => {
 const pasteAllBtn = document.getElementById("paste-all");
 function pasteAllLabel() {
   const n = memoList.querySelectorAll(".memo-item.selected").length;
-  if (n) return `選択した回答を入力（${n}件）`;
-  const all = [...memoList.querySelectorAll("textarea")].filter(t => t.value.trim()).length;
-  return all ? `全ての回答を入力（${all}件）` : "全ての回答を入力";
+  return n ? `${n}件選択` : "全選択";
 }
 function refreshPasteAllLabel() { if (!pasteAllBtn.dataset.busy) pasteAllBtn.textContent = pasteAllLabel(); }
 window.__refreshPasteAll = refreshPasteAllLabel;
