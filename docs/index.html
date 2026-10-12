@@ -150,6 +150,8 @@
   .result-row.has-answer .result-item{border-color:rgba(75,135,100,.85);background:#e6f4ec;}
   .result-row.has-answer .name::after{content:" ✓";color:#3f8a64;}
   .result-acts{display:flex;align-items:center;gap:6px;}
+  .paste-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .paste-label{font-size:0.5rem;font-weight:700;color:var(--muted);white-space:nowrap;line-height:1.1;}
   .result-acts button.memo-copy{font-size:0.95rem;min-height:44px;padding:4px 20px;}
   .result-item{
     display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);border-radius:18px;
@@ -452,7 +454,13 @@ function showResult(s, status, url, blocked) {
     resetBtn.className = "memo-copy memo-reset";
     resetBtn.textContent = "リセット";
     resetBtn.addEventListener("click", () => memoApi(s.id).reset());
-    acts.append(pasteBtn, resetBtn);
+    const pasteWrap = document.createElement("div");
+    pasteWrap.className = "paste-wrap";
+    const pasteLabel = document.createElement("span");
+    pasteLabel.className = "paste-label";
+    pasteLabel.textContent = "NotebookLMの入力用";
+    pasteWrap.append(pasteLabel, pasteBtn);
+    acts.append(pasteWrap, resetBtn);
     row.append(item, acts);
     resultList.appendChild(row);
   }
