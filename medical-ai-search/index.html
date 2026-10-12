@@ -261,7 +261,7 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
       <button type="button" class="memo-copy memo-mini" id="copy-all" style="margin-left:calc(1.4rem - 10px);">回答コピー</button><button type="button" id="kb-close" style="margin-left:0;">⌨ <span style="font-size:1.35em;">キーボード閉じる</span></button>
-      <span class="note" style="margin:0;">バーの右の「貼り付け」</span>
+      <span class="note" style="margin:0;">バーの右の「ペースト」</span>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
     </div>
     <div id="memo-list"></div>
@@ -273,11 +273,11 @@
       <li>患者情報を入れ、使うAIのチップをタップします（AIごとのバーと、回答メモの欄ができます）。</li>
       <li>AIのバーをタップして、AIサイトを開き、質問します（質問文は自動でコピーされます）。</li>
       <li>回答が出たら、そのAIの<b>コピーマーク</b>をタップします。</li>
-      <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「貼り付け」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
+      <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「ペースト」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
-      <li>終わったら、「回答コピー」で全部、または各AIの「コピー」で1つずつコピーして、NotebookLMに貼り付けます（AIごとに別のソース）。</li>
+      <li>終わったら、「回答コピー」で全部、または各AIの「コピー」で1つずつコピーして、NotebookLMにペーストします（AIごとに別のソース）。</li>
     </ol>
-    <p>違う回答が入ったときは、もう一度貼り付けると上書きされます。バーの右の「リセット」で空にもできます。</p>
+    <p>違う回答が入ったときは、もう一度ペーストすると上書きされます。バーの右の「リセット」で空にもできます。</p>
   </details></div>
 
 </main>
@@ -309,7 +309,7 @@ const SERVICES = [
     name: "Medscape AI",
     urlType: "manual",
     url: "https://www.medscape.com/sites/public/medscape-ai",
-    note: "薬剤・疾患・治療を短く確認でき、回答に参照元が付きます。無料会員登録が必要。Medscape AIの紹介ページを開きます。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。個人が特定できる情報は入力しないでください。"
+    note: "薬剤・疾患・治療を短く確認でき、回答に参照元が付きます。無料会員登録が必要。Medscape AIの紹介ページを開きます。検索語の自動入力は未確認のため、コピー済みの内容をペーストしてください。個人が特定できる情報は入力しないでください。"
   },
   {
     id: "glasshealth",
@@ -325,7 +325,7 @@ const SERVICES = [
     name: "DxGPT",
     urlType: "manual",
     url: "https://dxgpt.app/",
-    note: "非営利団体Foundation 29の鑑別診断支援AI（無料・多言語）。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。"
+    note: "非営利団体Foundation 29の鑑別診断支援AI（無料・多言語）。検索語の自動入力は未確認のため、コピー済みの内容をペーストしてください。"
   },
   {
     id: "hokuto",
@@ -334,7 +334,7 @@ const SERVICES = [
     name: "ホクト (Hokuto)",
     urlType: "manual",
     url: "https://hokuto.app/ai-search",
-    note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容を貼り付けてください。"
+    note: "AI検索画面に直接遷移します（検索語の自動入力は未確認・要ログイン）。コピー済みの内容をペーストしてください。"
   },
   {
     id: "medii",
@@ -352,7 +352,7 @@ const SERVICES = [
     name: "JME",
     urlType: "manual",
     url: "https://jme.m-review.co.jp/",
-    note: "日本の医師向け無料AIアシスタント。国内ガイドラインとPubMedを参照。検索語の自動入力は未確認のため、コピー済みの内容を貼り付けてください。"
+    note: "日本の医師向け無料AIアシスタント。国内ガイドラインとPubMedを参照。検索語の自動入力は未確認のため、コピー済みの内容をペーストしてください。"
   },
   {
     id: "chatgpt",
@@ -368,7 +368,7 @@ const SERVICES = [
     name: "Gemini",
     urlType: "query",
     url: "https://gemini.google.com/app?q=",
-    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容を貼り付けてください。"
+    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容をペーストしてください。"
   },
   {
     id: "claude",
@@ -376,7 +376,7 @@ const SERVICES = [
     name: "Claude",
     urlType: "query",
     url: "https://claude.ai/new?q=",
-    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容を貼り付けてください。"
+    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容をペーストしてください。"
   },
   {
     id: "copilot",
@@ -384,7 +384,7 @@ const SERVICES = [
     name: "Copilot",
     urlType: "query",
     url: "https://copilot.microsoft.com/?q=",
-    note: "Microsoft Copilot。検索語を付けて開きます（入力欄に入らない場合があります）。うまく反映されない場合はコピー済みの内容を貼り付けてください。"
+    note: "Microsoft Copilot。検索語を付けて開きます（入力欄に入らない場合があります）。うまく反映されない場合はコピー済みの内容をペーストしてください。"
   },
   {
     id: "grok",
@@ -392,7 +392,7 @@ const SERVICES = [
     name: "Grok",
     urlType: "query",
     url: "https://grok.com/?q=",
-    note: "xAIのGrok。検索語を付けて開きます（入力欄に入るかは未確認）。入らない場合はコピー済みの内容を貼り付けてください。"
+    note: "xAIのGrok。検索語を付けて開きます（入力欄に入るかは未確認）。入らない場合はコピー済みの内容をペーストしてください。"
   },
   {
     id: "google",
@@ -447,7 +447,7 @@ function showResult(s, status, url, blocked) {
     const pasteBtn = document.createElement("button");
     pasteBtn.type = "button";
     pasteBtn.className = "memo-copy";
-    pasteBtn.textContent = "貼り付け";
+    pasteBtn.textContent = "ペースト";
     pasteBtn.addEventListener("click", () => memoApi(s.id).paste());
     const resetBtn = document.createElement("button");
     resetBtn.type = "button";
@@ -622,7 +622,7 @@ SERVICES.forEach(s => {
     copyText(q);
     showResult(
       s,
-      s.urlType === "query" ? "コピー済み・タップで検索結果を開く" : "コピー済み・タップで開いて貼り付け",
+      s.urlType === "query" ? "コピー済み・タップで検索結果を開く" : "コピー済み・タップで開いてペースト",
       targetUrl,
       false
     );
@@ -827,7 +827,7 @@ document.addEventListener("click", (e) => {
 const copyAllBtn = document.getElementById("copy-all");
 copyAllBtn.addEventListener("click", async () => {
   const parts = [...memoList.querySelectorAll("textarea")].map(t => t.value.trim()).filter(Boolean);
-  if (!parts.length) { alert("先に回答を貼り付けてください。"); return; }
+  if (!parts.length) { alert("先に回答をペーストしてください。"); return; }
   const ok = await copyText(parts.join("\n\n"));
   copyAllBtn.textContent = ok ? `コピーしました（${parts.length}件）` : "コピー失敗";
   setTimeout(() => { copyAllBtn.textContent = "回答コピー"; }, 1800);
