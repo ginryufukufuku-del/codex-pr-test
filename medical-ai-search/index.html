@@ -150,6 +150,16 @@
   .result-row.has-answer .result-item{border-color:rgba(75,135,100,.85);background:#e6f4ec;}
   .result-row.has-answer .name::after{content:" ✓";color:#3f8a64;}
   .result-acts{display:flex;align-items:flex-end;gap:6px;}
+  @media (max-width:600px){
+    .result-row{flex-direction:column;gap:6px;}
+    .result-row .result-item{flex:none;width:100%;box-sizing:border-box;}
+    .result-acts{width:100%;gap:8px;}
+    .paste-wrap{flex:1;}
+    .result-acts button.memo-copy{width:100%;}
+    .result-acts button.memo-reset{flex:1;width:auto;}
+    .memo-title-row{gap:6px 8px;}
+    #copy-all{margin-left:0 !important;}
+  }
   .paste-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;}
   .paste-label{font-size:0.5rem;font-weight:700;color:var(--muted);white-space:nowrap;line-height:1.1;}
   .result-acts button.memo-copy{font-size:0.95rem;height:44px;min-height:44px;padding:0 20px;box-sizing:border-box;}
