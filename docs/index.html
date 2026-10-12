@@ -218,7 +218,8 @@
     transition:transform .06s;
   }
   a.memo-link:active{transform:scale(0.96);}
-  .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
+  .result-item .title-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 10px;}
+  .result-item .status{font-size:0.55rem;color:var(--muted);margin:0;}
   .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
   @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
@@ -480,9 +481,9 @@ function showResult(s, status, url, blocked) {
   item.dataset.status = status;
   const showStatus = !NO_STATUS_IDS.includes(s.id);
   item.innerHTML = `
-    <div>
-      <div class="name">${s.name}</div>
-      ${showStatus ? `<div class="status">${status}</div>` : ""}
+    <div class="title-line">
+      <span class="name">${s.name}</span>
+      ${showStatus ? `<span class="status">${String(status).split("・")[0]}</span>` : ""}
     </div>
   `;
   ensureMemo(s);
