@@ -596,7 +596,7 @@ function ensureMemo(s) {
     collapse();
     saveState();
     copyText(ta.value);
-    say(`✓ ${s.name}の回答として入れました（出典付きでコピー済み）`);
+    say(`✓ ${s.name}の回答として入力しました（出典付きでコピー済み）`);
     return true;
   };
   ta.addEventListener("paste", (e) => {
