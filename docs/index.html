@@ -292,7 +292,7 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
       <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="入っている全AIの回答を、1つにまとめてコピーします">全ペースト</button>
-      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" onerror="this.style.display='none'">NotebookLMを開く</a>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" style="display:none">NotebookLMを開く</a>
     </div>
     <div id="memo-list"></div>
   </div>
@@ -861,6 +861,20 @@ pasteAllBtn.addEventListener("click", async () => {
   pasteAllBtn.textContent = ok ? `${parts.length}件コピー済` : "失敗";
   setTimeout(() => { pasteAllBtn.textContent = "全ペースト"; }, 2000);
 });
+
+(function () {
+  const img = document.querySelector(".nl-logo");
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@latest/icons/notebooklm-color.svg",
+    "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/notebooklm-color.svg",
+    "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/notebook-lm.svg"
+  ];
+  let n = 0;
+  const next = () => { if (n < urls.length) img.src = urls[n++]; else img.style.display = "none"; };
+  img.addEventListener("error", next);
+  img.addEventListener("load", () => { img.style.display = ""; });
+  next();
+})();
 </script>
 </body>
 </html>
