@@ -258,7 +258,8 @@
   <div class="card" id="memo-card" style="display:none;">
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
-      <a class="memo-link" style="margin-left:calc(1.4rem - 10px);" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
+      <button type="button" class="memo-copy" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="入っている全AIの回答を、1つにまとめてコピーします">全ペースト</button>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
       <span class="note" style="margin:0;">バーの右の「ペースト」</span>
     </div>
     <div id="memo-list"></div>
@@ -272,6 +273,7 @@
       <li>回答が出たら、そのAIの<b>コピーマーク</b>をタップします。</li>
       <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「ペースト」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
+      <li>全部そろったら、回答メモの<b>「全ペースト」</b>を押すと、全AIの回答が1つにまとまってコピーされます。<b>「NotebookLMを開く」</b>で開き、テキストとしてペーストします（AIごとに別のソースにしたいときは、次のとおり）。</li>
       <li>「ペースト」を押した直後は、出典付きの回答がコピーされた状態です。「NotebookLMを開く」で開き、AIごとに別のソースとしてペーストします（あとから取り出すときは、下の回答メモの欄を長押し →「すべてを選択」→「コピー」）。</li>
     </ol>
     <p>違う回答が入ったときは、もう一度ペーストすると上書きされます。バーの右の「リセット」で空にもできます。</p>
@@ -817,6 +819,15 @@ document.addEventListener("click", (e) => {
   const closesKeyboard = e.target.closest(".chip, .result-item, .memo-reset, #clear-btn, #copy-btn");
   const emptySpace = !e.target.closest("textarea, input, button, a, summary");
   if (closesKeyboard || emptySpace) setTimeout(closeKeyboard, 0);
+});
+
+const pasteAllBtn = document.getElementById("paste-all");
+pasteAllBtn.addEventListener("click", async () => {
+  const parts = [...memoList.querySelectorAll("textarea")].map(t => t.value.trim()).filter(Boolean);
+  if (!parts.length) { alert("先に回答をペーストしてください。"); return; }
+  const ok = await copyText(parts.join("\n\n----------\n\n"));
+  pasteAllBtn.textContent = ok ? `${parts.length}件コピー済` : "失敗";
+  setTimeout(() => { pasteAllBtn.textContent = "全ペースト"; }, 2000);
 });
 </script>
 </body>
