@@ -193,7 +193,7 @@
   .memo-msg:empty{display:none;}
   .memo-item textarea.pasteready{border-color:rgba(75,135,100,.8);box-shadow:0 0 0 3px rgba(120,185,150,.35);}
   .memo-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
-  a.memo-link{margin-left:auto;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:1px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
+  a.memo-link{margin-left:0;border:1px solid rgba(88,143,115,.55);border-radius:999px;padding:1px 12px;color:var(--accent-dark);font-weight:700;font-size:0.7rem;text-decoration:none;background:#fff;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin-top:2px;}
   .warn{background:#fff7e6;border:2px solid #f4d999;color:#7a5b00;padding:8.7px 14px;border-radius:16px;font-size:0.56rem;line-height:1.4;}
   footer{max-width:960px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:0.5rem;}
@@ -249,8 +249,8 @@
     <div class="memo-title-row">
       <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
       <button type="button" class="memo-copy memo-mini" id="copy-all" style="margin-left:calc(1.4rem - 10px);">回答コピー</button>
-      <span class="note" style="margin:0;">バーの右の「ペースト」</span>
       <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener">NotebookLMを開く</a>
+      <span class="note" style="margin:0;">バーの右の「ペースト」</span>
     </div>
     <div id="memo-list"></div>
   </div>
