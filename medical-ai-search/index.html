@@ -211,9 +211,9 @@
   .howto summary{cursor:pointer;font-weight:700;font-size:0.8rem;color:var(--accent-dark);padding:2px 0;}
   .howto ol{margin:6px 0 4px;padding-left:1.4em;font-size:0.72rem;line-height:1.55;color:var(--text,#2b3a33);}
   .howto p{margin:4px 0;font-size:0.68rem;line-height:1.5;color:var(--muted);}
-  .memo-item.selected textarea{background:#ffe6ee;border-color:rgba(226,130,160,.85);}
-  .memo-item.selected .memo-name{color:#c0577f;}
-  .memo-item.selected .memo-name::after{content:" ✓ 選択中";font-size:0.6em;font-weight:700;}
+  .memo-name{cursor:pointer;border-radius:999px;padding:1px 8px;margin-left:-6px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  .memo-item.selected .memo-name{color:#1565d8;background:#dbe9ff;box-shadow:inset 0 0 0 1.5px rgba(40,110,220,.55);}
+  .memo-item.selected .memo-name::after{content:" ✓ 選んだ";font-size:0.6em;font-weight:700;}
   .memo-msg{font-size:0.7rem;font-weight:700;color:var(--accent-dark);margin:2px 4px 0;min-height:0;}
   .memo-msg:empty{display:none;}
   .memo-item textarea.pasteready{border-color:rgba(75,135,100,.8);box-shadow:0 0 0 3px rgba(120,185,150,.35);}
@@ -315,7 +315,8 @@
       <li>回答が出たら、そのAIの<b>コピーマーク</b>をタップします。</li>
       <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「ペースト」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
-      <li>一部のAIだけ送りたいときは、下の回答メモの<b>そのAIの欄をダブルタップ</b>します。欄が<b>薄ピンク</b>になり、選んだことになります（もう一度ダブルタップで解除）。選んだAIがあるときは、ボタンが<b>「選んだ回答ペースト」</b>に変わり、選んだ分だけがコピーされます。選んでいないときは、全AIの回答が1つにまとまってコピーされます。<b>「ジェミニノートブック」</b>で開き、テキストとしてペーストします（AIごとに別のソースにしたいときは、次のとおり）。</li>
+      <li>下の回答メモで、欄を<b>1回タップ</b>すると、中身が広がって見えます。<b>ダブルタップ</b>すると、1行に縮みます。</li>
+      <li>一部のAIだけ送りたいときは、そのAIの<b>名前をタップ</b>します。名前が<b>青</b>になり、選んだことになります（もう一度タップで解除）。選んだAIがあるときは、ボタンが<b>「選んだ回答ペースト」</b>に変わり、<b>青いAIの分だけ</b>がコピーされます。選んでいないときは、全AIの回答が1つにまとまってコピーされます。<b>「ジェミニノートブック」</b>で開き、テキストとしてペーストします（AIごとに別のソースにしたいときは、次のとおり）。</li>
       <li>「ペースト」を押した直後は、出典付きの回答がコピーされた状態です。「ジェミニノートブック」で開き、AIごとに別のソースとしてペーストします（あとから取り出すときは、下の回答メモの欄を長押し →「すべてを選択」→「コピー」）。</li>
     </ol>
     <p>違う回答が入ったときは、もう一度ペーストすると上書きされます。バーの右の「リセット」で空にもできます。</p>
@@ -615,20 +616,19 @@ function ensureMemo(s) {
     if (!ta.value.trim()) { say("回答が入っていません。先に「ペースト」を押してください。"); return; }
     const on = !item.classList.contains("selected");
     item.classList.toggle("selected", on);
-    ta.blur();
     saveState();
-    say(on ? "✓ 選びました（薄ピンク）。もう一度ダブルタップで解除" : "選択を解除しました");
+    say(on ? "✓ 選びました（青）。もう一度タップで解除" : "選択を解除しました");
   };
+  item.querySelector(".memo-name").addEventListener("click", toggleSelect);
   let lastTap = 0, lastX = 0, lastY = 0;
-  item.addEventListener("pointerup", (e) => {
-    if (e.target.closest("button")) return;
+  ta.addEventListener("pointerup", (e) => {
     const now = Date.now();
     if (now - lastTap < 350 && Math.abs(e.clientX - lastX) < 30 && Math.abs(e.clientY - lastY) < 30) {
       lastTap = 0;
-      toggleSelect();
+      ta.blur();
     } else { lastTap = now; lastX = e.clientX; lastY = e.clientY; }
   });
-  item.addEventListener("dblclick", (e) => e.preventDefault());
+  ta.addEventListener("dblclick", (e) => { e.preventDefault(); ta.blur(); });
   item._api = {
     async paste() {
       try {
