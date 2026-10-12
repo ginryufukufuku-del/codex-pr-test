@@ -179,6 +179,8 @@
   }
   #import-bar button.memo-auto{font-size:1.05rem;min-height:46px;padding:4px 22px;}
   #import-bar{position:fixed;left:8px;right:8px;bottom:calc(8px + var(--kb, 0px));z-index:50;display:none;align-items:center;gap:6px 12px;flex-wrap:wrap;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(88,143,115,.55);border-radius:20px;padding:8px 12px;box-shadow:0 8px 24px rgba(40,80,60,.25);max-width:960px;margin:0 auto;}
+  #import-current{font-size:1rem;font-weight:800;color:#2f5a45;width:100%;}
+  #import-bar button.memo-copy.is-current{box-shadow:0 0 0 3px rgba(235,196,80,.95), inset 0 1.5px 0 rgba(255,255,255,.65), 0 4px 10px rgba(60,115,85,.32);}
   #import-label{font-size:0.8rem;font-weight:700;color:var(--accent-dark);width:100%;}
   #import-targets{display:flex;flex-wrap:wrap;gap:8px;flex:1;}
   #import-bar button.memo-copy{font-size:0.95rem;min-height:42px;padding:4px 18px;}
@@ -269,9 +271,8 @@
     <ol>
       <li>上の緑・青のボタンで、使うAIをタップします（下に、そのAIのバーと、回答メモの欄ができます）。</li>
       <li>AIのバーをタップして、AIサイトを開き、質問します。</li>
-      <li>回答が出たら、回答の下の<b>コピーマーク</b>をタップします。</li>
-      <li>このアプリのタブに戻り、画面の下の<b>白い枠</b>をタップ →キーボード左上の<b>📋</b>をタップします（貼り付け）。</li>
-      <li>下のバーの、<b>そのAIの名前</b>をタップします。回答メモの欄に、出典の見出し付きで入ります。</li>
+      <li>回答が出たら、回答の下の<b>コピーマーク</b>をタップします（画面の下に、「いま表示中のAI」が出ています）。</li>
+      <li>このアプリのタブに戻り、画面の下の<b>「📥 自動で取り込む」</b>をタップします。「いま表示中のAI」の欄に、出典の見出し付きで入ります（取り込めないときは、白い枠をタップ →キーボード左上の<b>📋</b>）。</li>
       <li>ほかのAIも、2〜5を繰り返します。</li>
       <li>終わったら、回答メモの欄の文章をコピーして、NotebookLMに貼り付けます（AIごとに別のソース）。</li>
     </ol>
@@ -284,7 +285,7 @@
   試作版（フロントエンドのみ・データはブラウザ内でのみ処理し外部送信しません）。実際の連携仕様は各サービスの利用規約・API提供状況により変更される可能性があります。
 </footer>
 
-<div id="import-bar"><div id="import-label"></div><textarea id="import-box" rows="1" placeholder="ここに貼り付け：この枠をタップ → キーボード左上の📋マークをタップ"></textarea><div id="import-targets"></div><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
+<div id="import-bar"><div id="import-current"></div><div id="import-label"></div><textarea id="import-box" rows="1" placeholder="ここに貼り付け：この枠をタップ → キーボード左上の📋マークをタップ"></textarea><div id="import-targets"></div><button type="button" class="memo-copy import-close" id="import-close" aria-label="閉じる">×</button></div>
 
 <script>
 const SERVICES = [
@@ -439,7 +440,7 @@ function showResult(s, status, url, blocked) {
     item.target = "_blank";
     item.rel = "noopener";
     item.dataset.resultId = s.id;
-    item.addEventListener("click", () => { copyText(buildQuery()); });
+    item.addEventListener("click", () => { setCurrent(s.id); copyText(buildQuery()); });
     resultList.appendChild(item);
   }
   item.href = url;
@@ -495,7 +496,24 @@ const importBar = document.getElementById("import-bar");
 const importTargets = document.getElementById("import-targets");
 const importLabel = document.getElementById("import-label");
 const importBox = document.getElementById("import-box");
-const IMPORT_LABEL = "回答をコピー → 白い枠に貼り付け（📋）。サイト名付きは自動で振り分け、ほかはAI名をタップ";
+const importCurrent = document.getElementById("import-current");
+const CURRENT_KEY = "medai-search-current-v1";
+let currentId = null;
+try { currentId = localStorage.getItem(CURRENT_KEY); } catch (e) {}
+
+function updateCurrentUI() {
+  importCurrent.textContent = currentId
+    ? `いま表示中のAI：${serviceName(currentId)}`
+    : "いま表示中のAI：未選択（AIのバーをタップして開くと、ここに表示されます）";
+  importTargets.querySelectorAll("button[data-id]").forEach(b => b.classList.toggle("is-current", b.dataset.id === currentId));
+}
+
+function setCurrent(id) {
+  currentId = id;
+  try { id ? localStorage.setItem(CURRENT_KEY, id) : localStorage.removeItem(CURRENT_KEY); } catch (e) {}
+  updateCurrentUI();
+}
+const IMPORT_LABEL = "回答をコピー → 「自動で取り込む」。サイト名付きは自動で振り分け、ない場合は「いま表示中のAI」に入ります";
 let labelTimer = null;
 
 function serviceName(id) {
@@ -547,6 +565,7 @@ function renderImportBar() {
     b.addEventListener("click", () => importInto(id));
     importTargets.appendChild(b);
   });
+  updateCurrentUI();
 }
 
 function showImportBar() {
@@ -614,8 +633,10 @@ function processRaw(raw, id) {
       : `取り込めませんでした（判定できず：${unknown.join("・") || "なし"}）`);
     return done.length > 0;
   }
+  let viaCurrent = false;
+  if (!id && currentId && memoList.querySelector(`[data-memo-id="${currentId}"]`)) { id = currentId; viaCurrent = true; }
   const ta = id ? memoList.querySelector(`[data-memo-id="${id}"] textarea`) : null;
-  if (!ta) { setImportLabel("どのAIの回答か分かりません。下のAI名を、タップしてください。", true); return false; }
+  if (!ta) { setImportLabel("どのAIの回答か分かりません。AIのバーをタップして開くか、下のAI名をタップしてください。", true); return false; }
   if (!raw || isOwnOrStale(raw)) {
     setImportLabel("新しい回答がコピーされていません。AIサイトで回答をコピーしてから、もう一度試してください。");
     return false;
@@ -623,7 +644,9 @@ function processRaw(raw, id) {
   placeAnswer(SERVICES.find(x => x.id === id), raw);
   saveState();
   ta.closest(".memo-item").scrollIntoView({ block: "center", behavior: "smooth" });
+  if (!viaCurrent) setCurrent(id);
   markDone(id);
+  if (viaCurrent) setImportLabel(`✓ ${serviceName(id)}の欄に入れました（いま表示中のAI）。違うときは「リセット」`);
   return true;
 }
 
@@ -642,11 +665,12 @@ async function importInto(id) {
   if (processRaw(raw, id) && fromBox) { importBox.value = ""; }
 }
 
-importBox.addEventListener("input", () => {
+importBox.addEventListener("input", (e) => {
   const raw = importBox.value.trim();
   if (!raw) return;
-  if (splitSources(raw).length) { importInto(null); }
-  else setImportLabel("貼り付けました。どのAIの回答か、下のAI名をタップしてください。", true);
+  if (splitSources(raw).length) { importInto(null); return; }
+  if (/^insertFromPaste/.test(e.inputType || "") && currentId) { importInto(null); return; }
+  setImportLabel(currentId ? "貼り付けました。取り込み先は、いま表示中のAI（またはAI名をタップ）です。" : "貼り付けました。どのAIの回答か、下のAI名をタップしてください。", true);
 });
 
 document.getElementById("import-close").addEventListener("click", hideImportBar);
@@ -654,6 +678,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 window.addEventListener("pageshow", showImportBar);
 
 function clearResults() {
+  setCurrent(null);
   hideImportBar();
   resultList.innerHTML = "";
   memoList.innerHTML = "";
