@@ -225,7 +225,6 @@
     transition:transform .06s;
   }
   a.memo-link:active{transform:scale(0.96);}
-  a.memo-link .nl-open{font-size:0.7rem;}
   a.memo-link .nl-logo{height:0.95em;width:auto;margin-right:6px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
   @media (max-width:600px){
     a.memo-link{
@@ -291,9 +290,9 @@
 
   <div class="card" id="memo-card" style="display:none;">
     <div class="memo-title-row">
-      <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（NotebookLM用）</span></h2>
+      <h2 style="color:var(--accent-dark);margin:0;font-size:0.7rem;">回答メモ<span style="font-size:0.75em;font-weight:400;">（ジェミニノートブック用）</span></h2>
       <button type="button" class="memo-copy paste-btn" id="paste-all" style="margin-left:calc(1.4rem - 10px);" title="入っている全AIの回答を、1つにまとめてコピーします">全ペースト</button>
-      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">NotebookLM<span class="nl-open">を開く</span></a>
+      <a class="memo-link" href="https://notebooklm.google.com/" target="_blank" rel="noopener"><img class="nl-logo" alt="" src="icons/notebooklm-logo.png">ジェミニノートブック</a>
     </div>
     <div id="memo-list"></div>
   </div>
@@ -306,8 +305,8 @@
       <li>回答が出たら、そのAIの<b>コピーマーク</b>をタップします。</li>
       <li>このアプリに戻り（または並べた画面で）、<b>そのAIのバーの右の「ペースト」</b>をタップします。出典の見出し付きで入り、バーに✓が付きます。入らないときは、下の回答メモの<b>そのAIの欄を長押し →「ペースト」</b>です。</li>
       <li>ほかのAIも、3〜5を繰り返します。</li>
-      <li>全部そろったら、回答メモの<b>「全ペースト」</b>を押すと、全AIの回答が1つにまとまってコピーされます。<b>「NotebookLMを開く」</b>で開き、テキストとしてペーストします（AIごとに別のソースにしたいときは、次のとおり）。</li>
-      <li>「ペースト」を押した直後は、出典付きの回答がコピーされた状態です。「NotebookLMを開く」で開き、AIごとに別のソースとしてペーストします（あとから取り出すときは、下の回答メモの欄を長押し →「すべてを選択」→「コピー」）。</li>
+      <li>全部そろったら、回答メモの<b>「全ペースト」</b>を押すと、全AIの回答が1つにまとまってコピーされます。<b>「ジェミニノートブック」</b>で開き、テキストとしてペーストします（AIごとに別のソースにしたいときは、次のとおり）。</li>
+      <li>「ペースト」を押した直後は、出典付きの回答がコピーされた状態です。「ジェミニノートブック」で開き、AIごとに別のソースとしてペーストします（あとから取り出すときは、下の回答メモの欄を長押し →「すべてを選択」→「コピー」）。</li>
     </ol>
     <p>違う回答が入ったときは、もう一度ペーストすると上書きされます。バーの右の「リセット」で空にもできます。</p>
   </details></div>
@@ -490,7 +489,7 @@ function showResult(s, status, url, blocked) {
     pasteWrap.className = "paste-wrap";
     const pasteLabel = document.createElement("span");
     pasteLabel.className = "paste-label";
-    pasteLabel.textContent = "NotebookLMの入力用";
+    pasteLabel.textContent = "ジェミニノートブックの入力用";
     pasteWrap.append(pasteLabel, pasteBtn);
     acts.append(pasteWrap, resetBtn);
     row.append(item, acts);
