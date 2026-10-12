@@ -591,12 +591,12 @@ function ensureMemo(s) {
   const setAnswer = (text) => {
     const raw = rawOf(text.trim());
     if (!raw) return false;
-    if (raw === buildQuery()) { say("質問文がコピーされています。AIの回答をコピーしてから、もう一度ペーストしてください。"); return false; }
+    if (raw === buildQuery()) { say("質問文です。回答をコピーしてください"); return false; }
     ta.value = wrapAnswer(s, raw);
     collapse();
     saveState();
     copyText(ta.value);
-    say(`✓ ${s.name}の回答として入力（出典付き）`);
+    say("✓ 入力（出典付き）");
     return true;
   };
   ta.addEventListener("paste", (e) => {
@@ -613,11 +613,11 @@ function ensureMemo(s) {
     if (v && !v.startsWith("【出典：")) { ta.value = wrapAnswer(s, v); saveState(); }
   });
   const toggleSelect = () => {
-    if (!ta.value.trim()) { say("回答が入っていません。先に「ペースト」を押してください。"); return; }
+    if (!ta.value.trim()) { say("回答がありません"); return; }
     const on = !item.classList.contains("selected");
     item.classList.toggle("selected", on);
     saveState();
-    say(on ? "✓ 選択しました（緑）。もう一度タップで解除" : "選択を解除しました");
+    say(on ? "✓ 選択（もう一度タップで解除）" : "選択を解除");
   };
   item.querySelector(".memo-name").addEventListener("click", toggleSelect);
   let lastTap = 0, lastX = 0, lastY = 0;
@@ -636,7 +636,7 @@ function ensureMemo(s) {
       } catch (e) {
         item.scrollIntoView({ block: "center", behavior: "smooth" });
         ta.focus();
-        say("自動で読み取れませんでした。この欄を長押し →「ペースト」をタップしてください。", true);
+        say("読み取れません。欄を長押し→ペースト", true);
       }
     },
     reset() {
