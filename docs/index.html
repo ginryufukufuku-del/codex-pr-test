@@ -527,14 +527,15 @@ function showResult(s, status, url, blocked) {
 }
 
 function attachLogo(item, s) {
-  if (s.category !== "medical") return;
   let host = "";
   try { host = new URL(s.url).hostname; } catch (e) { return; }
-  const urls = [
-    `icons/ai/${s.id}.png`,
-    `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent("https://" + host)}&size=64`,
-    `https://icons.duckduckgo.com/ip3/${host}.ico`
-  ];
+  const urls = s.category === "medical"
+    ? [
+        `icons/ai/${s.id}.png`,
+        `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=${encodeURIComponent("https://" + host)}&size=64`,
+        `https://icons.duckduckgo.com/ip3/${host}.ico`
+      ]
+    : [`icons/ai/${s.id}.png`];
   const img = document.createElement("img");
   img.className = "ai-logo";
   img.alt = "";
@@ -715,12 +716,15 @@ SERVICES.forEach(s => {
   chip.className = "chip active" + (s.chipTone ? " chip-" + s.chipTone : (s.category === "general" ? " chip-general" : ""));
   chip.dataset.id = s.id;
   chip.innerHTML = s.name;
-  if (s.category === "medical") {
+  {
     const slot = document.createElement("span");
     slot.className = "chip-logo-slot";
     const logo = document.createElement("img");
     logo.alt = "";
+    const medical = s.category === "medical";
+    if (!medical) slot.style.display = "none";          // 汎用AIは、ロゴ画像があるときだけスペースを作る
     logo.addEventListener("error", () => logo.remove());
+    logo.addEventListener("load", () => { slot.style.display = ""; });
     logo.src = `icons/ai/${s.id}.png`;
     slot.appendChild(logo);
     chip.insertBefore(slot, chip.firstChild);
