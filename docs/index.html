@@ -500,7 +500,8 @@ const AI_INFO = {
     source: ["NEJM Group（2025年2月）、JAMA Network 13誌（2025年6月）と、複数年のコンテンツ提携を結んでいます。", "Springer Natureとも購読契約を結んだと発表されています（2026年8月）。", "NCCNなどの学会ガイドラインとの契約は、今回は確認できませんでした。"],
     price: "認証された医療従事者は無料。製薬企業などの広告で運営していると報じられています（第三者の情報）。",
     reg: "医療従事者の認証が必要です（米国のNPI番号の確認との情報あり）。日本の医師が使えるかは未確認です。",
-    links: [["OpenEvidence × NEJM", "https://openevidence.com/announcements/openevidence-and-nejm"], ["JAMA提携（Fierce Healthcare）", "https://www.fiercehealthcare.com/ai-and-machine-learning/jama-signs-multi-year-deal-openevidence-inform-ai-powered-medical-search"], ["Springer Nature発表", "https://group.springernature.com/de/group/media/press-releases/open-evidence/53064470"]]
+    users: "米国の医師の約65万人が積極的に利用していると、会社が説明しています（STAT・2026年5月）。認証済みの医師は、約75.7万人（2026年初め）、約91.5万人（2026年7月）との第三者の報告があります。数え方が違うため、数字は一致しません。会社の公式な最新の数字は、確認できませんでした。",
+    links: [["利用者数（STAT）", "https://www.statnews.com/2026/05/20/openevidence-pitches-hospitals-we-are-not-monsters/"], ["利用者数・分析（Sacra）", "https://sacra.com/c/openevidence/"], ["OpenEvidence × NEJM", "https://openevidence.com/announcements/openevidence-and-nejm"], ["JAMA提携（Fierce Healthcare）", "https://www.fiercehealthcare.com/ai-and-machine-learning/jama-signs-multi-year-deal-openevidence-inform-ai-powered-medical-search"], ["Springer Nature発表", "https://group.springernature.com/de/group/media/press-releases/open-evidence/53064470"]]
   },
   verahealth: {
     source: ["6,000万件以上の査読論文・臨床ガイドライン・診療経路を元にすると、運営元は説明しています。", "回答の主な記述には、出典の引用が付きます。", "数値や評価は、運営元の自己申告です。"],
@@ -647,7 +648,7 @@ function openInfo(s) {
       <button type="button" class="info-close" aria-label="閉じる">×</button>
       <div class="info-title">${logo}<span></span></div>
       <h3>情報の出どころ</h3><ul>${li(d.source)}</ul>
-      <h3>料金</h3><p>${d.price}</p>
+      ${d.users ? `<h3>利用者数</h3><p>${d.users}</p>` : ""}<h3>料金</h3><p>${d.price}</p>
       <h3>会員登録</h3><p>${d.reg}</p>
       <h3>出典</h3><ul class="info-links">${d.links.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${t}</a></li>`).join("")}</ul>
       <p class="info-note">調べた日：${INFO_CHECKED}。運営元の発表や第三者の紹介記事を含みます。内容は変わることがあります。「未確認」は、確認できなかった項目です。</p>
