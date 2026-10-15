@@ -22,6 +22,28 @@ GitHub CLIとCodexを使ったPull Requestワークフローを検証するた�
 > [!IMPORTANT]
 > `main`ブランチは直接変更せず、必ずPull Requestを経由してください。
 
+## 映画・動画づくりの全体の流れ
+3分〜30分の動画を、企画から完成まで次の順で作ります。どの道具も、前の工程が書き出したJSONを読み込んで続きを進めます。
+
+```mermaid
+flowchart LR
+  A["脚本・絵コンテ スタジオ<br/>script-studio/"] -->|プロジェクトJSON| B["動画制作スタジオ<br/>video-studio/"]
+  A -->|JSON + シーン範囲| C["動画生成AIハブ ⑤AI制作チーム<br/>video-ai-hub/"]
+  C -->|シーンごとの完成動画| B
+  B -->|JSON + 素材| D["make_video.py<br/>ffmpeg で組み立て"]
+  D -->|resolve_import.py / EDL / SRT| E["DaVinci Resolve<br/>色・音・テロップの仕上げ"]
+```
+
+| 工程 | 道具 | やること |
+|---|---|---|
+| 1. 企画・脚本・絵コンテ | `script-studio/index.html` | ジャンル・尺・構成の型を選び、人物、シーン、カット(画面サイズ・カメラ・秒数)、セリフを決める。「学ぶ」タブで参考動画の型を研究する |
+| 2. 素材づくり | `video-ai-hub/`(⑤AI制作チーム) | 絵コンテのシーン範囲(120秒・12カットまで)を、動画生成AIとClaudeの4エージェントで映像化する【有料】 |
+| 2'. 素材集め | 撮影・ストック素材・図解 | 実写のカットは撮影リスト、AIのカットはプロンプトを動画制作スタジオから書き出して使う |
+| 3. 組み立て | `video-studio/index.html` → `make_video.py` | カットに素材を割り当て、プレビューし、尺どおりにつないだ動画とResolve用ファイルを作る |
+| 4. 仕上げ | DaVinci Resolve | `resolve_import.py` でタイムラインを作り、色・音・テロップを整えて書き出す |
+
+Claude Code のサブエージェントも用意しています。`screenwriter`(脚本家)が脚本とJSONを書き、`video-director`(映像制作)が撮影リスト・AIプロンプト・ラフ編集・Resolve用ファイルを用意します(`.claude/agents/`)。
+
 ## 動画生成AI ハブ(`video-ai-hub/`)
 動画生成AIのリンク集・プロンプト作成・API生成・履歴比較。
 起動: `cd video-ai-hub && cp .env.example .env`(`GEMINI_API_KEY` を記入)→ `node server.js` → http://127.0.0.1:8000
@@ -40,6 +62,8 @@ Claude(`claude-opus-5-5`)の4人のエージェントが、意見を出し合い
 - ③監督: 秒ごとのタイムライン、声の配役(VOICEVOX)、セリフと映像・原作の整合のファクトチェック
 - ④最終チェック: 完成版の照明・配置・流れ・カメラ・音を独立に判定し、担当者に数値付きで差し戻し
 - 進め方: 「案 → ほかのメンバーの意見 → 書き手が修正(採否と理由を回答) → 再確認」を工程ごとに最大N回(FilmAgent・Camera Artist などの研究と、制作者の実践を参考)
+
+**絵コンテから始める**: 「絵コンテから始める」に脚本・絵コンテ スタジオのJSONを読み込み、シーンの範囲を選ぶと、脚本とショット表の話し合いを省いて、絵コンテのカット割り・秒数・セリフどおりに生成します(1回 120秒・12カットまで。Claude の呼び出しも減ります)。完成した動画は、動画制作スタジオでそのシーンの素材として割り当てられます。
 
 準備: `cd video-ai-hub && npm install`、`.env` に `ANTHROPIC_API_KEY` と動画生成AIのキー、ffmpeg(Mac: `brew install ffmpeg`)。声を付けるなら VOICEVOX を起動。テスト: `npm test`(APIを呼ばない代役で全工程を通す)。
 

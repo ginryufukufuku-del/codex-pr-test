@@ -337,7 +337,7 @@ function cutRow(r, have) {
     <div><span class="meta">${esc(c.shot)}・${esc(c.angle)}・${esc(c.move)}</span><span class="meta">○${esc(r.s.place)}（${esc(r.s.time)}）</span>
       <div class="act">${esc(c.action)}</div>${c.dialogue ? `<div class="dlg">${esc(c.dialogue).replace(/\n/g, "<br>")}</div>` : ""}${c.sound ? `<div class="meta">〔${esc(c.sound)}〕</div>` : ""}</div>
     <div><label class="f">作り方<select id="m-${c.id}" data-cut="${c.id}" data-k="method">${opts(METHODS, c.method)}</select></label>
-      <div class="file"><button class="btn sm" data-act="pick" data-id="${c.id}">${have ? "素材を差し替え" : "素材を割り当て"}</button>${have ? `<button class="btn sm" data-act="unpick" data-id="${c.id}">外す</button>` : ""}</div>
+      <div class="file"><button class="btn sm" data-act="pick" data-id="${c.id}">${have ? "素材を差し替え" : "素材を割り当て"}</button>${have ? `<button class="btn sm" data-act="unpick" data-id="${c.id}">外す</button>` : `<button class="btn sm" data-act="pickSeq" data-id="${c.id}" title="1本の動画を、このカットから順に秒数ずつ切り分けて割り当てます（AI制作チームが作ったシーン動画など）">シーン動画を割り当て</button>`}</div>
       ${have ? `<span class="name" title="${esc(c.media)}">${esc(c.media)}</span>` : `<span class="note">または素材フォルダに <code>C${String(r.no).padStart(3, "0")}.mp4</code> の名前で置く</span>`}
       ${have && isVideo(med) ? `<label class="f">素材の使い始め（秒）<input type="number" id="in-${c.id}" data-cut="${c.id}" data-k="mediaIn" value="${c.mediaIn}" min="0" step="0.1"></label>` : ""}</div>
     <div><textarea class="prompt" id="p-${c.id}" rows="5" data-cut="${c.id}" data-k="aiPrompt" aria-label="AI動画プロンプト">${esc(promptOf(r))}</textarea>
@@ -542,7 +542,8 @@ const ACT = {
     catch (e) { setSave("このブラウザに脚本スタジオのデータが見つかりません。JSONで読み込んでください", true); } },
   filter: t => { ui.filter = t.dataset.v; render(); },
   autoMethod: () => { rows().forEach(r => { if (r.c.method !== "未定") return; r.c.method = r.c.shot === "INS" ? "図解・テロップ" : /対談|討論|講義|医師|看護|話者|語りかけ/.test(r.c.action + r.s.summary) ? "実写撮影" : "AI動画生成"; }); saveSoon(); render(); },
-  pick: (t, id) => { ui.pickFor = id; $("#mediaIn").value = ""; $("#mediaIn").click(); },
+  pick: (t, id) => { ui.pickFor = id; ui.pickSeq = false; $("#mediaIn").value = ""; $("#mediaIn").click(); },
+  pickSeq: (t, id) => { ui.pickFor = id; ui.pickSeq = true; $("#mediaIn").value = ""; $("#mediaIn").click(); },
   unpick: async (t, id) => { await delMedia(id); const c = cutById(id); c.media = ""; c.mediaIn = 0; saveSoon(); render(); },
   copyPrompt: (t, id) => copyText($("#p-" + id), $("#pm-" + id)),
   resetPrompt: (t, id) => { cutById(id).aiPrompt = ""; saveSoon(); render(); },
@@ -557,6 +558,20 @@ const ACT = {
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ui.exportText], { type: "text/plain;charset=utf-8" })); a.download = ui.exportName; document.body.appendChild(a); a.click(); a.remove();
     $("#exp-msg").textContent = `${ui.exportName} を保存しました（保存できない環境では「コピー」を使ってください）`; },
 };
+// 1本の動画(シーン動画)を、指定カットから順に「使い始め」をずらして割り当てる
+async function assignSequence(id, f) {
+  const url = URL.createObjectURL(f), v = document.createElement("video"); v.preload = "metadata"; v.src = url;
+  let dur = 0; try { await once(v, "loadedmetadata"); dur = v.duration; } catch (e) {} URL.revokeObjectURL(url);
+  if (!(dur > 0)) { setSave("動画の長さを読み取れませんでした。別の形式（MP4など）で試してください", true); return; }
+  const rs = rows(), start = rs.findIndex(r => r.c.id === id); let at = 0, n = 0;
+  for (const r of rs.slice(start)) {
+    if (at >= dur - 0.2) break;
+    await putMedia(r.c.id, f); Object.assign(r.c, { media: f.name, mediaIn: +at.toFixed(2) }); if (r.c.method === "未定") r.c.method = "AI動画生成";
+    at += r.sec; n++;
+  }
+  save(); render();
+  setSave(`「${f.name}」（${dur.toFixed(1)}秒）を C${rs[start].no} から ${n} カットに割り当てました` + (at > dur + 0.5 ? "。最後のカットは素材が足りないので止め絵になります" : ""));
+}
 function copyText(ta, msg) { if (!ta?.value) return; const done = ok => { if (msg) msg.textContent = ok ? "コピーしました" : "選択しました。Ctrl+C（⌘C）でコピーしてください"; };
   if (navigator.clipboard?.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), () => { ta.select(); done(false); }); else { ta.select(); done(false); } }
 document.addEventListener("click", e => { const t = e.target.closest("[data-act]"); if (!t) return; const f = ACT[t.dataset.act]; if (f) { e.preventDefault(); f(t, t.dataset.id, e); } });
@@ -575,6 +590,7 @@ document.addEventListener("change", async e => {
     catch (err) { setSave("読み込めませんでした。脚本・絵コンテ スタジオで書き出したJSONか確認してください", true); }
     e.target.value = ""; return; }
   if (e.target.id === "mediaIn") { const f = e.target.files[0], id = ui.pickFor; if (!f || !id) return;
+    if (ui.pickSeq && f.type.startsWith("video/")) { await assignSequence(id, f); return; }
     await putMedia(id, f); const c = cutById(id); c.media = f.name; c.mediaIn = 0; if (c.method === "未定") c.method = f.type.startsWith("image/") ? "ストック素材" : "実写撮影";
     save(); render(); return; }
   onEdit(e);
