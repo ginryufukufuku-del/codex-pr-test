@@ -10,8 +10,11 @@
 <header><h1>Slide2Video</h1><span>スライドを動画(WebM)に変換</span></header>
 <main>
   <section id="editor">
-    <div id="slides"></div>
-    <button id="add">＋ スライド追加</button>
+    <button id="toggle" class="toggle" aria-expanded="true">アウトライン ▲</button>
+    <div id="outline">
+      <div id="slides"></div>
+      <button id="add">＋ スライド追加</button>
+    </div>
   </section>
   <section id="preview">
     <canvas id="canvas" width="1280" height="720"></canvas>

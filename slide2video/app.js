@@ -122,3 +122,12 @@ function render() {
 $('add').onclick = () => { slides.push({ title: '', body: '', seconds: 3, img: null }); render(); };
 render();
 drawIdle();
+
+const editor = $('editor'), toggle = $('toggle');
+function setOutline(open) {
+  editor.classList.toggle('collapsed', !open);
+  toggle.setAttribute('aria-expanded', open);
+  toggle.textContent = open ? 'アウトライン ▲' : 'アウトライン ▼（開く）';
+}
+toggle.onclick = () => setOutline(editor.classList.contains('collapsed'));
+setOutline(!window.matchMedia('(orientation: portrait)').matches);

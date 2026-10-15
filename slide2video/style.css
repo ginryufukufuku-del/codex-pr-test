@@ -16,3 +16,10 @@ button:disabled{opacity:.5;cursor:default}
 canvas{width:100%;background:#000;border-radius:8px}
 .controls{display:flex;gap:10px;align-items:center;margin:10px 0}
 #status{font-size:13px;color:#555}
+.toggle{width:100%;text-align:left;background:#374151;margin-bottom:10px}
+#editor.collapsed #outline{display:none}
+@media (orientation:portrait){
+  main{flex-direction:column}
+  #preview{order:-1;position:sticky;top:0;z-index:1;background:#f4f5f7;padding-bottom:4px}
+  #editor{max-width:none}
+}
