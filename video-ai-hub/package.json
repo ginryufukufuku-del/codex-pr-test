@@ -1,0 +1,14 @@
+{
+  "name": "video-ai-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "動画生成AIハブ(AI監督つき)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/aozora.test.js && node test/studio.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0"
+  }
+}

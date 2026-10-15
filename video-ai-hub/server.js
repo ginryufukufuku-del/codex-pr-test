@@ -113,14 +113,19 @@ const providers = {
   }
 };
 
+// ---- AI制作チーム(4人のエージェント) ----
+const studio = require('./studio'), media = require('./media'), voice = require('./voice'), { fetchAozora } = require('./aozora');
+if (process.env.STUDIO_MOCK === '1') providers.mock = require('./test/studio-mock').mockProvider(require('os').tmpdir());   // テスト用
+studio.init(providers);
+
 // ---- ジョブ(メモリ上) ----
 const jobs = new Map();
 const hits = new Map();
-const limited = ip => { const n = Date.now(), a = (hits.get(ip) || []).filter(t => n - t < 60000); a.push(n); hits.set(ip, a); return a.length > 30; };
+const limited = ip => { const n = Date.now(), a = (hits.get(ip) || []).filter(t => n - t < 60000); a.push(n); hits.set(ip, a); return a.length > 120; };   // 制作の進み具合を数秒ごとに問い合わせるため余裕を持たせる
 const safeEq = (a, b) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && crypto.timingSafeEqual(x, y); };
 
 const send = (res, code, obj) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(obj)); };
-const body = req => new Promise((ok, ng) => { let d = ''; req.on('data', c => { d += c; if (d.length > 20000) { ng(new Error('too large')); req.destroy(); } }); req.on('end', () => { try { ok(JSON.parse(d || '{}')); } catch { ng(new Error('bad json')); } }); });
+const body = (req, max = 20000) => new Promise((ok, ng) => { let d = ''; req.on('data', c => { d += c; if (d.length > max) { ng(new Error('too large')); req.destroy(); } }); req.on('end', () => { try { ok(JSON.parse(d || '{}')); } catch { ng(new Error('bad json')); } }); });
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
 const STATIC = new Set(['index.html', 'app.js', 'style.css']);
 
@@ -169,11 +174,69 @@ const server = http.createServer(async (req, res) => {
       if (j.status === 'running') Object.assign(j, await p.poll(j));
       return send(res, 200, { status: j.status, error: j.error });   // videoUrl(上流URL)は返さない
     }
+    if (parts[1] === 'studio') return await studioApi(req, res, parts);
     send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('error:', e.message);                     // キーは出力しない
     send(res, 500, { error: String(e.message).slice(0, 200) });
   }
 });
+async function studioApi(req, res, parts) {
+  const intIn = (v, lo, hi, d) => Number.isInteger(v) ? Math.min(hi, Math.max(lo, v)) : d;
+  if (req.method === 'GET' && parts[2] === 'status') {
+    const sp = await voice.speakers();
+    return send(res, 200, { configured: studio.configured(), ffmpeg: await media.available(), model: studio.MODEL, voices: sp.length, voiceNames: [...new Set(sp.map(s => s.character))] });
+  }
+  if (req.method === 'POST' && parts[2] === 'aozora') {
+    const b = await body(req);
+    try { return send(res, 200, await fetchAozora(String(b.url || ''))); } catch (e) { return send(res, 400, { error: e.message }); }
+  }
+  if (req.method === 'POST' && parts[2] === 'bgm') {   // BGM の音声ファイル(30MBまで)
+    const type = String(req.headers['content-type'] || '');
+    const ext = { 'audio/mpeg': '.mp3', 'audio/mp3': '.mp3', 'audio/wav': '.wav', 'audio/x-wav': '.wav', 'audio/wave': '.wav', 'audio/mp4': '.m4a', 'audio/x-m4a': '.m4a', 'audio/aac': '.aac', 'audio/ogg': '.ogg' }[type.split(';')[0]];
+    if (!ext) return send(res, 400, { error: '音声ファイル(mp3/wav/m4a/aac/ogg)を選んでください' });
+    const chunks = []; let size = 0;
+    for await (const c of req) { size += c.length; if (size > 30 * 1024 * 1024) return send(res, 413, { error: '30MBまでです' }); chunks.push(c); }
+    const id = crypto.randomUUID() + ext;
+    fs.writeFileSync(path.join(studio.uploadDir(), id), Buffer.concat(chunks));
+    return send(res, 200, { bgmId: id });
+  }
+  if (req.method === 'POST' && parts[2] === 'start') {
+    if (!studio.configured()) return send(res, 400, { error: 'Claude の APIキー(ANTHROPIC_API_KEY)が未設定です' });
+    if (!(await media.available())) return send(res, 400, { error: 'ffmpeg が見つかりません' });
+    const b = await body(req, 120000), p = providers[b.provider];
+    if (b.confirmPaid !== true) return send(res, 400, { error: '有料です。料金発生の確認が必要です(confirmPaid)' });
+    if (!p || !p.configured()) return send(res, 400, { error: 'この動画生成AIはキーが未設定です' });
+    const brief = String(b.brief || '').trim(), text = String(b.sourceText || '').trim();
+    if (!brief || brief.length > 2000) return send(res, 400, { error: '依頼内容は1〜2000文字で入力してください' });
+    if (text.length > 45000) return send(res, 400, { error: '原作の文章が長すぎます(45000文字まで)' });
+    let bgmFile = null;
+    if (b.bgmId) {
+      if (!/^[0-9a-f-]{36}\.(mp3|wav|m4a|aac|ogg)$/.test(b.bgmId)) return send(res, 400, { error: 'BGMの指定が不正です' });
+      bgmFile = path.join(studio.uploadDir(), b.bgmId);
+      if (!fs.existsSync(bgmFile)) return send(res, 400, { error: 'BGMが見つかりません。もう一度選んでください' });
+    }
+    try {
+      const id = await studio.start({ brief, aspect: p.aspects.includes(b.aspect) ? b.aspect : p.aspects[0], provider: b.provider,
+        model: p.models ? b.model : undefined, targetSec: intIn(b.targetSec, 5, 120, 30), maxShots: intIn(b.maxShots, 1, 12, 4),
+        maxGenerations: intIn(b.maxGenerations, 1, 20, 6), rounds: intIn(b.rounds, 1, 3, 2), useVoice: b.useVoice !== false, bgmFile,
+        source: { text: text || '(原作なし。依頼内容から自由に創作)', title: String(b.sourceTitle || '').slice(0, 100), author: String(b.sourceAuthor || '').slice(0, 100),
+          credit: String(b.sourceCredit || '').slice(0, 300), truncated: !!b.sourceTruncated } });
+      return send(res, 200, { id });
+    } catch (e) { return send(res, 409, { error: e.message }); }
+  }
+  const id = parts[2];
+  if (!/^[0-9a-f-]{36}$/.test(id || '')) return send(res, 404, { error: 'not found' });
+  if (req.method === 'POST' && parts[3] === 'stop') return send(res, 200, { ok: studio.stop(id) });
+  if (req.method === 'GET' && parts[3] === 'final') {
+    const f = studio.finalFile(id);
+    if (!f || !fs.existsSync(f)) return send(res, 404, { error: 'まだ完成していません' });
+    res.writeHead(200, { 'content-type': 'video/mp4', 'content-length': fs.statSync(f).size, 'cache-control': 'no-store' });
+    return fs.createReadStream(f).pipe(res);
+  }
+  if (req.method === 'GET' && !parts[3]) { const v = studio.view(id); return v ? send(res, 200, v) : send(res, 404, { error: 'not found' }); }
+  send(res, 404, { error: 'not found' });
+}
+
 server.listen(PORT, HOST, () => console.log(`http://${HOST}:${server.address().port}  (APP_TOKEN: ${APP_TOKEN ? '有効' : '未設定'})`));
 module.exports = server;   // デスクトップアプリ(Electron)から読み込めるようにする

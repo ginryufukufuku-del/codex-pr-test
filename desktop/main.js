@@ -4,7 +4,7 @@
 const { app, BrowserWindow, Menu, ipcMain, safeStorage, shell, session } = require('electron');
 const path = require('path'), fs = require('fs'), crypto = require('crypto');
 
-const KEY_NAMES = ['GEMINI_API_KEY', 'RUNWAY_API_KEY', 'LUMA_API_KEY', 'FAL_KEY'];
+const KEY_NAMES = ['GEMINI_API_KEY', 'RUNWAY_API_KEY', 'LUMA_API_KEY', 'FAL_KEY', 'ANTHROPIC_API_KEY'];
 const keyFile = () => path.join(app.getPath('userData'), 'keys.json');
 let mainWin = null, settingsWin = null, origin = '';
 
@@ -48,6 +48,8 @@ function openExternal(url) { if (/^https?:\/\//i.test(url)) shell.openExternal(u
 async function startServer() {
   const token = crypto.randomBytes(24).toString('hex');
   process.env.HOST = '127.0.0.1'; process.env.PORT = '0'; process.env.APP_TOKEN = token;   // 読み込み前に設定
+  process.env.DATA_DIR = path.join(app.getPath('userData'), 'projects');                    // 制作物の保存先
+  try { process.env.FFMPEG_PATH = require('ffmpeg-static').replace('app.asar', 'app.asar.unpacked'); } catch {}   // 同梱の ffmpeg
   const server = require('./app/server.js');
   if (!server.listening) await new Promise(ok => server.once('listening', ok));
   origin = `http://127.0.0.1:${server.address().port}`;

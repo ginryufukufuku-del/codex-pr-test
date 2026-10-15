@@ -44,6 +44,39 @@
     <h2>④ 生成履歴・比較</h2>
     <div id="jobs"></div>
   </section>
+  <section id="studioSec" hidden>
+    <h2>⑤ AI制作チーム(4人のエージェント)</h2>
+    <p class="hint">①脚本家 ②撮影・生成担当 ③監督 ④最終チェック が、意見を出し合いながら1本の動画を作ります(脚本→ショット表→タイムラインと声→生成→ファクトチェック→編集→最終チェック)。</p>
+    <div id="stStatus" class="hint"></div>
+    <textarea id="stBrief" rows="3" placeholder="依頼(例: 野球の九回裏、逆転サヨナラの瞬間を30秒で)"></textarea>
+    <details><summary>原作(任意): 青空文庫の作品や、自分の文章</summary>
+      <div class="row2"><input id="stAozora" placeholder="青空文庫の作品ページURL(https://www.aozora.gr.jp/cards/…/files/….html)"><button id="stAozoraBtn" type="button">読み込む</button></div>
+      <div id="stSrcInfo" class="hint"></div>
+      <textarea id="stSource" rows="6" placeholder="または、使ってよい文章(自分の文章・著作権の切れた作品)を貼り付け"></textarea>
+    </details>
+    <div class="opts">
+      <label>生成AI <select id="stProv"></select></label>
+      <label id="stModelL" hidden>モデル <select id="stModel"></select></label>
+      <label>縦横比 <select id="stAspect"></select></label>
+      <label>長さ(秒) <input id="stSec" type="number" min="5" max="120" value="30"></label>
+      <label>ショット数 <input id="stShots" type="number" min="1" max="12" value="4"></label>
+      <label>生成回数の上限 <input id="stGen" type="number" min="1" max="20" value="6"></label>
+      <label>話し合い(回/工程) <input id="stRounds" type="number" min="1" max="3" value="2"></label>
+      <label>BGM(任意) <input id="stBgm" type="file" accept="audio/*"></label>
+      <label class="chk"><input id="stVoice" type="checkbox" checked> 声を付ける(VOICEVOX)</label>
+    </div>
+    <label class="paid"><input type="checkbox" id="stPaid"><span><b>【有料】</b>Claude API(4人の会話)と動画生成APIを使います。動画生成は最大 <b id="stGenShow">6</b> 回まで。料金が発生することを理解しました(開始ごとにチェックが必要)</span></label>
+    <button id="stStart" disabled>制作を始める(有料)</button> <button id="stStop" type="button" hidden>停止</button>
+    <div id="stProgress" hidden>
+      <div id="stPhase" class="phase"></div>
+      <div id="stMeta" class="hint"></div>
+      <div id="stLog" class="chat"></div>
+      <details><summary>制作ノート(脚本・ショット表・タイムライン・チェック結果)</summary><pre id="stNote"></pre></details>
+      <video id="stVid" controls hidden></video>
+      <a id="stDl" hidden download="video-ai-hub.mp4">完成版をダウンロード</a>
+      <div id="stCredits" class="hint"></div>
+    </div>
+  </section>
 </main>
 <footer>※ サービス内容・料金・提供状況は変わります。必ず各公式サイトで最新情報を確認してください。</footer>
 <script src="app.js"></script>

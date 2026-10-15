@@ -23,7 +23,15 @@ jobs:
         working-directory: desktop
         run: |
           npm install
-          npm run dist
+          npm run prep
+          # Apple のチップ(arm64)用
+          file node_modules/ffmpeg-static/ffmpeg
+          npx electron-builder --mac --arm64 --publish never
+          # Intel(x64)用: 同梱する ffmpeg を x64 版に入れ替えてから組み立てる
+          rm -f node_modules/ffmpeg-static/ffmpeg
+          npm_config_arch=x64 npm rebuild ffmpeg-static
+          file node_modules/ffmpeg-static/ffmpeg
+          npx electron-builder --mac --x64 --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: video-ai-hub-mac
