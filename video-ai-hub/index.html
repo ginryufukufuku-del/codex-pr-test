@@ -49,6 +49,15 @@
     <p class="hint">①脚本家 ②撮影・生成担当 ③監督 ④最終チェック が、意見を出し合いながら1本の動画を作ります(脚本→ショット表→タイムラインと声→生成→ファクトチェック→編集→最終チェック)。</p>
     <div id="stStatus" class="hint"></div>
     <textarea id="stBrief" rows="3" placeholder="依頼(例: 野球の九回裏、逆転サヨナラの瞬間を30秒で)"></textarea>
+    <details id="stSbBox"><summary>絵コンテから始める(任意): 脚本・絵コンテ スタジオのJSON</summary>
+      <p class="hint">脚本・絵コンテ スタジオで書き出したプロジェクト(.json)を読み込み、作るシーンの範囲を選びます。脚本とショット表の話し合いを省き、絵コンテのカット割りどおりに生成します(1回 120秒・12カットまで)。</p>
+      <div class="row2"><input id="stSbFile" type="file" accept=".json,application/json"><button id="stSbClear" type="button" hidden>使わない</button></div>
+      <div id="stSbPick" class="opts" hidden>
+        <label>最初のシーン <select id="stSbFrom"></select></label>
+        <label>最後のシーン <select id="stSbTo"></select></label>
+      </div>
+      <div id="stSbInfo" class="hint"></div>
+    </details>
     <details><summary>原作(任意): 青空文庫の作品や、自分の文章</summary>
       <div class="row2"><input id="stAozora" placeholder="青空文庫の作品ページURL(https://www.aozora.gr.jp/cards/…/files/….html)"><button id="stAozoraBtn" type="button">読み込む</button></div>
       <div id="stSrcInfo" class="hint"></div>

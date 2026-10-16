@@ -310,12 +310,21 @@ async function applyFixes(p, fixes) {
 // ---------- 全体の流れ ----------
 async function run(p) {
   const step = s => { p.phase = s; say(p, null, 'phase', s); };
-  step('1. 脚本(①が書き、②③④が意見)');
-  const script = await debate(p, '脚本', 'writer', ['camera', 'director', 'checker'], 'script',
-    'この原作と依頼から映像用の脚本を書いてください。');
-  step('2. 撮影設計(②がショット表を作り、③④が意見)');
-  const shots = await debate(p, 'ショット表', 'camera', ['director', 'checker'], 'shots',
-    `脚本に沿ってショット表を作ってください。shot_id は英数字とハイフン(例: s1)。ショット数は${p.maxShots}以内。`, `脚本:\n${brief(script)}`);
+  let script, shots;
+  if (p.plan) {   // 脚本・絵コンテ スタジオの絵コンテを使う: 脚本とショット表の話し合いを省く
+    step(`1〜2. 脚本とショット表(絵コンテ ${p.plan.range} を使用)`);
+    script = p.notebook.script = p.plan.script;
+    shots = p.notebook.shots = p.plan.shots;
+    say(p, 'writer', 'info', `脚本・絵コンテ スタジオの ${p.plan.range} を脚本として使います(${script.beats.length}カット)。`);
+    say(p, 'camera', 'info', `絵コンテのカット割り・画面サイズ・カメラの動きを、そのままショット表にしました。`);
+  } else {
+    step('1. 脚本(①が書き、②③④が意見)');
+    script = await debate(p, '脚本', 'writer', ['camera', 'director', 'checker'], 'script',
+      'この原作と依頼から映像用の脚本を書いてください。');
+    step('2. 撮影設計(②がショット表を作り、③④が意見)');
+    shots = await debate(p, 'ショット表', 'camera', ['director', 'checker'], 'shots',
+      `脚本に沿ってショット表を作ってください。shot_id は英数字とハイフン(例: s1)。ショット数は${p.maxShots}以内。`, `脚本:\n${brief(script)}`);
+  }
   shots.shots = shots.shots.filter(s => ID_RE.test(s.shot_id)).slice(0, p.maxShots);
   if (!shots.shots.length) throw new Error('有効なショットがありません');
   for (const s of shots.shots) p.shots[s.shot_id] = { id: s.shot_id, status: 'planned', attempts: 0 };
@@ -358,9 +367,10 @@ async function start(o) {
   const p = { id, dir, brief: o.brief, source: o.source, targetSec: o.targetSec, aspect: o.aspect, provider: o.provider, model: o.model,
     nativeAudio: NATIVE_AUDIO.has(o.provider), maxShots: o.maxShots, maxGenerations: o.maxGenerations, rounds: o.rounds,
     used: 0, calls: 0, usage: { input: 0, output: 0 }, notebook: {}, shots: {}, log: [], phase: '準備', status: 'running', stop: false,
-    bgmFile: null, finalFile: null, speakers: o.useVoice ? await voice.speakers() : [],
+    plan: o.plan || null, bgmFile: null, finalFile: null, speakers: o.useVoice ? await voice.speakers() : [],
     credits: new Set([`映像: ${providers[o.provider].name} で生成`, `脚本・演出: Claude (Anthropic) による4エージェント`]), client: null };
   if (o.source.credit) p.credits.add(o.source.credit);
+  if (o.plan) p.credits.add(`脚本・絵コンテ: 『${o.plan.script.title}』${o.plan.range}(脚本・絵コンテ スタジオ)`);
   if (o.bgmFile) { p.bgmFile = path.join(dir, 'bgm' + path.extname(o.bgmFile)); fs.renameSync(o.bgmFile, p.bgmFile); p.credits.add('BGM: 利用者が用意した音源(利用条件は利用者が確認)'); }
   p.client = createClient();
   projects.set(id, p); current = p;

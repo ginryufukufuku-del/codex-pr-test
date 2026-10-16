@@ -131,7 +131,7 @@ $('genBtn').onclick = async () => {
 // ---- ⑤ AI制作チーム(4人のエージェント) ----
 const AGC = { '①脚本家': 'ag1', '②撮影・生成担当': 'ag2', '③監督': 'ag3', '④最終チェック': 'ag4' };
 const KIND = { draft: '案', comment: '意見', reply: '回答', ok: 'OK', paid: '有料', error: 'エラー', info: '', phase: '' };
-let stReady = false, stId = null, stTimer = null, stSrc = {}, stProvs = [];
+let stReady = false, stId = null, stTimer = null, stSrc = {}, stProvs = [], stSb = null;
 async function initStudio() {
   let st;
   try { const r = await api('/api/studio/status'); if (!r.ok) return; st = await r.json(); } catch { return; }
@@ -162,6 +162,39 @@ $('stAozoraBtn').onclick = async () => {
     $('stSrcInfo').textContent = `${j.author}『${j.title}』を読み込みました(${j.totalChars}文字${j.truncated ? `。長いため先頭${j.text.length}文字を使います` : ''})。`;
   } catch { $('stSrcInfo').textContent = '読み込めませんでした'; }
 };
+// 絵コンテから始める: シーンの並びと番号は脚本・絵コンテ スタジオ(と storyboard.js)に合わせる
+function sbScenes(p) {
+  const order = (p.beats || []).map(b => b.id), rank = s => { const i = order.indexOf(s.beatId); return i < 0 ? 999 : i; };
+  return p.scenes.map((s, i) => [s, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1])
+    .map(([s], i) => ({ no: i + 1, place: s.place || '場所未定', cuts: (s.cuts || []).length, sec: (s.cuts || []).reduce((a, c) => a + Math.max(0.5, +c.sec || 0), 0) }));
+}
+function sbUpdate() {
+  if (!stSb) { $('stSbInfo').textContent = ''; $('stSbPick').hidden = true; $('stSbClear').hidden = true; ['stSec', 'stShots'].forEach(id => $(id).disabled = false); return; }
+  const sc = sbScenes(stSb), from = +$('stSbFrom').value, to = Math.max(from, +$('stSbTo').value);
+  if (+$('stSbTo').value < from) $('stSbTo').value = from;
+  const pick = sc.slice(from - 1, to), cuts = pick.reduce((a, s) => a + s.cuts, 0), sec = pick.reduce((a, s) => a + s.sec, 0);
+  const over = cuts > 12 || sec > 120;
+  $('stSec').value = Math.max(5, Math.min(120, Math.round(sec))); $('stShots').value = Math.max(1, Math.min(12, cuts));
+  ['stSec', 'stShots'].forEach(id => $(id).disabled = true);
+  $('stGen').value = Math.min(20, cuts); $('stGenShow').textContent = $('stGen').value;   // 1カット1回分。撮り直しの分は必要なら増やす
+  $('stSbInfo').textContent = `『${stSb.title || '無題'}』 S${from}${to > from ? '〜S' + to : ''}: ${cuts}カット・${Math.round(sec)}秒` + (over ? ' — 1回の制作は120秒・12カットまでです。範囲を狭めてください' : '。長さとショット数は絵コンテから決まります');
+  $('stSbInfo').style.color = over ? '#b71c1c' : '';
+}
+$('stSbFile').onchange = async () => {
+  const f = $('stSbFile').files[0]; if (!f) return;
+  try {
+    const p = JSON.parse(await f.text()); if (!p || !Array.isArray(p.scenes) || !p.scenes.length) throw new Error();
+    p.scenes.forEach(s => (s.cuts || []).forEach(c => { delete c.sketch; }));   // 手描きの絵は送らない(サーバーでは使わない)
+    stSb = p;
+    const opt = sbScenes(p).map(s => `<option value="${s.no}">S${s.no} ${esc(s.place)}(${s.cuts}カット・${Math.round(s.sec)}秒)</option>`).join('');
+    $('stSbFrom').innerHTML = opt; $('stSbTo').innerHTML = opt; $('stSbPick').hidden = false; $('stSbClear').hidden = false;
+    if (p.aspect && [...$('stAspect').options].some(o => o.value === p.aspect)) $('stAspect').value = p.aspect;
+    if (!$('stBrief').value.trim()) $('stBrief').placeholder = '空欄なら、絵コンテのタイトルとテーマから依頼文を作ります';
+  } catch { stSb = null; alert('脚本・絵コンテ スタジオで書き出したJSONを選んでください'); }
+  sbUpdate();
+};
+$('stSbFrom').onchange = sbUpdate; $('stSbTo').onchange = sbUpdate;
+$('stSbClear').onclick = () => { stSb = null; $('stSbFile').value = ''; sbUpdate(); };
 $('stStart').onclick = async () => {
   if (!$('stPaid').checked) return;                    // 有料確認なしでは呼ばない
   $('stPaid').checked = false; $('stStart').disabled = true;
@@ -177,7 +210,8 @@ $('stStart').onclick = async () => {
     const r = await api('/api/studio/start', { method: 'POST', body: JSON.stringify({
       brief: $('stBrief').value.trim(), sourceText: $('stSource').value.trim(), sourceTitle: stSrc.title, sourceAuthor: stSrc.author, sourceCredit: stSrc.credit, sourceTruncated: stSrc.truncated,
       provider: $('stProv').value, model: $('stModelL').hidden ? undefined : $('stModel').value, aspect: $('stAspect').value,
-      targetSec: num('stSec'), maxShots: num('stShots'), maxGenerations: num('stGen'), rounds: num('stRounds'), useVoice: $('stVoice').checked, bgmId, confirmPaid: true }) });
+      targetSec: num('stSec'), maxShots: num('stShots'), maxGenerations: num('stGen'), rounds: num('stRounds'), useVoice: $('stVoice').checked, bgmId, confirmPaid: true,
+      ...(stSb ? { storyboard: stSb, sceneFrom: num('stSbFrom'), sceneTo: num('stSbTo') } : {}) }) });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error);
     stId = j.id; $('stProgress').hidden = false; $('stStop').hidden = false; $('stVid').hidden = true; $('stDl').hidden = true;

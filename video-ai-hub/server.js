@@ -114,7 +114,7 @@ const providers = {
 };
 
 // ---- AI制作チーム(4人のエージェント) ----
-const studio = require('./studio'), media = require('./media'), voice = require('./voice'), { fetchAozora } = require('./aozora');
+const studio = require('./studio'), media = require('./media'), voice = require('./voice'), { fetchAozora } = require('./aozora'), storyboard = require('./storyboard');
 if (process.env.STUDIO_MOCK === '1') providers.mock = require('./test/studio-mock').mockProvider(require('os').tmpdir());   // テスト用
 studio.init(providers);
 
@@ -204,10 +204,14 @@ async function studioApi(req, res, parts) {
   if (req.method === 'POST' && parts[2] === 'start') {
     if (!studio.configured()) return send(res, 400, { error: 'Claude の APIキー(ANTHROPIC_API_KEY)が未設定です' });
     if (!(await media.available())) return send(res, 400, { error: 'ffmpeg が見つかりません' });
-    const b = await body(req, 120000), p = providers[b.provider];
+    const b = await body(req, 400000), p = providers[b.provider];
     if (b.confirmPaid !== true) return send(res, 400, { error: '有料です。料金発生の確認が必要です(confirmPaid)' });
     if (!p || !p.configured()) return send(res, 400, { error: 'この動画生成AIはキーが未設定です' });
-    const brief = String(b.brief || '').trim(), text = String(b.sourceText || '').trim();
+    let plan = null;
+    if (b.storyboard) {   // 脚本・絵コンテ スタジオの JSON から始める
+      try { plan = storyboard.toPlan(b.storyboard, b.sceneFrom, b.sceneTo); } catch (e) { return send(res, 400, { error: e.message }); }
+    }
+    const brief = (String(b.brief || '').trim() || plan?.brief || '').slice(0, 2000), text = String(b.sourceText || '').trim() || plan?.sourceText || '';
     if (!brief || brief.length > 2000) return send(res, 400, { error: '依頼内容は1〜2000文字で入力してください' });
     if (text.length > 45000) return send(res, 400, { error: '原作の文章が長すぎます(45000文字まで)' });
     let bgmFile = null;
@@ -218,7 +222,7 @@ async function studioApi(req, res, parts) {
     }
     try {
       const id = await studio.start({ brief, aspect: p.aspects.includes(b.aspect) ? b.aspect : p.aspects[0], provider: b.provider,
-        model: p.models ? b.model : undefined, targetSec: intIn(b.targetSec, 5, 120, 30), maxShots: intIn(b.maxShots, 1, 12, 4),
+        model: p.models ? b.model : undefined, targetSec: plan ? Math.max(5, plan.targetSec) : intIn(b.targetSec, 5, 120, 30), maxShots: plan ? plan.maxShots : intIn(b.maxShots, 1, 12, 4), plan,
         maxGenerations: intIn(b.maxGenerations, 1, 20, 6), rounds: intIn(b.rounds, 1, 3, 2), useVoice: b.useVoice !== false, bgmFile,
         source: { text: text || '(原作なし。依頼内容から自由に創作)', title: String(b.sourceTitle || '').slice(0, 100), author: String(b.sourceAuthor || '').slice(0, 100),
           credit: String(b.sourceCredit || '').slice(0, 300), truncated: !!b.sourceTruncated } });

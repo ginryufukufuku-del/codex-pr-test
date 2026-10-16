@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/aozora.test.js && node test/studio.test.js"
+    "test": "node test/aozora.test.js && node test/studio.test.js && node test/storyboard.test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0"
