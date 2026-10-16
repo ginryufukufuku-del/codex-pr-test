@@ -4,8 +4,8 @@ const ctx = canvas.getContext('2d');
 const $ = (id) => document.getElementById(id);
 
 const slides = [
-  { title: 'はじめに', body: 'このアプリはスライドを動画に変換します。', seconds: 3, img: null, audio: null },
-  { title: '使い方', body: 'スライドを追加して、書き出しを押すだけです。', seconds: 3, img: null, audio: null },
+  { title: 'はじめに', body: 'このアプリはスライドを動画に変換します。', seconds: 3, img: null, audio: null, caption: '' },
+  { title: '使い方', body: 'スライドを追加して、書き出しを押すだけです。', seconds: 3, img: null, audio: null, caption: '' },
 ];
 
 function wrap(text, maxWidth) {
@@ -21,7 +21,7 @@ function wrap(text, maxWidth) {
   return lines;
 }
 
-function drawSlide(s) {
+function drawSlide(s, cap = capLines(s)[0]) {
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 0, W, 12);
   ctx.textBaseline = 'top';
@@ -40,6 +40,21 @@ function drawSlide(s) {
     const w = s.img.width * r, h = s.img.height * r;
     ctx.drawImage(s.img, box.x + (box.w - w) / 2, box.y + (box.h - h) / 2, w, h);
   }
+  if (cap) drawCaption(cap);
+}
+
+const capLines = (s) => (s.caption || '').split('\n').map((l) => l.trim()).filter(Boolean);
+
+function drawCaption(text) {
+  ctx.font = 'bold 38px system-ui, sans-serif';
+  const lines = wrap(text, W - 200).slice(0, 3);
+  const lh = 50, h = lines.length * lh + 24, y0 = H - h - 30;
+  ctx.fillStyle = 'rgba(0,0,0,.72)';
+  ctx.fillRect(60, y0, W - 120, h);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  lines.forEach((l, i) => ctx.fillText(l, W / 2, y0 + 12 + i * lh));
+  ctx.textAlign = 'left';
 }
 
 function drawIdle() { drawSlide(slides[0] || { title: '', body: '', seconds: 1 }); }
@@ -59,7 +74,8 @@ async function playAll(dest = null) {
   const c = audioCtx();
   await c.resume();
   for (const s of slides) {
-    drawSlide(s);
+    const caps = capLines(s);
+    drawSlide(s, caps[0]);
     let sec = Math.max(0.5, s.seconds);
     if (s.audio) {
       const src = c.createBufferSource();
@@ -68,7 +84,11 @@ async function playAll(dest = null) {
       src.start();
       sec = Math.max(sec, s.audio.duration + 0.3);
     }
-    await sleep(sec * 1000);
+    const n = Math.max(1, caps.length);
+    for (let k = 0; k < n; k++) {
+      if (k) drawSlide(s, caps[k]);
+      await sleep((sec * 1000) / n);
+    }
   }
 }
 
@@ -120,10 +140,13 @@ function render() {
     el.innerHTML = `<input type="text" placeholder="タイトル"><textarea placeholder="本文"></textarea>
       <div class="row"><label>秒 <input type="number" min="1" max="60"></label>
       <input type="file" accept="image/*"><button class="del">削除</button></div>
+      <textarea class="cap" placeholder="字幕（改行で区切ると順番に切り替わります）"></textarea>
       <div class="row"><span>🎙</span><input type="file" class="aud" accept="audio/*">
       <button class="rec" type="button">録音</button><span class="ainfo"></span></div>`;
-    const [t, b] = [el.querySelector('input[type=text]'), el.querySelector('textarea')];
+    const [t, b] = [el.querySelector('input[type=text]'), el.querySelector('textarea:not(.cap)')];
     const n = el.querySelector('input[type=number]');
+    const cp = el.querySelector('.cap');
+    cp.value = s.caption; cp.oninput = () => { s.caption = cp.value; drawSlide(s); };
     t.value = s.title; b.value = s.body; n.value = s.seconds;
     t.oninput = () => { s.title = t.value; drawSlide(s); };
     b.oninput = () => { s.body = b.value; drawSlide(s); };
@@ -166,7 +189,7 @@ function render() {
   });
 }
 
-$('add').onclick = () => { slides.push({ title: '', body: '', seconds: 3, img: null, audio: null }); render(); };
+$('add').onclick = () => { slides.push({ title: '', body: '', seconds: 3, img: null, audio: null, caption: '' }); render(); };
 render();
 drawIdle();
 

@@ -24,3 +24,4 @@ canvas{width:100%;background:#000;border-radius:8px}
   #editor{max-width:none}
 }
 .slide .aud{max-width:170px}.slide .rec{padding:4px 10px;background:#059669}.slide .ainfo{font-size:12px;color:#555}
+.slide textarea.cap{height:48px}
