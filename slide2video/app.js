@@ -4,8 +4,8 @@ const ctx = canvas.getContext('2d');
 const $ = (id) => document.getElementById(id);
 
 const slides = [
-  { title: 'はじめに', body: 'このアプリはスライドを動画に変換します。', seconds: 3, img: null },
-  { title: '使い方', body: 'スライドを追加して、書き出しを押すだけです。', seconds: 3, img: null },
+  { title: 'はじめに', body: 'このアプリはスライドを動画に変換します。', seconds: 3, img: null, audio: null },
+  { title: '使い方', body: 'スライドを追加して、書き出しを押すだけです。', seconds: 3, img: null, audio: null },
 ];
 
 function wrap(text, maxWidth) {
@@ -47,10 +47,28 @@ function drawIdle() { drawSlide(slides[0] || { title: '', body: '', seconds: 1 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let busy = false;
 
-async function playAll() {
-  for (let i = 0; i < slides.length; i++) {
-    drawSlide(slides[i]);
-    await sleep(Math.max(0.5, slides[i].seconds) * 1000);
+let actx = null;
+const audioCtx = () => (actx ||= new AudioContext());
+
+async function setAudio(s, blob) {
+  s.audio = await audioCtx().decodeAudioData(await blob.arrayBuffer());
+}
+
+// dest: 書き出し時は MediaStreamDestination、プレビュー時は null（スピーカーへ）
+async function playAll(dest = null) {
+  const c = audioCtx();
+  await c.resume();
+  for (const s of slides) {
+    drawSlide(s);
+    let sec = Math.max(0.5, s.seconds);
+    if (s.audio) {
+      const src = c.createBufferSource();
+      src.buffer = s.audio;
+      src.connect(dest || c.destination);
+      src.start();
+      sec = Math.max(sec, s.audio.duration + 0.3);
+    }
+    await sleep(sec * 1000);
   }
 }
 
@@ -72,14 +90,16 @@ $('export').onclick = async () => {
   if (!window.MediaRecorder) { $('status').textContent = 'このブラウザは録画に未対応です'; return; }
   setBusy(true, '書き出し中…');
   $('download').hidden = true;
+  const dest = audioCtx().createMediaStreamDestination();
   const stream = canvas.captureStream(FPS);
-  const type = ['video/webm;codecs=vp9', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t));
+  dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+  const type = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t));
   const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 4_000_000 });
   const chunks = [];
   rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
   const done = new Promise((r) => (rec.onstop = r));
   rec.start();
-  await playAll();
+  await playAll(dest);
   await sleep(200);
   rec.stop();
   await done;
@@ -99,7 +119,9 @@ function render() {
     el.className = 'slide';
     el.innerHTML = `<input type="text" placeholder="タイトル"><textarea placeholder="本文"></textarea>
       <div class="row"><label>秒 <input type="number" min="1" max="60"></label>
-      <input type="file" accept="image/*"><button class="del">削除</button></div>`;
+      <input type="file" accept="image/*"><button class="del">削除</button></div>
+      <div class="row"><span>🎙</span><input type="file" class="aud" accept="audio/*">
+      <button class="rec" type="button">録音</button><span class="ainfo"></span></div>`;
     const [t, b] = [el.querySelector('input[type=text]'), el.querySelector('textarea')];
     const n = el.querySelector('input[type=number]');
     t.value = s.title; b.value = s.body; n.value = s.seconds;
@@ -114,12 +136,37 @@ function render() {
       img.onload = () => { s.img = img; drawSlide(s); };
       img.src = URL.createObjectURL(f);
     };
+    const info = el.querySelector('.ainfo'), recBtn = el.querySelector('.rec');
+    const showAudio = () => (info.textContent = s.audio ? `${s.audio.duration.toFixed(1)}秒` : '');
+    showAudio();
+    el.querySelector('.aud').onchange = async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      try { await setAudio(s, f); showAudio(); } catch { info.textContent = '読み込み失敗'; }
+    };
+    let mr = null;
+    recBtn.onclick = async () => {
+      if (mr) { mr.stop(); return; }
+      try {
+        const st = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const parts = [];
+        mr = new MediaRecorder(st);
+        mr.ondataavailable = (e) => parts.push(e.data);
+        mr.onstop = async () => {
+          st.getTracks().forEach((t) => t.stop());
+          mr = null; recBtn.textContent = '録音';
+          try { await setAudio(s, new Blob(parts)); showAudio(); } catch { info.textContent = '録音失敗'; }
+        };
+        mr.start();
+        recBtn.textContent = '■ 停止';
+      } catch { info.textContent = 'マイクを使えません'; }
+    };
     el.querySelector('.del').onclick = () => { slides.splice(i, 1); render(); drawIdle(); };
     box.appendChild(el);
   });
 }
 
-$('add').onclick = () => { slides.push({ title: '', body: '', seconds: 3, img: null }); render(); };
+$('add').onclick = () => { slides.push({ title: '', body: '', seconds: 3, img: null, audio: null }); render(); };
 render();
 drawIdle();
 
