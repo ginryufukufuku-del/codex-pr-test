@@ -411,6 +411,14 @@ const SERVICES = [
     note: "オーストラリア発のAI診療記録（スクライブ）。引用つきの文献検索（Evidence）機能もあります。トップを開きます。コピー済みの内容をペーストしてください。"
   },
   {
+    id: "iatrox",
+    category: "medical",
+    name: "iatroX",
+    urlType: "manual",
+    url: "https://www.iatrox.com/",
+    note: "英国の医療従事者向けの臨床AI参照ツール（NICE・BNFなど）。トップを開きます。コピー済みの内容をペーストしてください。"
+  },
+  {
     id: "dxgpt",
     category: "medical",
     name: "DxGPT",
@@ -563,6 +571,13 @@ const AI_INFO = {
     price: "無料枠があります。公式は、「コア機能は永久無料で、利用制限なし」と説明しています。第三者は、高度な機能は月10回までなど、制限があると報告しています。有料プランは、米国で月額150ドル／人との報告があります（第三者）。",
     reg: "登録の手順は、今回は確認できませんでした。",
     links: [["料金（公式）", "https://www.heidihealth.com/pricing"], ["資金調達・利用状況（HLTH）", "https://hlth.com/insights/news/heidi-health-secures-65m-to-scale-ai-care-partner-platform-globally-2025-10-07"], ["料金の比較（Toolradar）", "https://toolradar.com/tools/heidi-health/pricing"]]
+  },
+  iatrox: {
+    source: ["英国の医療従事者向けの、臨床AIの参照ツールです。", "NICE、CKS、SIGN、BNF、査読付きの研究を元にしていると、運営元は説明しています。NICEやBNFの更新は、公開から24〜48時間以内に反映と説明していますが、独立した検証は確認できませんでした。", "英国の医療機器の規制（UKCAマーク、MHRA登録）に対応と、運営元が説明しています（自己申告で、未確認）。"],
+    users: "認証済みの臨床家が5万人超、40か国で利用、主に英国（運営元・2026年9月）。2026年5月の発表では、3万人超で、英国のGPの約10%が月間で利用と説明しています。数字は、運営元の発表のみです。",
+    price: "運営元は、完全無料と説明しています。専門医試験の問題集は、年99ポンドとの記載があります。",
+    reg: "情報源で食い違いがあります（ログイン不要との記載と、標準のサインアップが必要との記載）。サイトで確認してください。",
+    links: [["よくある質問（運営元）", "https://iatrox.com/faq"], ["利用状況の発表（PRLog）", "https://markets.financialcontent.com/bpas/article/prlog-2026-5-15-iatrox-surpasses-500000-clinical-queries-and-expands-specialist-exam-coverage"], ["利用状況の数字（運営元のブログ）", "https://www.iatrox.com/blog/most-used-ai-tools-for-doctors-2026-published-adoption-figures"]]
   },
   dxgpt: {
     source: ["スペインの非営利団体 Foundation 29 の、鑑別診断の支援ツールです。主に希少疾患を想定しています。", "症状から、可能性のある診断を5件、理由つきで示します。", "Human Phenotype Ontology と Orphanet のデータを使うとの情報があります（第三者の解説）。", "小児50症例を使った評価の論文（査読前）があります。"],
