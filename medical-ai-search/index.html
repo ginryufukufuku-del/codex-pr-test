@@ -395,6 +395,22 @@ const SERVICES = [
     note: "臨床意思決定支援AI。トップ/ログイン画面を開きます。"
   },
   {
+    id: "doximitygpt",
+    category: "medical",
+    name: "Doximity GPT",
+    urlType: "manual",
+    url: "https://www.doximity.com/ask/overview",
+    note: "米国の医師向けSNS Doximityの臨床AI（現在の名称は「Ask」、旧DoxGPT）。Askの紹介ページを開きます。要ログイン（認証済みアカウント）。コピー済みの内容をペーストしてください。"
+  },
+  {
+    id: "heidihealth",
+    category: "medical",
+    name: "Heidi Health",
+    urlType: "manual",
+    url: "https://www.heidihealth.com/",
+    note: "オーストラリア発のAI診療記録（スクライブ）。引用つきの文献検索（Evidence）機能もあります。トップを開きます。コピー済みの内容をペーストしてください。"
+  },
+  {
     id: "dxgpt",
     category: "medical",
     name: "DxGPT",
@@ -533,6 +549,20 @@ const AI_INFO = {
     reg: "登録の要否は、今回は確認できませんでした。",
     users: "情報源によって数字が違います。月間の利用者が13.1万人超（2026年5月・第三者のディレクトリ）、利用者が約5.9万〜7万人（古い紹介記事）との記載があります。会社の公式な数字は、確認できませんでした。",
     links: [["利用者数（vantaige）", "https://vantaige.io/ai-tool/glass-health"], ["Glass Health（運営元の比較ページ）", "https://glass.health/compare/freed"], ["レビュー記事（第三者）", "https://www.plaud.ai/blogs/articles/glass-health-review"]]
+  },
+  doximitygpt: {
+    source: ["米国の医師向けSNS Doximityが提供する臨床AIです。現在の名称は「Ask」（旧DoxGPT）です。", "回答は、「PeerCheck」で、1.2万人超の医師の専門家が継続して評価・改善していると、運営元が説明しています。", "元にしている論文やガイドラインの、具体的な提携先は、今回は確認できませんでした。"],
+    users: "DoxGPTを使う医師が30万人超（2026年2月・第三者の記事）。AIの利用者が前の四半期より50%超増えたと、運営元が発表しています（2025年9月期）。最新の月間の人数は、確認できませんでした。",
+    price: "認証済みのDoximityアカウントがあれば、無料です（公式のFAQ）。病院向けの契約は、別料金です。",
+    reg: "Doximityの認証済みアカウントが必要です。米国の医師のネットワークで、日本の医師が使えるかは、未確認です。",
+    links: [["Doximity Ask FAQ（公式）", "https://support.doximity.com/hc/en-us/articles/41850759500051-DoxGPT-FAQs"], ["Doximity Ask（公式の紹介）", "https://www.doximity.com/ask/overview"], ["利用者数（Tikr）", "https://www.tikr.com/blog/doximity-stock-why-analysts-are-signaling-a-buy-after-a-67-drop-last-year"], ["決算発表（BusinessWire）", "https://businesswire.com/news/home/20251106795409/en/Doximity-Announces-Fiscal-2026-Second-Quarter-Financial-Results"]]
+  },
+  heidihealth: {
+    source: ["オーストラリア発の、AI診療記録（スクライブ）です。診察の会話から、カルテの下書きを作ります。", "引用つきの文献検索（Evidence）機能もあるとの記載があります（第三者の紹介）。", "文献検索の元データや、提携先は、今回は確認できませんでした。"],
+    users: "週に200万件超の診察を支援しています。医療従事者は「数万人」、116か国・110言語です（会社の発表・2025年10月）。正確な利用者数は、確認できませんでした。",
+    price: "無料枠があります。公式は、「コア機能は永久無料で、利用制限なし」と説明しています。第三者は、高度な機能は月10回までなど、制限があると報告しています。有料プランは、米国で月額150ドル／人との報告があります（第三者）。",
+    reg: "登録の手順は、今回は確認できませんでした。",
+    links: [["料金（公式）", "https://www.heidihealth.com/pricing"], ["資金調達・利用状況（HLTH）", "https://hlth.com/insights/news/heidi-health-secures-65m-to-scale-ai-care-partner-platform-globally-2025-10-07"], ["料金の比較（Toolradar）", "https://toolradar.com/tools/heidi-health/pricing"]]
   },
   dxgpt: {
     source: ["スペインの非営利団体 Foundation 29 の、鑑別診断の支援ツールです。主に希少疾患を想定しています。", "症状から、可能性のある診断を5件、理由つきで示します。", "Human Phenotype Ontology と Orphanet のデータを使うとの情報があります（第三者の解説）。", "小児50症例を使った評価の論文（査読前）があります。"],
