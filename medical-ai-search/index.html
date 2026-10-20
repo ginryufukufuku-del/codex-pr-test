@@ -462,19 +462,19 @@ const SERVICES = [
     note: "ログインが必要。仕様変更により動作しなくなる可能性があります。"
   },
   {
-    id: "gemini",
-    category: "general",
-    name: "Gemini",
-    urlType: "query",
-    url: "https://gemini.google.com/app?q=",
-    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容をペーストしてください。"
-  },
-  {
     id: "claude",
     category: "general",
     name: "Claude",
     urlType: "query",
     url: "https://claude.ai/new?q=",
+    note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容をペーストしてください。"
+  },
+  {
+    id: "gemini",
+    category: "general",
+    name: "Gemini",
+    urlType: "query",
+    url: "https://gemini.google.com/app?q=",
     note: "ログインが必要。入力欄への自動入力は未確認のため、動作しない場合はコピー済みの内容をペーストしてください。"
   },
   {
@@ -494,6 +494,14 @@ const SERVICES = [
     note: "xAIのGrok。検索語を付けて開きます（入力欄に入るかは未確認）。入らない場合はコピー済みの内容をペーストしてください。"
   },
   {
+    id: "metaai",
+    category: "general",
+    name: "Meta AI",
+    urlType: "manual",
+    url: "https://www.meta.ai/",
+    note: "MetaのAIアシスタント。トップを開きます。検索語の自動入力は未確認のため、コピー済みの内容をペーストしてください。個人が特定できる情報は入力しないでください。"
+  },
+  {
     id: "google",
     category: "general",
     chipTone: "gray",
@@ -510,14 +518,6 @@ const SERVICES = [
     urlType: "query",
     url: "https://www.bing.com/search?q=",
     note: "検索語を付けて開けます。Copilotの回答が表示される場合があります。"
-  },
-  {
-    id: "metaai",
-    category: "general",
-    name: "Meta AI",
-    urlType: "manual",
-    url: "https://www.meta.ai/",
-    note: "MetaのAIアシスタント。トップを開きます。検索語の自動入力は未確認のため、コピー済みの内容をペーストしてください。個人が特定できる情報は入力しないでください。"
   }
 ];
 
