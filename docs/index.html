@@ -275,9 +275,7 @@
   @media (max-width:600px){
     .nm-full{display:none;}
     .nm-short{display:inline;}
-    .result-item .name[data-ai="openevidence"]{font-size:clamp(1.2rem,6.7vw,1.5rem);}
-    .result-item .name[data-ai="doximitygpt"]{font-size:clamp(1.1rem,6.2vw,1.3rem);}
-    .chip[data-ai="openevidence"]{font-size:clamp(1.1rem,6.3vw,1.37rem);padding-left:14px;padding-right:14px;white-space:nowrap;}
+    .result-item .name[data-ai="openevidence"]{font-size:clamp(1.2rem,6.7vw,1.5rem);}    .chip[data-ai="openevidence"]{font-size:clamp(1.1rem,6.3vw,1.37rem);padding-left:14px;padding-right:14px;white-space:nowrap;}
   }
   .result-item .title-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 10px;}
   .result-item .status{font-size:0.55rem;color:var(--muted);margin:0;display:none;}
@@ -394,14 +392,6 @@ const SERVICES = [
     urlType: "manual",
     url: "https://glass.health/",
     note: "臨床意思決定支援AI。トップ/ログイン画面を開きます。"
-  },
-  {
-    id: "doximitygpt",
-    category: "medical",
-    name: "Doximity Ask",
-    urlType: "manual",
-    url: "https://www.doximity.com/ask/overview",
-    note: "米国の医師向けSNS Doximityの臨床AI「Ask」（旧DoxGPT）。Askの紹介ページを開きます。要ログイン（認証済みアカウント）。コピー済みの内容をペーストしてください。"
   },
   {
     id: "heidihealth",
@@ -566,13 +556,6 @@ const AI_INFO = {
     reg: "登録の要否は、今回は確認できませんでした。",
     users: "情報源によって数字が違います。月間の利用者が13.1万人超（2026年5月・第三者のディレクトリ）、利用者が約5.9万〜7万人（古い紹介記事）との記載があります。会社の公式な数字は、確認できませんでした。",
     links: [["利用者数（vantaige）", "https://vantaige.io/ai-tool/glass-health"], ["Glass Health（運営元の比較ページ）", "https://glass.health/compare/freed"], ["レビュー記事（第三者）", "https://www.plaud.ai/blogs/articles/glass-health-review"]]
-  },
-  doximitygpt: {
-    source: ["米国の医師向けSNS Doximityが提供する臨床AI「Ask」です（旧DoxGPT、Doximity GPT）。", "回答は、「PeerCheck」で、1.2万人超の医師の専門家が継続して評価・改善していると、運営元が説明しています。", "元にしている論文やガイドラインの、具体的な提携先は、今回は確認できませんでした。"],
-    users: "DoxGPTを使う医師が30万人超（2026年2月・第三者の記事）。AIの利用者が前の四半期より50%超増えたと、運営元が発表しています（2025年9月期）。最新の月間の人数は、確認できませんでした。",
-    price: "認証済みのDoximityアカウントがあれば、無料です（公式のFAQ）。病院向けの契約は、別料金です。",
-    reg: "Doximityの認証済みアカウントが必要です。米国の医師のネットワークで、日本の医師が使えるかは、未確認です。",
-    links: [["Doximity Ask FAQ（公式）", "https://support.doximity.com/hc/en-us/articles/41850759500051-DoxGPT-FAQs"], ["Doximity Ask（公式の紹介）", "https://www.doximity.com/ask/overview"], ["利用者数（Tikr）", "https://www.tikr.com/blog/doximity-stock-why-analysts-are-signaling-a-buy-after-a-67-drop-last-year"], ["決算発表（BusinessWire）", "https://businesswire.com/news/home/20251106795409/en/Doximity-Announces-Fiscal-2026-Second-Quarter-Financial-Results"]]
   },
   heidihealth: {
     source: ["オーストラリア発の、AI診療記録（スクライブ）です。診察の会話から、カルテの下書きを作ります。", "引用つきの文献検索（Evidence）機能もあるとの記載があります（第三者の紹介）。", "文献検索の元データや、提携先は、今回は確認できませんでした。"],
