@@ -34,6 +34,7 @@
   header{max-width:100%;}
   h1{font-size:1.4rem;margin:0 0 4px;}
   h1 .emo{display:inline-block;width:1.45em;text-indent:0;}
+  h1 .emo img{width:1.2em;height:1.2em;border-radius:28%;object-fit:cover;vertical-align:-0.22em;box-shadow:0 1px 4px rgba(40,80,60,.35);}
   @media (max-width:600px){h1{padding-left:1.45em;text-indent:-1.45em;}}
   .sub{color:var(--muted);font-size:0.62rem;line-height:1.25;}
   main{max-width:960px;margin:0 auto;padding:12px 16px 6px;display:flex;flex-direction:column;gap:11.6px;}
@@ -288,7 +289,7 @@
 <body>
 <div class="hero">
   <header>
-    <h1><span class="emo">🩺</span><span style="white-space:nowrap;">医療AI 横断検索</span> <span style="white-space:nowrap;">アシスタント</span><span class="ver" style="font-size:0.5em;font-weight:600;white-space:nowrap;"><span class="nm-full">（バージョン1.0）</span><span class="nm-short"> Ver1.0</span></span></h1>
+    <h1><span class="emo"><img src="icons/title-face.png" alt="" onerror="this.replaceWith(document.createTextNode('🩺'))"></span><span style="white-space:nowrap;">医療AI 横断検索</span> <span style="white-space:nowrap;">アシスタント</span><span class="ver" style="font-size:0.5em;font-weight:600;white-space:nowrap;"><span class="nm-full">（バージョン1.0）</span><span class="nm-short"> Ver1.0</span></span></h1>
   </header>
 </div>
 <main>
